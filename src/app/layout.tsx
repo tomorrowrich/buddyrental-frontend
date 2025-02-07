@@ -1,29 +1,17 @@
-"use client";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import "@/styles/globals.css";
-import { Box, ThemeProvider } from "@mui/material";
 import theme from "@/theme";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import { Box, ThemeProvider } from "@mui/material";
 import { NavigationBar } from "@/widgets/NavigationBar";
 import { AuthProvider } from "@/context/auth";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import LoadBackdrop from "@/screens/LoadBackdrop";
+import { BuddyRentalLoader } from "./loading";
+import { Suspense } from "react";
 
 export default function BuddyRentalRootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [isLoading, setIsLoading] = useState(false);
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timeout = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timeout);
-  }, [pathname, searchParams]);
-
   return (
     <html lang="en">
       <head>
@@ -36,11 +24,15 @@ export default function BuddyRentalRootLayout({
           <AuthProvider>
             <ThemeProvider theme={theme}>
               <main className="flex flex-col min-h-screen">
-                <LoadBackdrop open={isLoading} />
-                <NavigationBar />
-                <Box flex={1} sx={{ display: "flex", flexDirection: "column" }}>
-                  {children}
-                </Box>
+                <Suspense fallback={<BuddyRentalLoader />}>
+                  <NavigationBar />
+                  <Box
+                    flex={1}
+                    sx={{ display: "flex", flexDirection: "column" }}
+                  >
+                    {children}
+                  </Box>
+                </Suspense>
               </main>
             </ThemeProvider>
           </AuthProvider>

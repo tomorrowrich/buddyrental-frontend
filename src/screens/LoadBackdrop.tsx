@@ -4,7 +4,7 @@ interface LoadBackdropProps {
   open: boolean;
 }
 
-const LoadBackdrop = ({ open }: LoadBackdropProps) => {
+export const LoadBackdrop = ({ open }: LoadBackdropProps) => {
   return (
     <Backdrop
       sx={{
@@ -17,5 +17,3 @@ const LoadBackdrop = ({ open }: LoadBackdropProps) => {
     </Backdrop>
   );
 };
-
-export default LoadBackdrop;
