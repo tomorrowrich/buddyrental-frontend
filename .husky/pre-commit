@@ -1,8 +1,8 @@
 #!/bin/sh
 
-pnpm test
+prettier $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g') --write --ignore-unknown
+git update-index --again
 
 pnpm lint
 
-prettier $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g') --write --ignore-unknown
-git update-index --again
+pnpm test
