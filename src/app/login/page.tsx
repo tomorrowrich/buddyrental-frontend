@@ -69,8 +69,9 @@ export default function Login() {
       sx={{
         background: "white",
         display: "flex",
+        justifyContent: "center",
         alignItems: "center",
-        minHeight: "100vh",
+        flex: 1,
       }}
     >
       <Stack
@@ -87,6 +88,8 @@ export default function Login() {
             maxWidth: "600px",
             mx: "auto",
             my: "auto",
+            justifyContent: "center",
+            alignContent: "center",
           }}
         >
           <Box

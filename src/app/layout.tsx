@@ -28,7 +28,13 @@ export default function BuddyRentalRootLayout({
                   <NavigationBar />
                   <Box
                     flex={1}
-                    sx={{ display: "flex", flexDirection: "column" }}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignContent: "center",
+                      justifyContent: "center",
+                      backgroundColor: "background.default",
+                    }}
                   >
                     {children}
                   </Box>
