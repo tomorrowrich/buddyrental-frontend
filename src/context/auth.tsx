@@ -7,7 +7,7 @@ export interface User {
   email: string;
   name: string;
 }
-interface AuthContextType {
+export interface AuthContextType {
   user?: User;
   token: string | null;
   login: (token: string) => void;
