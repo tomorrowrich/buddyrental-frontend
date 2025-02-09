@@ -39,6 +39,7 @@ export function LoginCarousel() {
               width="100%"
               height="100%"
               animation="wave"
+              data-testid="mui-skeleton"
             />
           )}
           <Box

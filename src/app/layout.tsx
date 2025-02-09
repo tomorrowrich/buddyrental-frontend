@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 import theme from "@/theme";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { Box, ThemeProvider } from "@mui/material";
-import { NavigationBar } from "@/widgets/NavigationBar";
+import { NavigationBar } from "@/widgets/NavigationBar/NavigationBar";
 import { AuthProvider } from "@/context/auth";
 import { BuddyRentalLoader } from "./loading";
 import { Suspense } from "react";

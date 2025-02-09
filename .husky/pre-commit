@@ -5,6 +5,6 @@ pnpm lint
 
 git update-index --again
 
-pnpm test
+pnpm test -- --run
 
 pnpm build

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { NavigationBar } from "@/widgets/NavigationBar";
+import { NavigationBar } from "@/widgets/NavigationBar/NavigationBar";
 import { useAuth } from "@/context/auth";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ThemeProvider } from "@mui/material/styles";
@@ -12,6 +12,7 @@ vi.mock("@/context/auth", () => ({
 
 // Mock next/image
 vi.mock("next/image", () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @next/next/no-img-element, jsx-a11y/alt-text
   default: (props: any) => <img {...props} />,
 }));
 
@@ -28,6 +29,7 @@ describe("NavigationBar", () => {
 
   describe("when authenticated", () => {
     beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (useAuth as any).mockReturnValue({
         isAuthenticated: true,
         user: {
