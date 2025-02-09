@@ -2,7 +2,13 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import Cookies from "js-cookie";
 
-interface AuthContextType {
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+}
+export interface AuthContextType {
+  user?: User;
   token: string | null;
   login: (token: string) => void;
   logout: () => void;
@@ -20,6 +26,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return Cookies.get("authToken") || null;
   });
 
+  const user = {
+    id: "1",
+    email: "john.doe@example.com",
+    name: "John Doe",
+  };
+
   const login = (newToken: string) => {
     Cookies.set("authToken", newToken, { expires: 7 }); // Token expires in 7 days
     setToken(newToken);
@@ -35,6 +47,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     login,
     logout,
     isAuthenticated: !!token,
+    user,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
