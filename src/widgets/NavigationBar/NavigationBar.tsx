@@ -90,6 +90,7 @@ export function NavigationBar() {
               <Avatar
                 src="https://i.pravatar.cc/40"
                 alt="User"
+                data-testid="user-avatar"
                 sx={{ bgcolor: "secondary.main", cursor: "pointer" }}
                 onClick={(event) => setAnchorEl(event.currentTarget)}
               />
@@ -159,7 +160,11 @@ export function NavigationBar() {
         {!auth.isAuthenticated && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
             {/* User Avatar */}
-            <Avatar alt="User" sx={{ bgcolor: "gray" }} />
+            <Avatar
+              alt="User"
+              data-testid="user-avatar"
+              sx={{ bgcolor: "gray" }}
+            />
           </Box>
         )}
       </Toolbar>

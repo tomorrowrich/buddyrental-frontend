@@ -13,6 +13,7 @@ export const LoadBackdrop = ({ open }: LoadBackdropProps) => {
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
       open={open}
+      data-testid="backdrop"
     >
       <Image
         src="/logo-full.svg"

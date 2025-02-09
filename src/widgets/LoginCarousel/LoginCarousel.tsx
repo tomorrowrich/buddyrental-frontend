@@ -27,6 +27,7 @@ export function LoginCarousel() {
         reverseDirection: false,
         stopOnLastSlide: false,
       }}
+      id="swiper"
       loop={true}
       slidesPerView={1}
       style={{ flex: 1, width: "100%", height: "75vh", borderRadius: "16px" }}
@@ -44,6 +45,7 @@ export function LoginCarousel() {
           )}
           <Box
             component="img"
+            data-testid="img"
             src={src}
             alt={`Slide ${index + 1}`}
             sx={{

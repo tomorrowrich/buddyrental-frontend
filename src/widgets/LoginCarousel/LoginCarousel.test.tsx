@@ -1,11 +1,20 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { LoginCarousel } from "./LoginCarousel";
+import "@testing-library/jest-dom";
 
 // Mock Swiper modules
 vi.mock("swiper/react", () => ({
-  Swiper: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="swiper">{children}</div>
+  Swiper: ({
+    children,
+    style,
+  }: {
+    children: React.ReactNode;
+    style: React.CSSProperties;
+  }) => (
+    <div data-testid="swiper" style={style}>
+      {children}
+    </div>
   ),
   SwiperSlide: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="swiper-slide">{children}</div>
@@ -29,24 +38,69 @@ describe("LoginCarousel", () => {
     expect(skeletons).toHaveLength(3);
   });
 
-  // it('renders images with correct sources', () => {
-  //   render(<LoginCarousel />);
-  //   const images = screen.getAllByRole('img');
+  it("renders images with correct sources", () => {
+    render(<LoginCarousel />);
+    const images = screen.getAllByTestId("img");
 
-  //   expect(images[0]).toHaveAttribute('src', 'https://picsum.photos/1920/1080?random=1');
-  //   expect(images[1]).toHaveAttribute('src', 'https://picsum.photos/1920/1080?random=2');
-  //   expect(images[2]).toHaveAttribute('src', 'https://picsum.photos/1920/1080?random=3');
-  // });
+    expect(images[0]).toHaveAttribute(
+      "src",
+      "https://picsum.photos/1920/1080?random=1",
+    );
+    expect(images[1]).toHaveAttribute(
+      "src",
+      "https://picsum.photos/1920/1080?random=2",
+    );
+    expect(images[2]).toHaveAttribute(
+      "src",
+      "https://picsum.photos/1920/1080?random=3",
+    );
+  });
 
-  // it('applies correct styles to swiper container', () => {
-  //   render(<LoginCarousel />);
-  //   const swiper = screen.getByTestId('swiper');
+  it("applies correct styles to swiper container", () => {
+    render(<LoginCarousel />);
+    const swiper = screen.getByTestId("swiper");
 
-  //   expect(swiper).toHaveStyle({
-  //     flex: 1,
-  //     width: '100%',
-  //     height: '75vh',
-  //     borderRadius: '16px'
-  //   });
-  // });
+    expect(swiper).toHaveStyle({
+      flex: "1",
+      width: "100%",
+      height: "75vh",
+      borderRadius: "16px",
+    });
+  });
+
+  it("handles image load events correctly", () => {
+    render(<LoginCarousel />);
+    const images = screen.getAllByTestId("img");
+    const skeletons = screen.getAllByTestId("mui-skeleton");
+
+    expect(skeletons).toHaveLength(3);
+    expect(images[0]).toHaveStyle({ display: "none" });
+
+    fireEvent.load(images[0]);
+
+    expect(screen.getAllByTestId("mui-skeleton")).toHaveLength(2);
+    expect(images[0]).toHaveStyle({ display: "block" });
+  });
+
+  it("maintains proper image dimensions", () => {
+    render(<LoginCarousel />);
+    const images = screen.getAllByTestId("img");
+
+    images.forEach((img) => {
+      expect(img).toHaveStyle({
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+      });
+    });
+  });
+
+  it("renders all images with correct alt text", () => {
+    render(<LoginCarousel />);
+    const images = screen.getAllByTestId("img");
+
+    images.forEach((img, index) => {
+      expect(img).toHaveAttribute("alt", `Slide ${index + 1}`);
+    });
+  });
 });

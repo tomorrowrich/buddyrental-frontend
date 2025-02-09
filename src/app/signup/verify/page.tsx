@@ -1,5 +1,8 @@
 "use client";
-import { QontoConnector, QontoStepIcon } from "@/widgets/QontoConnector";
+import {
+  QontoConnector,
+  QontoStepIcon,
+} from "@/widgets/VerificationStepper/QontoConnector";
 import {
   Box,
   Button,
