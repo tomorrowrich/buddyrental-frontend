@@ -7,6 +7,7 @@ import {
   IconButton,
   Avatar,
   Button,
+  Menu,
 } from "@mui/material";
 import {
   NotificationsNone,
@@ -16,9 +17,11 @@ import {
 } from "@mui/icons-material";
 import Image from "next/image";
 import { useAuth } from "@/context/auth";
+import { useState } from "react";
 
 export function NavigationBar() {
   const auth = useAuth();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   return (
     <AppBar
       position="static"
@@ -82,12 +85,74 @@ export function NavigationBar() {
               <NotificationsNone sx={{ color: "primary.main" }} />
             </IconButton>
 
-            {/* User Avatar */}
-            <Avatar
-              src="https://i.pravatar.cc/40"
-              alt="User"
-              sx={{ bgcolor: "secondary.main" }}
-            />
+            {/* User Avatar with Dialog */}
+            <Box>
+              <Avatar
+                src="https://i.pravatar.cc/40"
+                alt="User"
+                sx={{ bgcolor: "secondary.main", cursor: "pointer" }}
+                onClick={(event) => setAnchorEl(event.currentTarget)}
+              />
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={() => setAnchorEl(null)}
+              >
+                <Box sx={{ p: 2, minWidth: 200 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      mb: 2,
+                    }}
+                  >
+                    <Avatar src="https://i.pravatar.cc/40" alt="User" />
+                    <Box>
+                      <Typography variant="subtitle1">
+                        {auth.user?.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {auth.user?.email}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Button
+                    fullWidth
+                    variant="text"
+                    sx={{ justifyContent: "flex-start", mb: 1 }}
+                    onClick={() => {
+                      setAnchorEl(null);
+                      // Add navigation to profile page
+                    }}
+                  >
+                    Edit Profile
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="text"
+                    sx={{ justifyContent: "flex-start", mb: 1 }}
+                    onClick={() => {
+                      setAnchorEl(null);
+                      // Add navigation to settings page
+                    }}
+                  >
+                    Settings
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => {
+                      auth.logout();
+                      setAnchorEl(null);
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </Box>
+              </Menu>
+            </Box>
           </Box>
         )}
 
