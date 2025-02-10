@@ -1,7 +1,7 @@
 "use client";
 import { createTheme } from "@mui/material/styles";
 
-let theme = createTheme({
+let BuddyRentalTheme = createTheme({
   colorSchemes: {
     light: true,
     dark: false,
@@ -25,25 +25,25 @@ let theme = createTheme({
   },
 });
 
-theme = createTheme(theme, {
+BuddyRentalTheme = createTheme(BuddyRentalTheme, {
   palette: {
-    primary: theme.palette.augmentColor({
+    primary: BuddyRentalTheme.palette.augmentColor({
       color: { main: "#7C606B" },
       name: "primary",
     }),
-    secondary: theme.palette.augmentColor({
+    secondary: BuddyRentalTheme.palette.augmentColor({
       color: { main: "#C46BAE" },
       name: "secondary",
     }),
-    tertiary: theme.palette.augmentColor({
+    tertiary: BuddyRentalTheme.palette.augmentColor({
       color: { main: "#EB7BC0" },
       name: "tertiary",
     }),
-    quaternary: theme.palette.augmentColor({
+    quaternary: BuddyRentalTheme.palette.augmentColor({
       color: { main: "#EDA4BD" },
       name: "quaternary",
     }),
-    quinary: theme.palette.augmentColor({
+    quinary: BuddyRentalTheme.palette.augmentColor({
       color: { main: "#EED5C2" },
       name: "quinary",
     }),
@@ -103,4 +103,4 @@ declare module "@mui/material/Link" {
   }
 }
 
-export default theme;
+export default BuddyRentalTheme;

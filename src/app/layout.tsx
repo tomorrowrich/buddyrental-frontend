@@ -1,5 +1,5 @@
 import "@/styles/globals.css";
-import theme from "@/theme";
+import BuddyRentalTheme from "@/theme";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { Box, ThemeProvider } from "@mui/material";
 import { NavigationBar } from "@/widgets/NavigationBar/NavigationBar";
@@ -22,7 +22,7 @@ export default function BuddyRentalRootLayout({
       <body>
         <AppRouterCacheProvider>
           <AuthProvider>
-            <ThemeProvider theme={theme}>
+            <ThemeProvider theme={BuddyRentalTheme}>
               <main className="flex flex-col min-h-screen">
                 <Suspense fallback={<BuddyRentalLoader />}>
                   <NavigationBar />

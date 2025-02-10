@@ -2,12 +2,12 @@ import { describe, it, beforeEach, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import VerificationPage from "@/app/signup/verify/page";
 import { ThemeProvider } from "@emotion/react";
-import theme from "@/theme";
+import BuddyRentalTheme from "@/theme";
 
 describe("VerificationPage", () => {
   beforeEach(() => {
     render(
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={BuddyRentalTheme}>
         <VerificationPage />
       </ThemeProvider>,
     );

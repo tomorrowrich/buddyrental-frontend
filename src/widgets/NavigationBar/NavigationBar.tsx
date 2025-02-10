@@ -24,7 +24,7 @@ export function NavigationBar() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   return (
     <AppBar
-      position="static"
+      position="sticky"
       elevation={0}
       sx={{ backgroundColor: "white", color: "primary.main", px: 2 }}
     >
