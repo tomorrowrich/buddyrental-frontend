@@ -36,8 +36,7 @@ export const BookingCard = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: 1,
-          borderBottom: "1px solid #EED5C2",
+          padding: 2,
         }}
       >
         <Stack direction="row" spacing={2} alignItems="center">
@@ -106,6 +105,7 @@ export const BookingCard = ({
                       sx={{ color: theme.palette.tertiary.main }}
                       defaultValue={2.5}
                       precision={0.5}
+                      readOnly
                     />
                   </Stack>
                   <Typography variant="body2" color="secondary">

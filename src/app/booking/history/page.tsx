@@ -129,7 +129,7 @@ const bookingData = [
 export default function Page() {
   const theme = useTheme();
   return (
-    <Container sx={{ flex: 1, paddingTop: 5 }}>
+    <Container sx={{ flex: 1, paddingTop: 5, borderRadius: 4 }}>
       <Box
         sx={{
           display: "flex",
@@ -138,10 +138,13 @@ export default function Page() {
           alignContent: "center",
           width: "100%",
           height: "100%",
+          mb: 10,
+          borderRadius: 2,
+          boxShadow: "0px 5px 30px rgba(237, 164, 189, 0.8)",
         }}
       >
         <Typography
-          variant="h6"
+          variant="h5"
           fontWeight={700}
           sx={{
             background: `linear-gradient(90deg, ${theme.palette.tertiary.main} , ${theme.palette.quinary.main})`,
