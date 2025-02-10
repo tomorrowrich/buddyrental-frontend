@@ -10,10 +10,8 @@ echo "📝 Updating git index after formatting..."
 git update-index --again
 
 echo "🔎 Checking for changed TypeScript files..."
-# Get changed TypeScript files
-echo "$(git diff --cached --name-only --diff-filter=AM | grep -E '\.(ts|tsx)$')"
+changed_files=$(git diff --cached --name-only --diff-filter=AM | grep -E '\.(ts|tsx)$' || true)
 
-# If there are changed files, run Vitest on them
 if [ -n "$changed_files" ]; then
   echo "🧪 Running Vitest on changed files:"
   echo "$changed_files"
