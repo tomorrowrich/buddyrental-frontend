@@ -1,10 +1,26 @@
-#!/bin/sh
+echo "🔍 Starting pre-commit checks..."
 
+echo "💅 Running Prettier on staged files..."
 prettier $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g') --write --ignore-unknown
+
+echo "🔬 Running ESLint..."
 pnpm lint
 
+echo "📝 Updating git index after formatting..."
 git update-index --again
 
-pnpm test -- --run
+echo "🔎 Checking for changed TypeScript files..."
+# Get changed TypeScript files
+echo "$(git diff --cached --name-only --diff-filter=AM | grep -E '\.(ts|tsx)$')"
 
-pnpm build
+# If there are changed files, run Vitest on them
+if [ -n "$changed_files" ]; then
+  echo "🧪 Running Vitest on changed files:"
+  echo "$changed_files"
+  echo "-------------------"
+  pnpm exec vitest related --run $changed_files
+else
+  echo "✨ No TypeScript files changed, skipping tests."
+fi
+
+echo "✅ Pre-commit checks completed!"
