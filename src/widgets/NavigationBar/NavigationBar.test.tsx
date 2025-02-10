@@ -3,7 +3,7 @@ import { NavigationBar } from "@/widgets/NavigationBar/NavigationBar";
 import { useAuth } from "@/context/auth";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ThemeProvider } from "@mui/material/styles";
-import theme from "@/theme";
+import BuddyRentalTheme from "@/theme";
 import "@testing-library/jest-dom";
 
 // Mock the useAuth hook
@@ -18,7 +18,7 @@ vi.mock("next/image", () => ({
 }));
 
 const customRender = (ui: React.ReactElement) => {
-  return render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+  return render(<ThemeProvider theme={BuddyRentalTheme}>{ui}</ThemeProvider>);
 };
 
 describe("NavigationBar", () => {
