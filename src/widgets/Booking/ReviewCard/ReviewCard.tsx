@@ -1,5 +1,5 @@
+"use client";
 import { useState } from "react";
-import { ReviewCard } from "../ReviewCard/ReviewCard";
 import {
   Stack,
   Avatar,
@@ -9,16 +9,75 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
   IconButton,
   Chip,
   Rating,
   useTheme,
   Grid2,
   Container,
+  TextField,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-export const BookingCard = ({
+// Review Dialog Component
+const ReviewDialog = ({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) => {
+  const [reviewText, setReviewText] = useState("");
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Typography variant="h6">Write a Review</Typography>
+          <IconButton onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </Stack>
+      </DialogTitle>
+
+      <DialogContent>
+        <Container>
+          <Stack spacing={1}>
+            <Rating name="half-rating" defaultValue={0} precision={0.5} />
+          </Stack>
+          <TextField
+            label="Give your comment review !"
+            multiline
+            rows={4}
+            fullWidth
+            variant="outlined"
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+          />
+        </Container>
+      </DialogContent>
+
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="secondary"
+          sx={{ borderRadius: 3 }}
+          onClick={onClose}
+        >
+          Submit Review
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// Booking Card Component
+export const ReviewCard = ({
   name,
   email,
   avatar,
@@ -28,6 +87,7 @@ export const BookingCard = ({
   avatar: string;
 }) => {
   const [open, setOpen] = useState(false);
+  const [openReview, setOpenReview] = useState(false);
   const theme = useTheme();
 
   return (
@@ -61,7 +121,7 @@ export const BookingCard = ({
         </Button>
       </Box>
 
-      {/* Modal Dialog */}
+      {/* Details Dialog */}
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -112,7 +172,6 @@ export const BookingCard = ({
                   <Typography variant="body2" color="secondary">
                     {email}
                   </Typography>
-
                   <Stack direction="row" spacing={1}>
                     <Chip label="Chip" color="default" />
                     <Chip label="Chip" color="default" />
@@ -157,21 +216,14 @@ export const BookingCard = ({
             </Box>
 
             <Stack direction="row" justifyContent="space-between" mt={3} mb={2}>
-              {/* <Button variant="outlined" color="tertiary">
-                Cancel Booking
-              </Button> */}
-
-              {/* -------------- */}
               <Button
                 variant="contained"
                 color="secondary"
                 sx={{ borderRadius: 3 }}
-                onClick={() => setOpen(true)}
+                onClick={() => setOpenReview(true)}
               >
                 Review
               </Button>
-              {/* -------------- */}
-
               <Box textAlign="right">
                 <Typography variant="body2" color="tertiary" fontWeight={400}>
                   Booking Date: 11/11/2024
@@ -186,7 +238,7 @@ export const BookingCard = ({
       </Dialog>
 
       {/* Review Popup */}
-      <ReviewCard open={openReview} onClose={() => setOpenReview(false)} />
+      <ReviewDialog open={openReview} onClose={() => setOpenReview(false)} />
     </>
   );
 };

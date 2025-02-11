@@ -1,6 +1,6 @@
 import { Box, Divider } from "@mui/material";
-import { BookingCard } from "../BookingCard/BookingCard";
 import { useTheme } from "@mui/material/styles";
+import { ReviewCard } from "../ReviewCard/ReviewCard";
 
 export interface BookingHistoryProps {
   data: {
@@ -17,7 +17,7 @@ export const BookingHistory = ({ data }: BookingHistoryProps) => {
     <Box mt={2}>
       {data.map((booking) => (
         <Box key={booking.id}>
-          <BookingCard {...booking} />
+          <ReviewCard {...booking} />
           <Divider
             sx={{ background: theme.palette.quinary.main }}
             variant="middle"
