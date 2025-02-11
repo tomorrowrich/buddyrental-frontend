@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import VerificationPage from "@/app/signup/verify/page";
+import VerificationPage from "@/app/(user)/verify/page";
 import { ThemeProvider } from "@emotion/react";
 import BuddyRentalTheme from "@/theme";
 
