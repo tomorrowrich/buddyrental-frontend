@@ -2,7 +2,7 @@
 import {
   Box,
   Typography,
-  Grid,
+  Grid2,
   TextField,
   Checkbox,
   Button,
@@ -20,9 +20,9 @@ export default function Signup({
 }) {
   return (
     <Box sx={{ width: "100%" }}>
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 1, md: 1 }}>
+      <Grid2 container rowSpacing={1} columnSpacing={{ xs: 1, sm: 1, md: 1 }}>
         {/* Left half */}
-        <Grid
+        <Grid2
           size={6}
           sx={{
             width: { xs: "100%", md: "50%" },
@@ -144,10 +144,10 @@ export default function Signup({
               Login
             </Link>
           </Typography>
-        </Grid>
+        </Grid2>
 
         {/* Right half */}
-        <Grid
+        <Grid2
           item
           size={6}
           sx={{
@@ -160,8 +160,8 @@ export default function Signup({
           <Typography variant="h4" fontWeight="bold">
             ? help
           </Typography>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Box>
   );
 }
