@@ -18,15 +18,25 @@ import {
 import Image from "next/image";
 import { useAuth } from "@/context/auth";
 import { useState } from "react";
+import { useTheme } from "@mui/material";
 
-export function NavigationBar() {
+export interface NavigationBarProps {
+  isAdmin?: boolean;
+}
+
+export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const auth = useAuth();
+  const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   return (
     <AppBar
       position="sticky"
       elevation={0}
-      sx={{ backgroundColor: "white", color: "primary.main", px: 2 }}
+      sx={{
+        backgroundColor: !isAdmin ? "white" : theme.palette.quinary.main,
+        color: "primary.main",
+        px: 2,
+      }}
     >
       <Toolbar
         sx={{
