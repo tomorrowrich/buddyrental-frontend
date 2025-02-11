@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ReviewCard } from "../ReviewCard/ReviewCard";
 import {
   Stack,
   Avatar,
@@ -157,21 +156,9 @@ export const BookingCard = ({
             </Box>
 
             <Stack direction="row" justifyContent="space-between" mt={3} mb={2}>
-              {/* <Button variant="outlined" color="tertiary">
+              <Button variant="outlined" color="tertiary">
                 Cancel Booking
-              </Button> */}
-
-              {/* -------------- */}
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{ borderRadius: 3 }}
-                onClick={() => setOpen(true)}
-              >
-                Review
               </Button>
-              {/* -------------- */}
-
               <Box textAlign="right">
                 <Typography variant="body2" color="tertiary" fontWeight={400}>
                   Booking Date: 11/11/2024
@@ -184,9 +171,6 @@ export const BookingCard = ({
           </Container>
         </DialogContent>
       </Dialog>
-
-      {/* Review Popup */}
-      <ReviewCard open={openReview} onClose={() => setOpenReview(false)} />
     </>
   );
 };
