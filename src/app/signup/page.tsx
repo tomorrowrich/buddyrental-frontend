@@ -148,7 +148,6 @@ export default function Signup({
 
         {/* Right half */}
         <Grid2
-          item
           size={6}
           sx={{
             backgroundColor: "#FFDAB9",
