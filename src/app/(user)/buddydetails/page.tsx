@@ -149,7 +149,7 @@ export default function BuddyDetails() {
             }}
           >
             <Typography variant="h6" fontWeight={600}>
-              {"Check Alexa's Availabilityyyyy"}
+              {"Check Alexa's Availability"}
             </Typography>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DateCalendar />
