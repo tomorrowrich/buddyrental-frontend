@@ -1,5 +1,4 @@
 "use client";
-import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
 import {
   Box,
   Typography,
@@ -8,11 +7,25 @@ import {
   Checkbox,
   Button,
   Link,
+  MenuItem,
 } from "@mui/material";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import ImageUploadButton from "@/widgets/Signup/ImageUploadButton";
+//import dayjs from "dayjs";
+//import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
+//import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
+//import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
+const genders = [
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+  { value: "none", label: "-" },
+];
 
-export default function Signup({
+export default function complete_profile({
   params,
   searchParams,
 }: {
@@ -35,14 +48,13 @@ export default function Signup({
           }}
         >
           <Typography variant="h4" fontWeight="bold">
-            Sign Up
+            Complete Your Profile
           </Typography>
           <Typography color="#ffffff00" gutterBottom>
             empty
           </Typography>
           <Typography color="quaternary" gutterBottom>
-            Let&rsquo;s get you all set up so you can access your personal
-            account.
+            Help us get to know you better with some extra info.
           </Typography>
           <Typography color="#ffffff00" gutterBottom>
             empty
@@ -55,28 +67,53 @@ export default function Signup({
                 display: "flex",
                 gap: 1,
                 width: "100%",
+                alignItems: "center",
               }}
             >
               <TextField
                 required
                 sx={{ flex: 1 }}
-                id="first-name"
-                label="First name"
+                id="nick-name"
+                label="Nick Name"
               />
-              <TextField
-                required
-                sx={{ flex: 1 }}
-                id="last-name"
-                label="Last name"
-              />
+
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker sx={{ flex: 1 }} label="Date of Birth" />
+              </LocalizationProvider>
+            </Box>
+
+            <Box sx={{ width: "100%" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  width: "100%",
+                  mt: 2,
+                }}
+              >
+                <TextField
+                  id="gender"
+                  select
+                  label="Gender"
+                  defaultValue="none"
+                  helperText="Select your gender"
+                >
+                  {genders.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  required
+                  sx={{ flex: 1 }}
+                  id="phone"
+                  label="Phone Number"
+                />
+              </Box>
             </Box>
             <Box sx={{ width: "100%", mt: 2 }}>
-              <TextField
-                required
-                fullWidth
-                id="identity-card"
-                label="Identity Card Number"
-              />
+              <TextField required fullWidth id="address" label="Address" />
             </Box>
           </Box>
           <Box sx={{ width: "100%" }}>
@@ -88,47 +125,9 @@ export default function Signup({
                 mt: 2,
               }}
             >
-              <TextField required sx={{ flex: 1 }} id="email" label="Email" />
-              <TextField
-                required
-                sx={{ flex: 1 }}
-                id="phone"
-                label="Phone Number"
-              />
+              <TextField required sx={{ flex: 1 }} id="city" label="City" />
+              <TextField required sx={{ flex: 1 }} id="zip" label="Zip" />
             </Box>
-          </Box>
-
-          <Box
-            component="form"
-            sx={{ width: "100%", mt: 2 }}
-            noValidate
-            autoComplete="off"
-          >
-            <div>
-              <TextField
-                required
-                fullWidth
-                id="outlined-required"
-                label="Password"
-                type="password"
-              />
-            </div>
-          </Box>
-          <Box
-            component="form"
-            sx={{ width: "100%", mt: 2 }}
-            noValidate
-            autoComplete="off"
-          >
-            <div>
-              <TextField
-                required
-                fullWidth
-                id="outlined-required"
-                label="Confirm Password"
-                type="password"
-              />
-            </div>
           </Box>
 
           <Box
@@ -149,13 +148,13 @@ export default function Signup({
 
           <Button
             component={Link}
-            href="/signup/complete_profile"
+            href="/verify"
             fullWidth
             variant="contained"
             color="secondary"
             sx={{ mt: 3, color: "white", padding: 1.5 }}
           >
-            Complete Profile
+            Continue
           </Button>
           <Typography textAlign="center" sx={{ mt: 2 }}>
             {"Already have an account? "}
@@ -169,12 +168,12 @@ export default function Signup({
         <Grid2
           size={6}
           sx={{
-            width: { xs: "100%", md: "50%" },
+            width: { xs: "100%", md: "100%" },
             minHeight: "500px",
             maxWidth: "600px",
           }}
         >
-          <LoginCarousel />
+          <ImageUploadButton />
         </Grid2>
       </Grid2>
     </Box>
