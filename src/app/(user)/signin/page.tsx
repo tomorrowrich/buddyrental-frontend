@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { useState, FormEvent, useEffect } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { LoginCarousel } from "@/widgets/LoginCarousel";
+import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth";
 
