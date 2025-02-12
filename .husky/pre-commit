@@ -16,7 +16,7 @@ if [ -n "$changed_files" ]; then
   echo "🧪 Running Vitest on changed files:"
   echo "$changed_files"
   echo "-------------------"
-  pnpm exec vitest related --run $changed_files
+  pnpm exec vitest related --run $changed_files --passWithNoTests
 else
   echo "✨ No TypeScript files changed, skipping tests."
 fi
