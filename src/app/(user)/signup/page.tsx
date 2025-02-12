@@ -1,5 +1,5 @@
 "use client";
-import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
+import { useState, useEffect, FormEvent } from "react";
 import {
   Box,
   Typography,
@@ -8,170 +8,222 @@ import {
   Checkbox,
   Button,
   Link,
+  FormControlLabel,
+  Dialog,
+  Alert,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
+import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
+import { useRouter } from "next/navigation";
+import { initialSignUpData, SignUpFormData } from "@/interface/signup/signup";
 
-const label = { inputProps: { "aria-label": "Checkbox demo" } };
+const STORAGE_KEY = "signup-info";
 
-export default function Signup({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+export default function Signup() {
+  const [formData, setFormData] = useState<SignUpFormData>(initialSignUpData);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      const newFormData = {
+        ...(JSON.parse(savedData) as SignUpFormData),
+        password: "",
+        confirmPassword: "",
+      } as SignUpFormData;
+      setFormData(newFormData);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+    }
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    const newFormData = {
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    };
+    setFormData(newFormData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log(formData);
+
+    if (!formData.agreeToTerms) {
+      setDialogMessage("Please agree to the terms and conditions");
+      setOpenDialog(true);
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setDialogMessage("Passwords do not match");
+      setOpenDialog(true);
+      return;
+    }
+    router.push("/signup/complete");
+  };
+
   return (
     <Box sx={{ width: "100%" }}>
-      <Grid2 container rowSpacing={1} columnSpacing={{ xs: 1, sm: 1, md: 1 }}>
-        {/* Left half */}
+      <Dialog fullWidth open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Error</DialogTitle>
+        <DialogContent>
+          <Alert severity="error">{dialogMessage}</Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Close me</Button>
+        </DialogActions>
+      </Dialog>
+      <Grid2 container sx={{ p: 2 }}>
         <Grid2
-          size={6}
+          size={{ xs: 12, sm: 6 }}
           sx={{
-            width: { xs: "100%", md: "50%" },
-            maxWidth: "600px",
-            mx: 15,
-            my: 1,
-            justifyContent: "flex-start",
-            alignContent: "flex-start",
+            p: 12,
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
           }}
         >
-          <Typography variant="h4" fontWeight="bold">
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
             Sign Up
           </Typography>
-          <Typography color="#ffffff00" gutterBottom>
-            empty
-          </Typography>
-          <Typography color="quaternary" gutterBottom>
+          <Typography color="quaternary" gutterBottom sx={{ mb: 4 }}>
             Let&rsquo;s get you all set up so you can access your personal
             account.
           </Typography>
-          <Typography color="#ffffff00" gutterBottom>
-            empty
-          </Typography>
 
-          {/* text box */}
-          <Box sx={{ width: "100%" }}>
-            <Box
-              sx={{
-                display: "flex",
-                gap: 1,
-                width: "100%",
-              }}
+          <form onSubmit={handleSubmit}>
+            <Grid2 container spacing={2}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  required
+                  fullWidth
+                  name="firstName"
+                  label="First name"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  required
+                  fullWidth
+                  name="lastName"
+                  label="Last name"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="idCard"
+                  label="Identity card Number"
+                  value={formData.idCard}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  required
+                  fullWidth
+                  name="email"
+                  label="Email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  required
+                  fullWidth
+                  name="phone"
+                  label="Phone Number"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="confirmPassword"
+                  label="Confirm Password"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={12}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="agreeToTerms"
+                      checked={formData.agreeToTerms}
+                      onChange={handleInputChange}
+                      color="primary"
+                    />
+                  }
+                  label={
+                    <Typography>
+                      I agree to all the{" "}
+                      <Link href="/terms" color="tertiary">
+                        Terms
+                      </Link>
+                      {" and "}
+                      <Link href="/privacy_policies" color="tertiary">
+                        Privacy Policies
+                      </Link>
+                    </Typography>
+                  }
+                />
+              </Grid2>
+            </Grid2>
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{ mt: 3, mb: 2, color: "white", padding: 1.5 }}
             >
-              <TextField
-                required
-                sx={{ flex: 1 }}
-                id="first-name"
-                label="First name"
-              />
-              <TextField
-                required
-                sx={{ flex: 1 }}
-                id="last-name"
-                label="Last name"
-              />
-            </Box>
-            <Box sx={{ width: "100%", mt: 2 }}>
-              <TextField
-                required
-                fullWidth
-                id="identity-card"
-                label="Identity Card Number"
-              />
-            </Box>
-          </Box>
-          <Box sx={{ width: "100%" }}>
-            <Box
-              sx={{
-                display: "flex",
-                gap: 1,
-                width: "100%",
-                mt: 2,
-              }}
-            >
-              <TextField required sx={{ flex: 1 }} id="email" label="Email" />
-              <TextField
-                required
-                sx={{ flex: 1 }}
-                id="phone"
-                label="Phone Number"
-              />
-            </Box>
-          </Box>
+              Complete Profile
+            </Button>
+          </form>
 
-          <Box
-            component="form"
-            sx={{ width: "100%", mt: 2 }}
-            noValidate
-            autoComplete="off"
-          >
-            <div>
-              <TextField
-                required
-                fullWidth
-                id="outlined-required"
-                label="Password"
-                type="password"
-              />
-            </div>
-          </Box>
-          <Box
-            component="form"
-            sx={{ width: "100%", mt: 2 }}
-            noValidate
-            autoComplete="off"
-          >
-            <div>
-              <TextField
-                required
-                fullWidth
-                id="outlined-required"
-                label="Confirm Password"
-                type="password"
-              />
-            </div>
-          </Box>
-
-          <Box
-            sx={{ width: "100%", display: "flex", alignItems: "center", mt: 1 }}
-          >
-            <Checkbox {...label} sx={{ padding: 0.5 }} />
-            <Typography>
-              {"I agree to all the "}
-              <Link href="/terms" color="tertiary">
-                Terms
-              </Link>
-              {" and "}
-              <Link href="/privacy_policies" color="tertiary">
-                Privacy Policies
-              </Link>
-            </Typography>
-          </Box>
-
-          <Button
-            component={Link}
-            href="/signup/complete_profile"
-            fullWidth
-            variant="contained"
-            color="secondary"
-            sx={{ mt: 3, color: "white", padding: 1.5 }}
-          >
-            Complete Profile
-          </Button>
-          <Typography textAlign="center" sx={{ mt: 2 }}>
-            {"Already have an account? "}
+          <Typography textAlign="center">
+            Already have an account?{" "}
             <Link href="/signin" color="tertiary">
               Login
             </Link>
           </Typography>
         </Grid2>
 
-        {/* Right half */}
         <Grid2
-          size={6}
+          size={{ xs: 12, md: 6 }}
           sx={{
-            width: { xs: "100%", md: "50%" },
-            minHeight: "500px",
-            maxWidth: "600px",
+            p: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: { xs: "300px", md: "600px" },
           }}
         >
           <LoginCarousel />
