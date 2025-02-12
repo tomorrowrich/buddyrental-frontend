@@ -22,6 +22,7 @@
     "@mui/material-nextjs": "^6.4.3",
     "@mui/x-date-pickers": "^7.26.0",
     "@types/js-cookie": "^3.0.6",
+    "axios": "^1.7.9",
     "dayjs": "^1.11.13",
     "js-cookie": "^3.0.5",
     "moment": "^2.30.1",

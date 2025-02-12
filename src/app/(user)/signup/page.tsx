@@ -9,38 +9,34 @@ import {
   Button,
   Link,
   FormControlLabel,
+  Dialog,
+  Alert,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
+import { initialSignUpData, SignUpFormData } from "@/interface/signup/signup";
 
-const label = { inputProps: { "aria-label": "Checkbox demo" } };
+const STORAGE_KEY = "signup-info";
 
-const STORAGE_KEY = "signupFormData";
-
-export default function Signup({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    identityCard: "",
-    email: "",
-    phoneNumber: "",
-    password: "",
-    confirmPassword: "",
-    agreeToTerms: false,
-  });
-
+export default function Signup() {
+  const [formData, setFormData] = useState<SignUpFormData>(initialSignUpData);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
   const router = useRouter();
 
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
-      setFormData(JSON.parse(savedData));
+      const newFormData = {
+        ...(JSON.parse(savedData) as SignUpFormData),
+        password: "",
+        confirmPassword: "",
+      } as SignUpFormData;
+      setFormData(newFormData);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
     }
   }, []);
 
@@ -57,11 +53,31 @@ export default function Signup({
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(formData);
-    router.replace("");
+
+    if (!formData.agreeToTerms) {
+      setDialogMessage("Please agree to the terms and conditions");
+      setOpenDialog(true);
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setDialogMessage("Passwords do not match");
+      setOpenDialog(true);
+      return;
+    }
+    router.push("/signup/complete");
   };
 
   return (
     <Box sx={{ width: "100%" }}>
+      <Dialog fullWidth open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Error</DialogTitle>
+        <DialogContent>
+          <Alert severity="error">{dialogMessage}</Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Close me</Button>
+        </DialogActions>
+      </Dialog>
       <Grid2 container sx={{ p: 2 }}>
         <Grid2
           size={{ xs: 12, sm: 6 }}
@@ -106,9 +122,9 @@ export default function Signup({
                 <TextField
                   required
                   fullWidth
-                  name="identityCard"
+                  name="idCard"
                   label="Identity card Number"
-                  value={formData.identityCard}
+                  value={formData.idCard}
                   onChange={handleInputChange}
                 />
               </Grid2>
@@ -127,9 +143,9 @@ export default function Signup({
                 <TextField
                   required
                   fullWidth
-                  name="phoneNumber"
+                  name="phone"
                   label="Phone Number"
-                  value={formData.phoneNumber}
+                  value={formData.phone}
                   onChange={handleInputChange}
                 />
               </Grid2>
