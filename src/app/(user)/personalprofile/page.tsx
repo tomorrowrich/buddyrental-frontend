@@ -9,8 +9,15 @@ import {
   Avatar,
   Chip,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import CloseIcon from "@mui/icons-material/Close";
 
 type User = {
   firstName: string;
@@ -27,8 +34,10 @@ type User = {
   interests: string[];
   avatar: string;
 };
+
 export default function PersonalProfile() {
   const [isEditing, setIsEditing] = useState(false);
+  const [open, setOpen] = useState(false); // State to control pop-up visibility
   const [user, setUser] = useState<User>({
     firstName: "Alexa",
     lastName: "Rawles",
@@ -106,7 +115,13 @@ export default function PersonalProfile() {
                 }}
               />
               {!isEditing && (
-                <Typography variant="body1" fontSize="12px" color="#EB7BC0">
+                <Typography
+                  variant="body1"
+                  fontSize="12px"
+                  color="#EB7BC0"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => setOpen(true)}
+                >
                   <span style={{ textDecoration: "underline" }}>
                     want to become a buddy ? click here !
                   </span>
@@ -147,7 +162,7 @@ export default function PersonalProfile() {
           {[
             { label: "First Name", name: "firstName" },
             { label: "Last Name", name: "lastName" },
-            { label: "Nickname", name: "nickname" }, // Add Nickname field
+            { label: "Nickname", name: "nickname" },
             { label: "Email", name: "email" },
             { label: "Date of Birth", name: "dateOfBirth", type: "date" },
             { label: "Gender", name: "gender" },
@@ -161,7 +176,7 @@ export default function PersonalProfile() {
               key={name}
               label={label}
               name={name}
-              type={type || "text"} // Set the type for the date field
+              type={type || "text"}
               value={user[name as keyof User]}
               onChange={handleChange}
               disabled={!isEditing}
@@ -179,6 +194,83 @@ export default function PersonalProfile() {
           ))}
         </Box>
       </Box>
+
+      {/* Modal for pop-up card */}
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontWeight: "bold",
+          }}
+        >
+          Complete profile to Become Buddy
+          <IconButton onClick={() => setOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Typography fontSize={14} fontWeight="bold" mb={1}>
+            Description
+          </Typography>
+          <TextField
+            multiline
+            rows={4}
+            placeholder="Tell customers about yourself! This information will show up on your profile."
+            fullWidth
+          />
+
+          <Box display="flex" gap={2} mt={3}>
+            <Box flex={1}>
+              <Typography fontSize={14} fontWeight="bold">
+                Minimum Price / Day
+              </Typography>
+              <Select fullWidth defaultValue={0}>
+                {[500, 1000, 1500, 2000].map((price) => (
+                  <MenuItem key={price} value={price}>
+                    {price}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+
+            <Box flex={1}>
+              <Typography fontSize={14} fontWeight="bold">
+                Maximum Price / Day
+              </Typography>
+              <Select fullWidth defaultValue={0}>
+                {[1000, 1500, 2000, 2500].map((price) => (
+                  <MenuItem key={price} value={price}>
+                    {price}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+          <Button
+            variant="contained"
+            sx={{
+              bgcolor: "#EB7BC0",
+              color: "white",
+              px: 4,
+              fontWeight: "light",
+              borderRadius: "8px",
+              textTransform: "none",
+              "&:hover": { bgcolor: "#E67BA0" },
+            }}
+            onClick={() => setOpen(false)}
+          >
+            Finish !
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
