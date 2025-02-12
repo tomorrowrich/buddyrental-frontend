@@ -1,12 +1,18 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
 export interface User {
   userId: string;
-  firstname: string;
-  lastname: string;
+  firstName: string;
+  lastName: string;
   citizenId: string;
   email: string;
   phoneNumber: string;
@@ -23,7 +29,13 @@ export interface User {
 export interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (token: string) => Promise<void>;
+  login: ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -40,13 +52,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   });
   const [user, setUser] = useState<User | null>(null);
 
-  async function getUser() {
+  async function getUser(newToken: string) {
+    if (!newToken) return null;
     try {
       const res = await axios.get<User>(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/me` as string,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${newToken}`,
           },
         },
       );
@@ -57,10 +70,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  const login = async (newToken: string) => {
+  async function userLogin(email: string, password: string) {
+    try {
+      const res = await axios.post<{ accessToken: string }>(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin` as string,
+        {
+          clientKey: "MOCK_CLIENT_KEY",
+          email,
+          password,
+        },
+      );
+      const { accessToken } = res.data;
+      return accessToken;
+    } catch (error) {
+      console.error("Failed to login");
+      return null;
+    }
+  }
+
+  const login = async ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => {
+    const newToken = await userLogin(email, password);
+    if (!newToken) return;
+
     Cookies.set("authToken", newToken, { expires: 7 }); // Token expires in 7 days
     setToken(newToken);
-    const userData = await getUser();
+
+    const userData = await getUser(newToken);
     if (userData) {
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
@@ -73,6 +114,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setToken(null);
     setUser(null);
   };
+
+  useEffect(() => {
+    if (token) {
+      getUser(token).then(setUser);
+    }
+  }, [token]);
 
   const value = {
     token,

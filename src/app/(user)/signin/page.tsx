@@ -27,7 +27,7 @@ export default function Login() {
 
   useEffect(() => {
     if (auth && auth.isAuthenticated) {
-      router.replace("/dashboard");
+      router.replace("/booking/history");
     }
   }, [auth, router]);
 
@@ -53,13 +53,13 @@ export default function Login() {
       }
     };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Login attempt with:", {
+    console.log("Login attempt with:");
+    await auth.login({
       email: values.email,
       password: values.password,
     });
-    auth.login("dummy-token");
   };
 
   return (
