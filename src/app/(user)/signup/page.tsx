@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect, FormEvent } from "react";
 import {
   Box,
   Typography,
@@ -8,8 +9,11 @@ import {
   Button,
   Link,
 } from "@mui/material";
+import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
+
+const STORAGE_KEY = "signupFormData";
 
 export default function Signup({
   params,
@@ -18,6 +22,39 @@ export default function Signup({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    identityCard: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
+    agreeToTerms: false,
+  });
+
+  useEffect(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+    }
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    const newFormData = {
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    };
+    setFormData(newFormData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log(formData);
+  };
+
   return (
     <Box sx={{ width: "100%" }}>
       <Grid2 container rowSpacing={1} columnSpacing={{ xs: 1, sm: 1, md: 1 }}>
@@ -29,8 +66,8 @@ export default function Signup({
             maxWidth: "600px",
             mx: 15,
             my: 1,
-            justifyContent: "flex-start",
-            alignContent: "flex-start",
+            justifyContent: "center",
+            alignContent: "center",
           }}
         >
           <Typography variant="h4" fontWeight="bold">
@@ -47,100 +84,107 @@ export default function Signup({
             empty
           </Typography>
 
-          {/* text box */}
-          <Box
-            component="form"
-            sx={{ "& .MuiTextField-root": { m: 1, width: "30ch" } }}
-            noValidate
-            autoComplete="off"
-          >
-            <div>
-              <TextField required id="outlined-required" label="First name" />
-              <TextField required id="outlined-required" label="Last name" />
-            </div>
-          </Box>
-          <Box
-            component="form"
-            sx={{ "& .MuiTextField-root": { m: 1, width: "62ch" } }}
-            noValidate
-            autoComplete="off"
-          >
-            <div>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ "& .MuiTextField-root": { m: 1, width: "30ch" } }}>
               <TextField
                 required
-                id="outlined-required"
-                label="Identity card Number"
+                name="firstName"
+                label="First name"
+                value={formData.firstName}
+                onChange={handleInputChange}
               />
-            </div>
-          </Box>
-          <Box
-            component="form"
-            sx={{ "& .MuiTextField-root": { m: 1, width: "30ch" } }}
-            noValidate
-            autoComplete="off"
-          >
-            <div>
-              <TextField required id="outlined-required" label="Email" />
-              <TextField required id="outlined-required" label="Phone Number" />
-            </div>
-          </Box>
-          <Box
-            component="form"
-            sx={{ "& .MuiTextField-root": { m: 1, width: "62ch" } }}
-            noValidate
-            autoComplete="off"
-          >
-            <div>
               <TextField
                 required
-                id="outlined-required"
+                name="lastName"
+                label="Last name"
+                value={formData.lastName}
+                onChange={handleInputChange}
+              />
+            </Box>
+
+            <Box sx={{ "& .MuiTextField-root": { m: 1, width: "62ch" } }}>
+              <TextField
+                required
+                name="identityCard"
+                label="Identity card Number"
+                value={formData.identityCard}
+                onChange={handleInputChange}
+              />
+            </Box>
+
+            <Box sx={{ "& .MuiTextField-root": { m: 1, width: "30ch" } }}>
+              <TextField
+                required
+                name="email"
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+              />
+              <TextField
+                required
+                name="phoneNumber"
+                label="Phone Number"
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+              />
+            </Box>
+
+            <Box sx={{ "& .MuiTextField-root": { m: 1, width: "62ch" } }}>
+              <TextField
+                required
+                name="password"
                 label="Password"
                 type="password"
+                value={formData.password}
+                onChange={handleInputChange}
               />
-            </div>
-          </Box>
-          <Box
-            component="form"
-            sx={{ "& .MuiTextField-root": { m: 1, width: "62ch" } }}
-            noValidate
-            autoComplete="off"
-          >
-            <div>
+            </Box>
+
+            <Box sx={{ "& .MuiTextField-root": { m: 1, width: "62ch" } }}>
               <TextField
                 required
-                id="outlined-required"
+                name="confirmPassword"
                 label="Confirm Password"
                 type="password"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
               />
+            </Box>
+
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <Checkbox
+                {...label}
+                name="agreeToTerms"
+                checked={formData.agreeToTerms}
+                onChange={handleInputChange}
+              />
+              <Typography>
+                {"I agree to all the "}
+                <Link href="/terms" color="tertiary">
+                  Terms
+                </Link>
+                {" and "}
+                <Link href="/privacy_policies" color="tertiary">
+                  Privacy Policies
+                </Link>
+              </Typography>
             </div>
-          </Box>
 
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Checkbox {...label} />
-            <Typography>
-              {"I agree to all the "}
-              <Link href="/terms" color="tertiary">
-                Terms
-              </Link>
-              {" and "}
-              <Link href="/privacy_policies" color="tertiary">
-                Privacy Policies
-              </Link>
-            </Typography>
-          </div>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{ mt: 3, color: "white", padding: 1.5 }}
+            >
+              Complete Profile
+            </Button>
+          </form>
 
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="secondary"
-            sx={{ mt: 3, color: "white", padding: 1.5 }}
-          >
-            Complete Profile
-          </Button>
           <Typography textAlign="center" sx={{ mt: 2 }}>
             {"Already have an account? "}
-            <Link href="/signin" color="tertiary">
+            <Link href="/completeprofile" color="tertiary">
               Login
             </Link>
           </Typography>
@@ -150,15 +194,12 @@ export default function Signup({
         <Grid2
           size={6}
           sx={{
-            backgroundColor: "#FFDAB9",
             width: { xs: "100%", md: "50%" },
             minHeight: "500px",
             maxWidth: "600px",
           }}
         >
-          <Typography variant="h4" fontWeight="bold">
-            ? help
-          </Typography>
+          <LoginCarousel />
         </Grid2>
       </Grid2>
     </Box>
