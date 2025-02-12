@@ -19,12 +19,14 @@ import Image from "next/image";
 import { useAuth } from "@/context/auth";
 import { useState } from "react";
 import { useTheme } from "@mui/material";
+// import { useRouter } from "next/navigation";
 
 export interface NavigationBarProps {
   isAdmin?: boolean;
 }
 
 export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
+  // const router = useRouter();
   const auth = useAuth();
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -121,7 +123,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     <Avatar src="https://i.pravatar.cc/40" alt="User" />
                     <Box>
                       <Typography variant="subtitle1">
-                        {auth.user?.name}
+                        {auth.user?.firstName + " " + auth.user?.lastName}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {auth.user?.email}
@@ -156,6 +158,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     color="primary"
                     onClick={() => {
                       auth.logout();
+                      // router.replace("/signin");
                       setAnchorEl(null);
                     }}
                   >
