@@ -8,8 +8,10 @@ import {
   Checkbox,
   Button,
   Link,
+  FormControlLabel,
 } from "@mui/material";
 import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
+import { useRouter } from "next/router";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
@@ -33,6 +35,8 @@ export default function Signup({
     agreeToTerms: false,
   });
 
+  const router = useRouter();
+
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
@@ -53,150 +57,157 @@ export default function Signup({
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(formData);
+    router.replace("");
   };
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Grid2 container rowSpacing={1} columnSpacing={{ xs: 1, sm: 1, md: 1 }}>
-        {/* Left half */}
+      <Grid2 container sx={{ p: 2 }}>
         <Grid2
-          size={6}
+          size={{ xs: 12, sm: 6 }}
           sx={{
-            width: { xs: "100%", md: "50%" },
-            maxWidth: "600px",
-            mx: 15,
-            my: 1,
+            p: 12,
+            display: "flex",
             justifyContent: "center",
-            alignContent: "center",
+            flexDirection: "column",
           }}
         >
-          <Typography variant="h4" fontWeight="bold">
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
             Sign Up
           </Typography>
-          <Typography color="#ffffff00" gutterBottom>
-            empty
-          </Typography>
-          <Typography color="quaternary" gutterBottom>
+          <Typography color="quaternary" gutterBottom sx={{ mb: 4 }}>
             Let&rsquo;s get you all set up so you can access your personal
             account.
           </Typography>
-          <Typography color="#ffffff00" gutterBottom>
-            empty
-          </Typography>
 
           <form onSubmit={handleSubmit}>
-            <Box sx={{ "& .MuiTextField-root": { m: 1, width: "30ch" } }}>
-              <TextField
-                required
-                name="firstName"
-                label="First name"
-                value={formData.firstName}
-                onChange={handleInputChange}
-              />
-              <TextField
-                required
-                name="lastName"
-                label="Last name"
-                value={formData.lastName}
-                onChange={handleInputChange}
-              />
-            </Box>
-
-            <Box sx={{ "& .MuiTextField-root": { m: 1, width: "62ch" } }}>
-              <TextField
-                required
-                name="identityCard"
-                label="Identity card Number"
-                value={formData.identityCard}
-                onChange={handleInputChange}
-              />
-            </Box>
-
-            <Box sx={{ "& .MuiTextField-root": { m: 1, width: "30ch" } }}>
-              <TextField
-                required
-                name="email"
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-              <TextField
-                required
-                name="phoneNumber"
-                label="Phone Number"
-                value={formData.phoneNumber}
-                onChange={handleInputChange}
-              />
-            </Box>
-
-            <Box sx={{ "& .MuiTextField-root": { m: 1, width: "62ch" } }}>
-              <TextField
-                required
-                name="password"
-                label="Password"
-                type="password"
-                value={formData.password}
-                onChange={handleInputChange}
-              />
-            </Box>
-
-            <Box sx={{ "& .MuiTextField-root": { m: 1, width: "62ch" } }}>
-              <TextField
-                required
-                name="confirmPassword"
-                label="Confirm Password"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-              />
-            </Box>
-
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <Checkbox
-                {...label}
-                name="agreeToTerms"
-                checked={formData.agreeToTerms}
-                onChange={handleInputChange}
-              />
-              <Typography>
-                {"I agree to all the "}
-                <Link href="/terms" color="tertiary">
-                  Terms
-                </Link>
-                {" and "}
-                <Link href="/privacy_policies" color="tertiary">
-                  Privacy Policies
-                </Link>
-              </Typography>
-            </div>
+            <Grid2 container spacing={2}>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  required
+                  fullWidth
+                  name="firstName"
+                  label="First name"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  required
+                  fullWidth
+                  name="lastName"
+                  label="Last name"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="identityCard"
+                  label="Identity card Number"
+                  value={formData.identityCard}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  required
+                  fullWidth
+                  name="email"
+                  label="Email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  required
+                  fullWidth
+                  name="phoneNumber"
+                  label="Phone Number"
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="confirmPassword"
+                  label="Confirm Password"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                />
+              </Grid2>
+              <Grid2 size={12}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="agreeToTerms"
+                      checked={formData.agreeToTerms}
+                      onChange={handleInputChange}
+                      color="primary"
+                    />
+                  }
+                  label={
+                    <Typography>
+                      I agree to all the{" "}
+                      <Link href="/terms" color="tertiary">
+                        Terms
+                      </Link>
+                      {" and "}
+                      <Link href="/privacy_policies" color="tertiary">
+                        Privacy Policies
+                      </Link>
+                    </Typography>
+                  }
+                />
+              </Grid2>
+            </Grid2>
 
             <Button
               type="submit"
               fullWidth
               variant="contained"
               color="secondary"
-              sx={{ mt: 3, color: "white", padding: 1.5 }}
+              sx={{ mt: 3, mb: 2, color: "white", padding: 1.5 }}
             >
               Complete Profile
             </Button>
           </form>
 
-          <Typography textAlign="center" sx={{ mt: 2 }}>
-            {"Already have an account? "}
-            <Link href="/completeprofile" color="tertiary">
+          <Typography textAlign="center">
+            Already have an account?{" "}
+            <Link href="/signin" color="tertiary">
               Login
             </Link>
           </Typography>
         </Grid2>
 
-        {/* Right half */}
         <Grid2
-          size={6}
+          size={{ xs: 12, md: 6 }}
           sx={{
-            width: { xs: "100%", md: "50%" },
-            minHeight: "500px",
-            maxWidth: "600px",
+            p: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: { xs: "300px", md: "600px" },
           }}
         >
           <LoginCarousel />
