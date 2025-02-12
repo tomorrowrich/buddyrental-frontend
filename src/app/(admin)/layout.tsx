@@ -1,3 +1,4 @@
+"use client";
 import "@/styles/globals.css";
 import BuddyRentalTheme from "@/theme";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
