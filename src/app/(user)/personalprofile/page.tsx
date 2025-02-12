@@ -40,21 +40,6 @@ export default function PersonalProfile() {
   const auth = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false); // State to control pop-up visibility
-  // const [user, setUser] = useState<User>({
-  //   firstName: "Alexa",
-  //   lastName: "Rawles",
-  //   displayName: "Alexa",
-  //   dateOfBirth: "2004-05-19",
-  //   email: "alexarawles@gmail.com",
-  //   gender: "Woman",
-  //   phoneNumber: "XXX-XXX-XXXX",
-  //   citizenId: "X-XXXX-XXXXX-XX-X",
-  //   address: "123 Main Street",
-  //   city: "Bangkok",
-  //   zipcode: "10110",
-  //   interests: ["Music", "Travel", "Technology"],
-  //   profilePicture: "https://picsum.photos/200",
-  // });
 
   const [user, setUser] = useState<User>({
     ...auth.user,
