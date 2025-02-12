@@ -18,41 +18,48 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
+import { useAuth } from "@/context/auth";
 
 type User = {
   firstName: string;
   lastName: string;
-  nickname: string;
+  displayName: string;
   dateOfBirth: string;
   email: string;
   gender: string;
-  phone: string;
-  idNumber: string;
+  phoneNumber: string;
+  citizenId: string;
   address: string;
   city: string;
-  zip: string;
-  interests: string[];
-  avatar: string;
+  zipcode: string;
+  interests?: string[];
+  profilePicture: string;
 };
 
 export default function PersonalProfile() {
+  const auth = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false); // State to control pop-up visibility
+  // const [user, setUser] = useState<User>({
+  //   firstName: "Alexa",
+  //   lastName: "Rawles",
+  //   displayName: "Alexa",
+  //   dateOfBirth: "2004-05-19",
+  //   email: "alexarawles@gmail.com",
+  //   gender: "Woman",
+  //   phoneNumber: "XXX-XXX-XXXX",
+  //   citizenId: "X-XXXX-XXXXX-XX-X",
+  //   address: "123 Main Street",
+  //   city: "Bangkok",
+  //   zipcode: "10110",
+  //   interests: ["Music", "Travel", "Technology"],
+  //   profilePicture: "https://picsum.photos/200",
+  // });
+
   const [user, setUser] = useState<User>({
-    firstName: "Alexa",
-    lastName: "Rawles",
-    nickname: "Alexa",
-    dateOfBirth: "2004-05-19",
-    email: "alexarawles@gmail.com",
-    gender: "Woman",
-    phone: "XXX-XXX-XXXX",
-    idNumber: "X-XXXX-XXXXX-XX-X",
-    address: "123 Main Street",
-    city: "Bangkok",
-    zip: "10110",
-    interests: ["Music", "Travel", "Technology"],
-    avatar: "https://picsum.photos/200",
-  });
+    ...auth.user,
+    profilePicture: "https://picsum.photos/200",
+  } as User);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -60,6 +67,7 @@ export default function PersonalProfile() {
       ...prevUser,
       [name]: value,
     }));
+    // TODO: Update user data to the server
   };
 
   return (
@@ -99,7 +107,7 @@ export default function PersonalProfile() {
         </Typography>
 
         <Box display="flex" alignItems="center" gap={2} mt={12}>
-          <Avatar src={user.avatar} sx={{ width: 80, height: 80 }} />
+          <Avatar src={user.profilePicture} sx={{ width: 80, height: 80 }} />
           <Box flexGrow={1}>
             <Typography variant="h5" fontWeight={500}>
               {user.firstName} {user.lastName}
@@ -162,15 +170,15 @@ export default function PersonalProfile() {
           {[
             { label: "First Name", name: "firstName" },
             { label: "Last Name", name: "lastName" },
-            { label: "Nickname", name: "nickname" },
+            { label: "Nickname", name: "displayName" },
             { label: "Email", name: "email" },
             { label: "Date of Birth", name: "dateOfBirth", type: "date" },
             { label: "Gender", name: "gender" },
-            { label: "Phone Number", name: "phone" },
-            { label: "Identity Card Number", name: "idNumber" },
+            { label: "Phone Number", name: "phoneNumber" },
+            { label: "Identity Card Number", name: "citizenId" },
             { label: "Address", name: "address" },
             { label: "City", name: "city" },
-            { label: "ZIP Code", name: "zip" },
+            { label: "ZIP Code", name: "zipcode" },
           ].map(({ label, name, type }) => (
             <TextField
               key={name}
@@ -189,7 +197,7 @@ export default function PersonalProfile() {
           Interests
         </Typography>
         <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-          {user.interests.map((interest, index) => (
+          {user.interests?.map((interest, index) => (
             <Chip key={index} label={interest} variant="outlined" />
           ))}
         </Box>
