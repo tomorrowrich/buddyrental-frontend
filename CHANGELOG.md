@@ -1,3 +1,15 @@
+# [2.1.0](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.0.0...v2.1.0) (2025-02-13)
+
+### Bug Fixes
+
+- login and show user info ([424c749](https://github.com/tomorrowrich/buddyrental-frontend/commit/424c7498bbf1dc0df74634ff45fc8e7ccf77b01d))
+
+### Features
+
+- **auth:** add authentication ([#57](https://github.com/tomorrowrich/buddyrental-frontend/issues/57)) ([9bc7882](https://github.com/tomorrowrich/buddyrental-frontend/commit/9bc7882646a87a74ad1a49606c00f07f98475345))
+- **profile:** integrate backend ([f584e88](https://github.com/tomorrowrich/buddyrental-frontend/commit/f584e88cb6426cfd5b9af17ecd5cc0e72109c9ff))
+- useAuth context ([3f47d47](https://github.com/tomorrowrich/buddyrental-frontend/commit/3f47d474211948e2ebe0cf4ef6d7b563e83b98f8))
+
 # [2.0.0](https://github.com/tomorrowrich/buddyrental-frontend/compare/v1.0.0...v2.0.0) (2025-02-12)
 
 - feat(verfication)!: admin verification page ([#39](https://github.com/tomorrowrich/buddyrental-frontend/issues/39)) ([ccd8f4f](https://github.com/tomorrowrich/buddyrental-frontend/commit/ccd8f4f800324e93c9aaf4a735aa2a5e2c05e7a8))
