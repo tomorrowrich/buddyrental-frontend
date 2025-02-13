@@ -34,8 +34,21 @@ describe("NavigationBar", () => {
       (useAuth as any).mockReturnValue({
         isAuthenticated: true,
         user: {
-          name: "John Doe",
-          email: "john@example.com",
+          userId: "8f2165a8-2218-49ed-b0f3-741b61a233d0",
+          firstName: "John",
+          lastName: "Doe",
+          citizenId: "123456789",
+          email: "john.doe@example.com",
+          phoneNumber: "+1234567890",
+          verified: false,
+          displayName: "Xx_Mist3rJohn_xX",
+          gender: "M",
+          dateOfBirth: "1990-01-01T00:00:00.000Z",
+          address: "123 Main Street",
+          city: "Tennessee",
+          zipcode: "12345",
+          profilePicture: null,
+          description: null,
         },
         logout: mockLogout,
       });
@@ -54,7 +67,7 @@ describe("NavigationBar", () => {
       fireEvent.click(avatar);
 
       expect(screen.getByText("John Doe")).toBeInTheDocument();
-      expect(screen.getByText("john@example.com")).toBeInTheDocument();
+      expect(screen.getByText("john.doe@example.com")).toBeInTheDocument();
       expect(screen.getByText("Edit Profile")).toBeInTheDocument();
       expect(screen.getByText("Settings")).toBeInTheDocument();
       expect(screen.getByText("Logout")).toBeInTheDocument();
