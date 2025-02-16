@@ -1,3 +1,9 @@
+## [2.1.1](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.1.0...v2.1.1) (2025-02-16)
+
+### Bug Fixes
+
+- **path:** reassign path and page integration ([a4451ad](https://github.com/tomorrowrich/buddyrental-frontend/commit/a4451adfa4c4e0eacbba55defa90d5739a6d7e16))
+
 # [2.1.0](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.0.0...v2.1.0) (2025-02-13)
 
 ### Bug Fixes
