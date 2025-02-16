@@ -112,9 +112,8 @@ describe("NavigationBar", () => {
     });
 
     it("handles profile navigation buttons correctly", () => {
-      const mockNavigate = vi.fn();
       vi.mock("next/navigation", () => ({
-        useRouter: () => ({ push: mockNavigate }),
+        useRouter: () => ({ push: vi.fn() }),
       }));
 
       customRender(<NavigationBar />);

@@ -47,7 +47,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       if (success && (pathname === "/login" || pathname === "/register")) {
-        redirect("/dashboard");
+        redirect("/app");
       }
     });
   }, [pathname]);
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { success, error } = await requestLogin(email, password);
 
     if (success) {
-      redirect("/dashboard");
+      redirect("/app");
     }
     return { success, error };
   };

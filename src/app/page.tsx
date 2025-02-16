@@ -6,7 +6,7 @@ import { useEffect } from "react";
 export default function RootBuddyRentalPage() {
   const router = useRouter();
   useEffect(() => {
-    router.replace("/dashboard");
+    router.replace("/app");
   }, [router]);
 
   return (

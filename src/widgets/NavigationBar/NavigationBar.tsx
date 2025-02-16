@@ -19,6 +19,7 @@ import Image from "next/image";
 import { useAuth } from "@/context/auth/auth";
 import { useState } from "react";
 import { useTheme } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 export interface NavigationBarProps {
   isAdmin?: boolean;
@@ -27,6 +28,7 @@ export interface NavigationBarProps {
 export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const { logout, user } = useAuth();
   const theme = useTheme();
+  const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleLogout = async () => {
@@ -42,6 +44,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
         backgroundColor: !isAdmin ? "white" : theme.palette.quinary.main,
         color: "primary.main",
         px: 2,
+        boxShadow: `0px 2px 4px ${!isAdmin ? "rgba(0, 0, 0, 0.05)" : "rgba(0, 0, 0, 0.1)"}`,
       }}
     >
       <Toolbar
@@ -67,12 +70,14 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
             <Button
               startIcon={<MenuBook />}
               sx={{ color: "primary.main", textTransform: "none" }}
+              onClick={() => router.push("/app/booking/history")}
             >
               Bookings
             </Button>
             <Button
               startIcon={<ChatBubbleOutline />}
               sx={{ color: "primary.main", textTransform: "none" }}
+              onClick={() => router.push("/chat")}
             >
               Chat
             </Button>
@@ -140,7 +145,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       setAnchorEl(null);
-                      // Add navigation to profile page
+                      router.push("/app/profile");
                     }}
                   >
                     Edit Profile
@@ -151,7 +156,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       setAnchorEl(null);
-                      // Add navigation to settings page
+                      router.push("/settings");
                     }}
                   >
                     Settings
