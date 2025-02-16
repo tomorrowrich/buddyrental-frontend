@@ -5,7 +5,7 @@ interface LoadBackdropProps {
   open: boolean;
 }
 
-export const LoadBackdrop = ({ open }: LoadBackdropProps) => {
+export function LoadBackdrop({ open }: LoadBackdropProps) {
   return (
     <Backdrop
       sx={{
@@ -24,4 +24,4 @@ export const LoadBackdrop = ({ open }: LoadBackdropProps) => {
       <CircularProgress color="primary" />
     </Backdrop>
   );
-};
+}

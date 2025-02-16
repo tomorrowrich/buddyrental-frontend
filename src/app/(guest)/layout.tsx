@@ -1,5 +1,5 @@
+import { ReducedNavBar } from "@/widgets/NavigationBar/ReducedNavBar";
 import { Box } from "@mui/material";
-import { NavigationBar } from "@/widgets/NavigationBar/NavigationBar";
 
 export default function BuddyRentalRootLayout({
   children,
@@ -8,7 +8,7 @@ export default function BuddyRentalRootLayout({
 }>) {
   return (
     <>
-      <NavigationBar />
+      <ReducedNavBar />
       <Box
         flex={1}
         sx={{

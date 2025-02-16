@@ -15,21 +15,13 @@ import {
   OutlinedInput,
   FormHelperText,
 } from "@mui/material";
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/auth/auth";
 
 export default function Login() {
   const auth = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (auth && auth.isAuthenticated) {
-      router.replace("/booking/history");
-    }
-  }, [auth, router]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [values, setValues] = useState({
@@ -47,7 +39,6 @@ export default function Login() {
     (prop: keyof typeof values) =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setValues({ ...values, [prop]: event.target.value });
-      // Clear error when user starts typing
       if (errors[prop as keyof typeof errors]) {
         setErrors({ ...errors, [prop]: "" });
       }
@@ -55,11 +46,17 @@ export default function Login() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Login attempt with:");
-    await auth.login({
+    const resp = await auth.login({
       email: values.email,
       password: values.password,
     });
+    console.log(resp);
+    if (resp && resp.error) {
+      setErrors({
+        email: resp.error || "Invalid email or password",
+        password: resp.error || "",
+      });
+    }
   };
 
   return (

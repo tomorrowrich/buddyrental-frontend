@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/auth/auth";
 
 type User = {
   firstName: string;

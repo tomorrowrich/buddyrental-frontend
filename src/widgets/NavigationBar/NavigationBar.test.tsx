@@ -1,17 +1,15 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { NavigationBar } from "@/widgets/NavigationBar/NavigationBar";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/auth/auth";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ThemeProvider } from "@mui/material/styles";
 import BuddyRentalTheme from "@/theme";
 import "@testing-library/jest-dom";
 
-// Mock the useAuth hook
-vi.mock("@/context/auth", () => ({
+vi.mock("@/context/auth/auth", () => ({
   useAuth: vi.fn(),
 }));
 
-// Mock next/image
 vi.mock("next/image", () => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @next/next/no-img-element, jsx-a11y/alt-text
   default: (props: any) => <img {...props} />,
