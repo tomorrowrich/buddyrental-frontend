@@ -14,18 +14,19 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import ImageUploadButton from "@/widgets/Signup/ImageUploadButton";
-import { initialSignUpData, SignUpFormData } from "@/interface/signup/signup";
+import { initialSignUpData, SignUpFormData } from "@/api/auth/interface";
 import dayjs, { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
-import { registerUser } from "@/server/signup";
+import { register } from "@/api/auth/api";
 
 const STORAGE_KEY = "signup-info";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 const genders = [
-  { value: "M", label: "Male" },
-  { value: "F", label: "Female" },
-  { value: "O", label: "-" },
+  { value: "MALE", label: "Male" },
+  { value: "FEMALE", label: "Female" },
+  { value: "OTHER", label: "Others" },
+  { value: "UNKNOWN", label: "Prefer not to say" },
 ];
 
 export default function CompleteProfile() {
@@ -35,7 +36,6 @@ export default function CompleteProfile() {
 
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
-    console.log(savedData);
     if (savedData) {
       const existingData = JSON.parse(savedData) as SignUpFormData;
       if (
@@ -44,7 +44,7 @@ export default function CompleteProfile() {
         !existingData.firstName ||
         !existingData.lastName
       )
-        router.replace("/signup");
+        router.replace("/register");
       setFormData(() => ({
         ...existingData,
         dateOfBirth: existingData.dateOfBirth
@@ -52,7 +52,7 @@ export default function CompleteProfile() {
           : null,
       }));
     } else {
-      router.replace("/signup");
+      router.replace("/register");
     }
   }, [router]);
 
@@ -93,11 +93,9 @@ export default function CompleteProfile() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     const completeData = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    console.log("Complete Profile Data:", completeData);
-    const { success, data, error } = await registerUser(completeData);
+    const { success, error } = await register(completeData);
     if (success) {
       localStorage.removeItem(STORAGE_KEY);
-      console.log(data);
       router.push("/signin");
     } else {
       console.error(error);

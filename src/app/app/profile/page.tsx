@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/auth/auth";
 
 type User = {
   firstName: string;
@@ -31,23 +31,31 @@ type User = {
   citizenId: string;
   address: string;
   city: string;
-  zipcode: string;
+  postalCode: string;
   interests?: string[];
-  profilePicture: string;
+  profilePicture?: string;
 };
 
 export default function PersonalProfile() {
-  const auth = useAuth();
+  const { user: authUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false); // State to control pop-up visibility
 
   const [user, setUser] = useState<User>({
-    ...auth.user,
     profilePicture: "https://picsum.photos/200",
   } as User);
 
+  useEffect(() => {
+    if (authUser) {
+      setUser({ ...authUser, displayName: authUser.displayName || "" });
+    }
+  }, [authUser]);
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
+    const name = event.target.name;
+    let value = event.target.value;
+    if (name === "dateOfBirth") value = new Date(value).toISOString();
+    console.log(name, value);
     setUser((prevUser) => ({
       ...prevUser,
       [name]: value,
@@ -163,14 +171,20 @@ export default function PersonalProfile() {
             { label: "Identity Card Number", name: "citizenId" },
             { label: "Address", name: "address" },
             { label: "City", name: "city" },
-            { label: "ZIP Code", name: "zipcode" },
+            { label: "ZIP Code", name: "postalCode" },
           ].map(({ label, name, type }) => (
             <TextField
               key={name}
               label={label}
               name={name}
               type={type || "text"}
-              value={user[name as keyof User]}
+              value={
+                name === "dateOfBirth"
+                  ? user.dateOfBirth
+                    ? new Date(user.dateOfBirth).toISOString().split("T")[0]
+                    : ""
+                  : user[name as keyof User] || ""
+              }
               onChange={handleChange}
               disabled={!isEditing}
               fullWidth

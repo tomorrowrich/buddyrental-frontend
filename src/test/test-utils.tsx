@@ -3,7 +3,7 @@ import { render as rtlRender } from "@testing-library/react";
 import { ThemeProvider } from "@mui/material";
 import BuddyRentalTheme from "@/theme";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import { AuthProvider } from "@/context/auth";
+import { AuthProvider } from "@/context/auth/auth";
 
 export function render(ui: ReactElement) {
   return rtlRender(

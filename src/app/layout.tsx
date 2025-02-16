@@ -2,9 +2,8 @@
 import "@/styles/globals.css";
 import BuddyRentalTheme from "@/theme";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import { Box, ThemeProvider } from "@mui/material";
-import { NavigationBar } from "@/widgets/NavigationBar/NavigationBar";
-import { AuthProvider } from "@/context/auth";
+import { ThemeProvider } from "@mui/material";
+import { AuthProvider } from "@/context/auth/auth";
 import { BuddyRentalLoader } from "./loading";
 import { Suspense } from "react";
 
@@ -25,21 +24,7 @@ export default function BuddyRentalRootLayout({
           <AuthProvider>
             <ThemeProvider theme={BuddyRentalTheme}>
               <main className="flex flex-col min-h-screen">
-                <Suspense fallback={<BuddyRentalLoader />}>
-                  <NavigationBar />
-                  <Box
-                    flex={1}
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignContent: "center",
-                      justifyContent: "center",
-                      backgroundColor: "background.default",
-                    }}
-                  >
-                    {children}
-                  </Box>
-                </Suspense>
+                <Suspense fallback={<BuddyRentalLoader />}>{children}</Suspense>
               </main>
             </ThemeProvider>
           </AuthProvider>

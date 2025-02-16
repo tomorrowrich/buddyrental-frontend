@@ -16,20 +16,26 @@ import {
   Add,
 } from "@mui/icons-material";
 import Image from "next/image";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/auth/auth";
 import { useState } from "react";
 import { useTheme } from "@mui/material";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export interface NavigationBarProps {
   isAdmin?: boolean;
 }
 
 export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
-  // const router = useRouter();
-  const auth = useAuth();
+  const { logout, user } = useAuth();
   const theme = useTheme();
+  const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleLogout = async () => {
+    console.log("Logging out");
+    await logout();
+  };
+
   return (
     <AppBar
       position="sticky"
@@ -38,6 +44,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
         backgroundColor: !isAdmin ? "white" : theme.palette.quinary.main,
         color: "primary.main",
         px: 2,
+        boxShadow: `0px 2px 4px ${!isAdmin ? "rgba(0, 0, 0, 0.05)" : "rgba(0, 0, 0, 0.1)"}`,
       }}
     >
       <Toolbar
@@ -58,17 +65,19 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
         </Box>
 
         {/* Right Side - Navigation, Balance, Notifications, Avatar */}
-        {auth.isAuthenticated && (
+        {user && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
             <Button
               startIcon={<MenuBook />}
               sx={{ color: "primary.main", textTransform: "none" }}
+              onClick={() => router.push("/app/booking/history")}
             >
               Bookings
             </Button>
             <Button
               startIcon={<ChatBubbleOutline />}
               sx={{ color: "primary.main", textTransform: "none" }}
+              onClick={() => router.push("/chat")}
             >
               Chat
             </Button>
@@ -123,10 +132,10 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     <Avatar src="https://i.pravatar.cc/40" alt="User" />
                     <Box>
                       <Typography variant="subtitle1">
-                        {auth.user?.firstName + " " + auth.user?.lastName}
+                        {user.firstName + " " + user.lastName}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {auth.user?.email}
+                        {user.email}
                       </Typography>
                     </Box>
                   </Box>
@@ -136,7 +145,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       setAnchorEl(null);
-                      // Add navigation to profile page
+                      router.push("/app/profile");
                     }}
                   >
                     Edit Profile
@@ -147,7 +156,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       setAnchorEl(null);
-                      // Add navigation to settings page
+                      router.push("/settings");
                     }}
                   >
                     Settings
@@ -156,11 +165,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     fullWidth
                     variant="outlined"
                     color="primary"
-                    onClick={() => {
-                      auth.logout();
-                      // router.replace("/signin");
-                      setAnchorEl(null);
-                    }}
+                    onClick={handleLogout}
                   >
                     Logout
                   </Button>
@@ -170,7 +175,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
           </Box>
         )}
 
-        {!auth.isAuthenticated && (
+        {!user && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
             {/* User Avatar */}
             <Avatar
