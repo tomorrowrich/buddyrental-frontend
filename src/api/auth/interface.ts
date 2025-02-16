@@ -1,7 +1,11 @@
 import { Dayjs } from "dayjs";
 
+export interface LoginResponse {
+  accessToken: string;
+}
+
+export type UserGender = "MALE" | "FEMALE" | "OTHER" | "UNKNOWN";
 export interface SignUpFormData {
-  // Initial signup fields
   firstName: string;
   lastName: string;
   idCard: string;
@@ -11,10 +15,9 @@ export interface SignUpFormData {
   confirmPassword: string;
   agreeToTerms: boolean;
 
-  // Complete profile fields
   nickname: string;
   dateOfBirth: Dayjs | null;
-  gender: "M" | "F" | "O";
+  gender: UserGender;
   address: string;
   city: string;
   zipcode: string;
@@ -32,7 +35,7 @@ export const initialSignUpData: SignUpFormData = {
   agreeToTerms: false,
   nickname: "",
   dateOfBirth: null,
-  gender: "O",
+  gender: "UNKNOWN",
   address: "",
   city: "",
   zipcode: "",

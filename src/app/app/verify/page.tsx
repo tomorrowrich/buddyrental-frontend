@@ -1,8 +1,5 @@
 "use client";
-import {
-  QontoConnector,
-  QontoStepIcon,
-} from "@/widgets/VerificationStepper/QontoConnector";
+import { useAuth } from "@/context/auth/auth";
 import {
   Box,
   Button,
@@ -12,8 +9,15 @@ import {
   Stepper,
   Typography,
 } from "@mui/material";
+import { redirect } from "next/navigation";
 
 export default function VerificationPage() {
+  const { user } = useAuth();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
     <Container
       maxWidth="sm"
@@ -25,7 +29,6 @@ export default function VerificationPage() {
         mt: 10,
       }}
     >
-      {/* Title */}
       <Typography variant="h4" sx={{ fontWeight: 600, mb: 2 }}>
         Please wait for verification.
       </Typography>
@@ -33,31 +36,24 @@ export default function VerificationPage() {
         Thanks for joining BuddyRental!
       </Typography>
 
-      {/* Subtext */}
       <Typography variant="body1" color="secondary.main" sx={{ mb: 4 }}>
         Please wait for verification from admin. We will send you an email!
       </Typography>
 
-      {/* Progress Bar */}
       <Box sx={{ width: "100%", mb: 4 }}>
-        <Stepper activeStep={1} alternativeLabel connector={<QontoConnector />}>
-          <Step key={"fill"}>
-            <StepLabel slots={{ stepIcon: QontoStepIcon }}>
-              Fill Information
-            </StepLabel>
+        <Stepper activeStep={1} alternativeLabel>
+          <Step key="fill">
+            <StepLabel>Fill Information</StepLabel>
           </Step>
-          <Step key={"verify"}>
-            <StepLabel slots={{ stepIcon: QontoStepIcon }}>
-              Verification
-            </StepLabel>
+          <Step key="verify">
+            <StepLabel>Verification</StepLabel>
           </Step>
-          <Step key={"complete"}>
-            <StepLabel slots={{ stepIcon: QontoStepIcon }}>Complete!</StepLabel>
+          <Step key="complete">
+            <StepLabel>Complete!</StepLabel>
           </Step>
         </Stepper>
       </Box>
 
-      {/* Button */}
       <Button
         variant="contained"
         color="secondary"

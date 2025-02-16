@@ -16,8 +16,8 @@ import {
   DialogTitle,
 } from "@mui/material";
 import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
-import { useRouter } from "next/navigation";
-import { initialSignUpData, SignUpFormData } from "@/interface/signup/signup";
+import { usePathname, useRouter } from "next/navigation";
+import { initialSignUpData, SignUpFormData } from "@/api/auth/interface";
 
 const STORAGE_KEY = "signup-info";
 
@@ -26,6 +26,7 @@ export default function Signup() {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
@@ -64,7 +65,7 @@ export default function Signup() {
       setOpenDialog(true);
       return;
     }
-    router.push("/signup/complete");
+    router.push(`${pathname}/complete`);
   };
 
   return (
