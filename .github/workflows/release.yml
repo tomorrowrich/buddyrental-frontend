@@ -16,9 +16,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-test:
+  release-build-test:
     if: startsWith(github.ref, 'refs/heads/')
-    name: Build and Test
+    name: Release Build and Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -52,7 +52,7 @@ jobs:
   release:
     if: startsWith(github.ref, 'refs/heads/')
     name: Semantic Release
-    needs: build-test
+    needs: release-build-test
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.semantic-release.outputs.version }}
