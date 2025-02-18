@@ -211,7 +211,7 @@ export default function Signup() {
 
           <Typography textAlign="center">
             Already have an account?{" "}
-            <Link href="/signin" color="tertiary">
+            <Link href="/login" color="tertiary">
               Login
             </Link>
           </Typography>

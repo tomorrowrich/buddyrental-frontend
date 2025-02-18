@@ -240,7 +240,7 @@ export default function CompleteProfile() {
           </Button>
           <Typography textAlign="center" sx={{ mt: 2 }}>
             {"Already have an account? "}
-            <Link href="/signin" color="tertiary">
+            <Link href="/login" color="tertiary">
               Login
             </Link>
           </Typography>
