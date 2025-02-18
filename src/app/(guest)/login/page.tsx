@@ -179,7 +179,7 @@ export default function Login() {
 
             <Typography textAlign="center" sx={{ mt: 2 }}>
               {"Don't have an account? "}
-              <Link href="/signup" color="tertiary">
+              <Link href="/register" color="tertiary">
                 Sign up
               </Link>
             </Typography>
