@@ -1,11 +1,5 @@
 name: Build and Test on Pull Request
 
-permissions:
-  packages: write
-  deployments: write
-  contents: write
-  pull-requests: write
-
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -49,7 +43,7 @@ jobs:
           else
             pnpm run test
           fi
-      
+
   build-test-completed:
     name: Build and Test
     runs-on: ubuntu-latest
