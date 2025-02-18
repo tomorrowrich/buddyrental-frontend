@@ -16,13 +16,10 @@ on:
 jobs:
   build-test:
     concurrency:
-      group: build-test-${{ github.ref }}-${{ matrix.task }}
+      group: build-test-${{ github.ref }}
       cancel-in-progress: true
     name: Build and Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        task: [build, test]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
