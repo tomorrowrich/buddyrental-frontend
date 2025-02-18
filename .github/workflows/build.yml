@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build and Test on Pull Request
 
 permissions:
   packages: write
@@ -41,10 +41,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run ${{ matrix.task }}
-        run: |
-          if [ "${{ matrix.task }}" == "build" ]; then
-            pnpm run build
-          else
-            pnpm run test
-          fi
+      - name: Run Build
+        run: pnpm run build
+
+      - name: Run Tests
+        run: pnpm run test
