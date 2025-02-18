@@ -1,0 +1,50 @@
+name: Build and Test on Pull Request
+
+permissions:
+  packages: write
+  deployments: write
+  contents: write
+  pull-requests: write
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches-ignore:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    concurrency:
+      group: build-test-${{ github.ref }}-${{ matrix.task }}
+      cancel-in-progress: true
+    name: Build and Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        task: [build, test]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ${{ matrix.task }}
+        run: |
+          if [ "${{ matrix.task }}" == "build" ]; then
+            pnpm run build
+          else
+            pnpm run test
+          fi
