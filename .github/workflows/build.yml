@@ -16,10 +16,13 @@ on:
 jobs:
   build-test:
     concurrency:
-      group: build-test-${{ github.ref }}
+      group: build-test-${{ github.ref }}-${{ matrix.task }}
       cancel-in-progress: true
-    name: Build and Test
+    name: Build and Test (${{ matrix.task }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        task: [build, test]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -38,8 +41,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run Build
-        run: pnpm run build
-
-      - name: Run Tests
-        run: pnpm run test
+      - name: Run ${{ matrix.task }}
+        run: |
+          if [ "${{ matrix.task }}" == "build" ]; then
+            pnpm run build
+          else
+            pnpm run test
+          fi
+      
+  build-test-completed:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Mark Build and Test as Successful
+        run: echo "All build and test tasks completed successfully."
