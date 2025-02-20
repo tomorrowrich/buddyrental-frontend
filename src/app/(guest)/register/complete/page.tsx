@@ -9,11 +9,13 @@ import {
   Button,
   Link,
   MenuItem,
+  Container,
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import ImageUploadButton from "@/widgets/Signup/ImageUploadButton";
+import ImageUploadButtonMobile from "@/widgets/Signup/ImageUploadButtonMobile";
 import { initialSignUpData, SignUpFormData } from "@/api/auth/interface";
 import dayjs, { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
@@ -96,7 +98,7 @@ export default function CompleteProfile() {
     const { success, error } = await register(completeData);
     if (success) {
       localStorage.removeItem(STORAGE_KEY);
-      router.push("/signin");
+      router.push("/login");
     } else {
       console.error(error);
       setIsSubmitting(false);
@@ -104,13 +106,23 @@ export default function CompleteProfile() {
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Container
+      maxWidth={false}
+      disableGutters
+      sx={{
+        background: "white",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flex: 1,
+      }}
+    >
       <Grid2 container sx={{ p: 2 }}>
         {/* Left half */}
         <Grid2
           size={{ xs: 12, sm: 6 }}
           sx={{
-            p: 4,
+            p: { xs: 2, sm: 4, md: 8 },
             display: "flex",
             flexDirection: "column",
           }}
@@ -121,6 +133,13 @@ export default function CompleteProfile() {
           <Typography color="quaternary" gutterBottom sx={{ mb: 4 }}>
             Help us get to know you better with some extra info.
           </Typography>
+
+          <Grid2
+            size={{ xs: 12, md: 6 }}
+            sx={{ display: { xs: "block", sm: "none" }, mb: 2, ml: 4 }}
+          >
+            <ImageUploadButtonMobile />
+          </Grid2>
 
           <Grid2 container spacing={2}>
             <Grid2 size={{ xs: 12, sm: 6 }}>
@@ -248,17 +267,12 @@ export default function CompleteProfile() {
 
         {/* Right half */}
         <Grid2
-          size={{ xs: 12, sm: 6 }}
-          sx={{
-            p: 4,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
+          size={{ xs: 12, md: 6 }}
+          sx={{ display: { xs: "none", sm: "block" } }}
         >
           <ImageUploadButton />
         </Grid2>
       </Grid2>
-    </Box>
+    </Container>
   );
 }
