@@ -58,6 +58,10 @@ export default function OnboardingPage() {
   );
   const [submitting, setSubmitting] = useState(false);
 
+  if (!user) {
+    redirect("/login");
+  }
+
   useEffect(() => {
     const storedInterests = localStorage.getItem(STORAGE_KEY);
     console.log(storedInterests);

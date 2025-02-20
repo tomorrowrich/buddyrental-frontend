@@ -37,7 +37,6 @@ export default function CompleteProfile() {
   const { login } = useAuth();
 
   useEffect(() => {
-
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
       const existingData = JSON.parse(savedData) as SignUpFormData;
@@ -105,7 +104,7 @@ export default function CompleteProfile() {
           password: completeData.password,
         },
         { redirectOnSuccess: false },
-      ).then(redirect("/app/onboarding"));
+      ).then(redirect("/app/onboard"));
     } else {
       console.error(error);
     }
