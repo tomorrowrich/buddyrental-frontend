@@ -58,32 +58,6 @@ export default function OnboardingPage() {
   );
   const [submitting, setSubmitting] = useState(false);
 
-  if (!user) {
-    redirect("/login");
-  }
-
-  const handleSubmit = async () => {
-    setSubmitting(true);
-    const interests = Array.from(selectedInterests);
-    // TODO: Send selected interests to backend
-    const { success, error } = (() => {
-      console.log(interests);
-      return {
-        success: true,
-        error: null,
-      };
-    })();
-
-    if (success) {
-      redirect("/verify");
-    } else {
-      // TODO: Handle error
-      console.error(error);
-    }
-
-    setSubmitting(false);
-  };
-
   useEffect(() => {
     const storedInterests = localStorage.getItem(STORAGE_KEY);
     console.log(storedInterests);
@@ -92,6 +66,29 @@ export default function OnboardingPage() {
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedInterests]));
   }, []);
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+
+    const interests = Array.from(selectedInterests);
+    // TODO: Send selected interests to backend
+    const { success, error } = (() => {
+      localStorage.removeItem(STORAGE_KEY);
+      return {
+        success: true,
+        error: null,
+      };
+    })();
+
+    if (success) {
+      redirect("/app/verify");
+    } else {
+      // TODO: Handle error
+      console.error(error);
+    }
+
+    setSubmitting(false);
+  };
 
   const handleChipClick = (interest: string) => {
     console.log(interest);
@@ -159,7 +156,7 @@ export default function OnboardingPage() {
                 variant="contained"
                 color="quinary"
                 disabled={submitting}
-                onClick={() => redirect("/verify")}
+                onClick={() => redirect("/app/verify")}
                 fullWidth
               >
                 Skip
