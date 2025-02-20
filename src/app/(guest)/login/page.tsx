@@ -61,8 +61,7 @@ export default function Login() {
 
   return (
     <Container
-      maxWidth={false}
-      disableGutters
+      maxWidth="xl"
       sx={{
         background: "white",
         display: "flex",
@@ -82,7 +81,7 @@ export default function Login() {
         <Box
           sx={{
             width: { xs: "100%", md: "50%" },
-            maxWidth: "600px",
+            maxWidth: "100%",
             mx: "auto",
             my: "auto",
             justifyContent: "center",
@@ -190,8 +189,8 @@ export default function Login() {
         <Box
           sx={{
             minHeight: "500px",
-            width: { xs: "100%", lg: "50%" },
-            display: { xs: "none", lg: "block" },
+            width: { xs: "100%", md: "50%" },
+            display: { xs: "none", md: "block" },
           }}
         >
           <LoginCarousel />
