@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, FormEvent } from "react";
 import {
-  Box,
   Typography,
   Grid2,
   TextField,
@@ -14,6 +13,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Container,
 } from "@mui/material";
 import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
 import { usePathname, useRouter } from "next/navigation";
@@ -69,7 +69,17 @@ export default function Signup() {
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Container
+      maxWidth={false}
+      disableGutters
+      sx={{
+        background: "white",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flex: 1,
+      }}
+    >
       <Dialog fullWidth open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Error</DialogTitle>
         <DialogContent>
@@ -83,7 +93,7 @@ export default function Signup() {
         <Grid2
           size={{ xs: 12, sm: 6 }}
           sx={{
-            p: 12,
+            p: { xs: 2, sm: 4, md: 8 },
             display: "flex",
             justifyContent: "center",
             flexDirection: "column",
@@ -99,7 +109,7 @@ export default function Signup() {
 
           <form onSubmit={handleSubmit}>
             <Grid2 container spacing={2}>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
+              <Grid2 size={{ xs: 12, md: 6 }}>
                 <TextField
                   required
                   fullWidth
@@ -109,7 +119,7 @@ export default function Signup() {
                   onChange={handleInputChange}
                 />
               </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
+              <Grid2 size={{ xs: 12, md: 6 }}>
                 <TextField
                   required
                   fullWidth
@@ -129,7 +139,7 @@ export default function Signup() {
                   onChange={handleInputChange}
                 />
               </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
+              <Grid2 size={{ xs: 12, md: 6 }}>
                 <TextField
                   required
                   fullWidth
@@ -140,7 +150,7 @@ export default function Signup() {
                   onChange={handleInputChange}
                 />
               </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
+              <Grid2 size={{ xs: 12, md: 6 }}>
                 <TextField
                   required
                   fullWidth
@@ -205,7 +215,7 @@ export default function Signup() {
               color="secondary"
               sx={{ mt: 3, mb: 2, color: "white", padding: 1.5 }}
             >
-              Complete Profile
+              Complete profile
             </Button>
           </form>
 
@@ -221,7 +231,7 @@ export default function Signup() {
           size={{ xs: 12, md: 6 }}
           sx={{
             p: 2,
-            display: "flex",
+            display: { xs: "none", md: "flex" }, // Hide on xs, show on md+
             justifyContent: "center",
             alignItems: "center",
             minHeight: { xs: "300px", md: "600px" },
@@ -230,6 +240,6 @@ export default function Signup() {
           <LoginCarousel />
         </Grid2>
       </Grid2>
-    </Box>
+    </Container>
   );
 }
