@@ -50,6 +50,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SEM_REL_TOKEN }}
         run: |
           pnpm dlx semantic-release --ci
-          VERSION=$(cat $VERSION || echo "")
+          VERSION=$(cat VERSION || echo "")
           echo "Resolved version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
