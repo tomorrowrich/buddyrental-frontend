@@ -10,50 +10,18 @@ on:
   push:
     branches:
       - main
-      - develop
     tags:
       - "v*"
   workflow_dispatch:
 
 jobs:
   build-test:
-    if: startsWith(github.ref, 'refs/heads/')
-    name: Build and Test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        task: [build, test]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run ${{ matrix.task }}
-        run: |
-          if [ "${{ matrix.task }}" == "build" ]; then
-            pnpm run build
-          else
-            pnpm run test
-          fi
+    uses: ./.github/workflows/build.yml
 
   release:
-    if: startsWith(github.ref, 'refs/heads/')
     name: Semantic Release
-    needs: build-test
     runs-on: ubuntu-latest
+    needs: build-test
     outputs:
       version: ${{ steps.semantic-release.outputs.version }}
     steps:
@@ -63,7 +31,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 #v4.0.0
         with:
           version: latest
 
