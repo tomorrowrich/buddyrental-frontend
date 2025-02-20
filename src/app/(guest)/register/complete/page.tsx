@@ -16,8 +16,9 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import ImageUploadButton from "@/widgets/Signup/ImageUploadButton";
 import { initialSignUpData, SignUpFormData } from "@/api/auth/interface";
 import dayjs, { Dayjs } from "dayjs";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { register } from "@/api/auth/api";
+import { useAuth } from "@/context/auth/auth";
 
 const STORAGE_KEY = "signup-info";
 
@@ -33,8 +34,10 @@ export default function CompleteProfile() {
   const router = useRouter();
   const [formData, setFormData] = useState<SignUpFormData>(initialSignUpData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
 
   useEffect(() => {
+
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
       const existingData = JSON.parse(savedData) as SignUpFormData;
@@ -96,11 +99,17 @@ export default function CompleteProfile() {
     const { success, error } = await register(completeData);
     if (success) {
       localStorage.removeItem(STORAGE_KEY);
-      router.push("/signin");
+      login(
+        {
+          email: completeData.email,
+          password: completeData.password,
+        },
+        { redirectOnSuccess: false },
+      ).then(redirect("/app/onboarding"));
     } else {
       console.error(error);
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
 
   return (

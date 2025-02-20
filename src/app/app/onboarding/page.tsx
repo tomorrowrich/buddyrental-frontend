@@ -58,6 +58,10 @@ export default function OnboardingPage() {
   );
   const [submitting, setSubmitting] = useState(false);
 
+  if (!user) {
+    redirect("/login");
+  }
+
   const handleSubmit = async () => {
     setSubmitting(true);
     const interests = Array.from(selectedInterests);
