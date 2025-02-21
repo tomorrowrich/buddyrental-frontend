@@ -109,12 +109,18 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
             {/* User Avatar with Dialog */}
             <Box>
               <Avatar
-                src="https://i.pravatar.cc/40"
+                src={
+                  user.profilePicture
+                    ? `data:image/png;base64,${user.profilePicture}`
+                    : undefined
+                }
                 alt="User"
                 data-testid="user-avatar"
                 sx={{ bgcolor: "secondary.main", cursor: "pointer" }}
                 onClick={(event) => setAnchorEl(event.currentTarget)}
-              />
+              >
+                {!user.profilePicture && `${user.firstName.at(0)}`}
+              </Avatar>
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -129,7 +135,16 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                       mb: 2,
                     }}
                   >
-                    <Avatar src="https://i.pravatar.cc/40" alt="User" />
+                    <Avatar
+                      src={
+                        user.profilePicture
+                          ? `data:image/png;base64,${user.profilePicture}`
+                          : undefined
+                      }
+                      alt="User"
+                    >
+                      {!user.profilePicture && `${user.firstName.at(0)}`}
+                    </Avatar>
                     <Box>
                       <Typography variant="subtitle1">
                         {user.firstName + " " + user.lastName}
