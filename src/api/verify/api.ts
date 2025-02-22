@@ -1,9 +1,9 @@
 "use server";
 
-import axios from "axios";
-import { cookies } from "next/headers";
 import { baseURL } from "@/api";
 import { User } from "@/model/user";
+import axios from "axios";
+import { cookies } from "next/headers";
 
 /**
  * Fetches the list of unverified users from the server.
@@ -73,7 +73,7 @@ export async function verifyUser(
         },
       },
     )
-    .then((res) => {
+    .then((_) => {
       return { success: true, error: null };
     })
     .catch((error) => {

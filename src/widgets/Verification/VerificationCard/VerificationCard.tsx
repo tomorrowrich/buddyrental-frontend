@@ -1,34 +1,42 @@
-import { useState } from "react";
+import { verifyUser } from "@/api/verify/api";
+import { User } from "@/model/user";
+import { Check } from "@mui/icons-material";
+import CloseIcon from "@mui/icons-material/Close";
 import {
-  Stack,
   Avatar,
   Box,
-  Typography,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton,
   Chip,
-  Grid2,
   Container,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Grid2,
+  IconButton,
+  Stack,
+  Typography,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { Check } from "@mui/icons-material";
+import { useState } from "react";
 import VerificationRejectDialog from "../VerificationRejectDialog/VerificationRejectDialog";
 
-export const VerficationCard = ({
-  name,
-  email,
-  avatar,
-}: {
-  name: string;
-  email: string;
-  avatar: string;
-}) => {
+export const VerficationCard = (user: User & { onChange: () => void }) => {
   const [open, setOpen] = useState(false);
-
   const [rejectOpen, setRejectOpen] = useState(false);
+  const { onChange } = user;
+
+  const name = user.firstName + " " + user.lastName;
+  const avatar = user.profilePicture;
+  const { email, citizenId, phoneNumber, address, interests } = user;
+
+  const handleAccept = async () => {
+    console.log("Accept", user.userId);
+    const res = await verifyUser(true, user.userId);
+    console.log(res);
+    setOpen(false);
+    if (res.success) {
+      onChange();
+    }
+  };
 
   return (
     <>
@@ -64,8 +72,11 @@ export const VerficationCard = ({
       {/* Modal Dialog */}
       <VerificationRejectDialog
         open={rejectOpen}
-        onClose={() => setRejectOpen(false)}
-        name={name}
+        onClose={() => {
+          setRejectOpen(false);
+          onChange();
+        }}
+        user={{ userId: user.userId, name }}
       />
       <Dialog
         open={open}
@@ -75,7 +86,10 @@ export const VerficationCard = ({
       >
         <DialogTitle>
           <Stack direction="row" justifyContent="end" alignItems="center">
-            <IconButton data-testid="CloseIcon" onClick={() => setOpen(false)}>
+            <IconButton
+              aria-label="close-button"
+              onClick={() => setOpen(false)}
+            >
               <CloseIcon />
             </IconButton>
           </Stack>
@@ -112,10 +126,9 @@ export const VerficationCard = ({
                   </Typography>
 
                   <Stack direction="row" spacing={1}>
-                    <Chip label="Chip" color="default" />
-                    <Chip label="Chip" color="default" />
-                    <Chip label="Chip" color="default" />
-                    <Chip label="Chip" color="default" />
+                    {interests?.map((interest) => (
+                      <Chip key={interest} label={interest} />
+                    ))}
                   </Stack>
                 </Stack>
               </Grid2>
@@ -129,7 +142,7 @@ export const VerficationCard = ({
                   </Typography>
                 </Grid2>
                 <Grid2 size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2">X-XXXX-XXXXX-XX-X</Typography>
+                  <Typography variant="body2">{citizenId}</Typography>
                 </Grid2>
 
                 <Grid2 size={{ xs: 12, md: 6 }}>
@@ -138,7 +151,7 @@ export const VerficationCard = ({
                   </Typography>
                 </Grid2>
                 <Grid2 size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2">XXX-XXX-XXXX</Typography>
+                  <Typography variant="body2">{phoneNumber}</Typography>
                 </Grid2>
 
                 <Grid2 size={{ xs: 12, md: 6 }}>
@@ -147,9 +160,7 @@ export const VerficationCard = ({
                   </Typography>
                 </Grid2>
                 <Grid2 size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2">
-                    Address Address Address Address Address Address Address
-                  </Typography>
+                  <Typography variant="body2">{address}</Typography>
                 </Grid2>
               </Grid2>
             </Box>
@@ -176,7 +187,7 @@ export const VerficationCard = ({
                 variant="contained"
                 color="secondary"
                 endIcon={<Check />}
-                onClick={() => setOpen(false)}
+                onClick={handleAccept}
               >
                 Approve
               </Button>
