@@ -78,12 +78,7 @@ export const VerficationCard = (user: User & { onChange: () => void }) => {
         }}
         user={{ userId: user.userId, name }}
       />
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={open} maxWidth="sm" fullWidth>
         <DialogTitle>
           <Stack direction="row" justifyContent="end" alignItems="center">
             <IconButton

@@ -22,6 +22,7 @@ const mockProps: User = {
   postalCode: "12345",
   profilePicture: "https://picsum.photos/200",
   description: "",
+  interests: ["Music", "Movies", "Art"],
 };
 
 const verifyUserMock = vi.hoisted(() =>
@@ -62,6 +63,10 @@ describe("BookingCard", () => {
 
     expect(screen.getByText("Address")).toBeInTheDocument();
     expect(screen.getByText(mockProps.address)).toBeInTheDocument();
+
+    for (const interest of mockProps.interests ?? []) {
+      expect(screen.getByText(interest)).toBeInTheDocument();
+    }
   });
 
   it("renders approval buttons in dialog", () => {
@@ -83,13 +88,19 @@ describe("BookingCard", () => {
     await screen.findByText("Details"); // Wait for re-render
   });
 
-  it("opens reject dialog when Reject button is clicked", () => {
+  it("opens and close reject dialog when Reject button is clicked", async () => {
     themeRenderer(<VerficationCard {...mockProps} onChange={() => {}} />);
 
     fireEvent.click(screen.getByText("Details"));
     fireEvent.click(screen.getByText("Reject"));
 
     expect(screen.getByText("Reject letter")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /close-button/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Reject letter")).not.toBeInTheDocument();
+    });
   });
 
   it("closes dialog when Close icon is clicked", async () => {
