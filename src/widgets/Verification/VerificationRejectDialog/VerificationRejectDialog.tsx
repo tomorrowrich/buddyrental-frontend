@@ -61,6 +61,7 @@ const VerificationRejectDialog = ({
         : reasons.join("");
 
     const res = await verifyUser(false, userId, message);
+    console.log(res);
     onClose();
   };
 
