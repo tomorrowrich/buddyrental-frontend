@@ -84,7 +84,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    (!user?.verified || 1) && (
+    !user?.verified && (
       <Container maxWidth="xl">
         <Stack alignItems="center">
           <Typography
