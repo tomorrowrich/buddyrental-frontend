@@ -109,11 +109,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
             {/* User Avatar with Dialog */}
             <Box>
               <Avatar
-                src={
-                  user.profilePicture
-                    ? `data:image/png;base64,${user.profilePicture}`
-                    : undefined
-                }
+                src={user.profilePicture ? user.profilePicture : undefined}
                 alt="User"
                 data-testid="user-avatar"
                 sx={{ bgcolor: "secondary.main", cursor: "pointer" }}

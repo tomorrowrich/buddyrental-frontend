@@ -141,12 +141,14 @@ export function MobileNavigationBar({
             {/* User Avatar with Dialog */}
             <Box>
               <Avatar
-                src="https://i.pravatar.cc/40"
+                src={user.profilePicture ? user.profilePicture : undefined}
                 alt="User"
                 data-testid="user-avatar"
                 sx={{ bgcolor: "secondary.main", cursor: "pointer" }}
                 onClick={(event) => setAnchorEl(event.currentTarget)}
-              />
+              >
+                {!user.profilePicture && `${user.firstName.at(0)}`}
+              </Avatar>
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}

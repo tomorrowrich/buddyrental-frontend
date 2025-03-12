@@ -1,21 +1,14 @@
-import { Box, useMediaQuery } from "@mui/material";
-import { NavigationBar } from "@/widgets/NavigationBar/NavigationBar";
-import { MobileNavigationBar } from "@/widgets/NavigationBar/MobileNavigationBar";
+import { Box } from "@mui/material";
+import NavigationSwitcher from "@/widgets/NavigationBar/NavigationSwitcher";
 
 export default function BuddyRentalRootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  //adjust for mobile layout
-  const isMobile = useMediaQuery("max-width:600px"); //equal to sm breakpoint
   return (
     <>
-      {isMobile ? (
-        <MobileNavigationBar isAdmin={true} />
-      ) : (
-        <NavigationBar isAdmin={true} />
-      )}
+      <NavigationSwitcher />
       <Box
         flex={1}
         sx={{
