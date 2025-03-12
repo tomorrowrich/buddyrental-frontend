@@ -10,9 +10,11 @@ import {
   Typography,
 } from "@mui/material";
 import { redirect } from "next/navigation";
+import { useTheme } from "@mui/material/styles";
 
 export default function VerificationPage() {
   const { user } = useAuth();
+  const theme = useTheme();
 
   if (!user) {
     redirect("/login");
@@ -29,10 +31,24 @@ export default function VerificationPage() {
         mt: 10,
       }}
     >
-      <Typography variant="h4" sx={{ fontWeight: 600, mb: 2 }}>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 600,
+          mb: 1,
+          fontSize: { xs: "20px", sm: theme.typography.h4.fontSize },
+        }}
+      >
         Please wait for verification.
       </Typography>
-      <Typography variant="h4" sx={{ fontWeight: 600, mb: 4 }}>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 600,
+          mb: 2,
+          fontSize: { xs: "20px", sm: theme.typography.h4.fontSize },
+        }}
+      >
         Thanks for joining BuddyRental!
       </Typography>
 
@@ -57,7 +73,12 @@ export default function VerificationPage() {
       <Button
         variant="contained"
         color="secondary"
-        sx={{ width: "70%", px: 5, py: 1.5 }}
+        sx={{
+          width: "70%",
+          px: 5,
+          py: 1.5,
+          display: { xs: "none", sm: "inline-block" },
+        }}
       >
         Thanks!
       </Button>
