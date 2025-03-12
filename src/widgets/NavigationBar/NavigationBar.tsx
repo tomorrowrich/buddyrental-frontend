@@ -85,7 +85,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
             <Button
               startIcon={<ChatBubbleOutline />}
               sx={{ color: "primary.main", textTransform: "none" }}
-              onClick={() => router.push("/chat")}
+              onClick={() => router.push("/app/chat")}
             >
               Chat
             </Button>
