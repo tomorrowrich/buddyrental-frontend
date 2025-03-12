@@ -118,7 +118,7 @@ describe("NavigationBar", () => {
 
       customRender(<NavigationBar />);
 
-      const avatar = screen.getByRole("img", { name: "User" });
+      const avatar = screen.getByTestId("user-avatar");
       fireEvent.click(avatar);
 
       const editProfileButton = screen.getByText("Edit Profile");

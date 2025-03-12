@@ -3,11 +3,7 @@ import {
   Box,
   Typography,
   Button,
-  Checkbox,
-  FormControlLabel,
   Link,
-  InputAdornment,
-  IconButton,
   Container,
   Stack,
   FormControl,
@@ -16,47 +12,43 @@ import {
   FormHelperText,
 } from "@mui/material";
 import { useState, FormEvent } from "react";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
 import { useAuth } from "@/context/auth/auth";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
   const auth = useAuth();
+  const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
   const [values, setValues] = useState({
     email: "",
-    password: "",
-    showPassword: false,
-    rememberMe: false,
   });
   const [errors, setErrors] = useState({
     email: "",
-    password: "",
   });
 
-  const handleChange =
-    (prop: keyof typeof values) =>
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setValues({ ...values, [prop]: event.target.value });
-      if (errors[prop as keyof typeof errors]) {
-        setErrors({ ...errors, [prop]: "" });
-      }
-    };
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setValues({ email: event.target.value });
+    if (errors.email) {
+      setErrors({ email: "" });
+    }
+  };
+
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const resp = await auth.login({
-      email: values.email,
-      password: values.password,
-    });
-    console.log(resp);
-    if (resp && resp.error) {
-      setErrors({
-        email: resp.error || "Invalid email or password",
-        password: resp.error || "",
-      });
+
+    if (!isValidEmail(values.email)) {
+      // EDITED: Validate email
+      setErrors({ email: "Invalid email format" });
+      return;
     }
+
+    router.push("/login/resetpassword"); // EDITED: Redirect if valid
   };
 
   return (
@@ -94,10 +86,11 @@ export default function Login() {
             sx={{ width: "100%", p: { xs: 2, sm: 4 } }}
           >
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Login
+              Forget your password?
             </Typography>
             <Typography color="quaternary" gutterBottom>
-              Login to access your BuddyRental account
+              Don&rsquo;t worry, happens to all of us. Enter your email below to
+              recover your password
             </Typography>
 
             <FormControl fullWidth margin="normal" error={!!errors.email}>
@@ -106,7 +99,7 @@ export default function Login() {
                 id="email"
                 type="email"
                 value={values.email}
-                onChange={handleChange("email")}
+                onChange={handleChange}
                 label="Email"
                 autoFocus
                 autoComplete="email"
@@ -118,53 +111,6 @@ export default function Login() {
                 </FormHelperText>
               )}
             </FormControl>
-
-            <FormControl fullWidth margin="normal" error={!!errors.password}>
-              <InputLabel htmlFor="password">Password</InputLabel>
-              <OutlinedInput
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={values.password}
-                onChange={handleChange("password")}
-                autoComplete="current-password"
-                endAdornment={
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      onMouseDown={(e) => e.preventDefault()}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                }
-                label="Password"
-                aria-describedby="password-helper-text"
-              />
-              {errors.password && (
-                <FormHelperText id="password-helper-text">
-                  {errors.password}
-                </FormHelperText>
-              )}
-            </FormControl>
-
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              justifyContent="space-between"
-              alignItems={{ xs: "stretch", sm: "center" }}
-              spacing={2}
-              sx={{ mt: 1 }}
-            >
-              <FormControlLabel
-                control={<Checkbox color="quinary" />}
-                color="primary"
-                label="Remember me"
-              />
-              <Link href="/login/forgetpassword" color="tertiary">
-                Forgot Password
-              </Link>
-            </Stack>
 
             <Button
               type="submit"

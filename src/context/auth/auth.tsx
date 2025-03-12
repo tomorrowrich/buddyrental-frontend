@@ -45,7 +45,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     getProfile().then(({ success, user }) => {
       setIsAuthenticated(success);
       setUser(user);
-      if (!success && pathname !== "/login" && pathname !== "/register") {
+      if (
+        !success &&
+        pathname !== "/login" &&
+        pathname !== "/register" &&
+        pathname !== "/login/forgetpassword" &&
+        pathname !== "/login/resetpassword"
+      ) {
         redirect("/login");
       }
 
