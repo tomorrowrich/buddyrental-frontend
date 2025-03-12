@@ -14,6 +14,7 @@ import {
   ChatBubbleOutline,
   MenuBook,
   Add,
+  EventNote,
 } from "@mui/icons-material";
 import Image from "next/image";
 import { useAuth } from "@/context/auth/auth";
@@ -73,6 +74,13 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
               onClick={() => router.push("/app/booking/history")}
             >
               Bookings
+            </Button>
+            <Button
+              startIcon={<EventNote />}
+              sx={{ color: "primary.main", textTransform: "none" }}
+              onClick={() => router.push("/app/calendar")}
+            >
+              Calendar
             </Button>
             <Button
               startIcon={<ChatBubbleOutline />}
