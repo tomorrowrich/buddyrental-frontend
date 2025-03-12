@@ -1,6 +1,9 @@
 "use client";
 
+import { getInterestSuggestions } from "@/api/interests/api";
+import { updateInterests } from "@/api/users/api";
 import { useAuth } from "@/context/auth/auth";
+import { Interest } from "@/model/user";
 import {
   Box,
   Button,
@@ -10,84 +13,58 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "interests-onboarding";
 
-// TODO: Replace with actual interests
-const interests = [
-  { tagId: "art", name: "Art" },
-  { tagId: "music", name: "Music" },
-  { tagId: "sports", name: "Sports" },
-  { tagId: "food", name: "Food" },
-  { tagId: "travel", name: "Travel" },
-  { tagId: "technology", name: "Technology" },
-  { tagId: "science", name: "Science" },
-  { tagId: "fashion", name: "Fashion" },
-  { tagId: "fitness", name: "Fitness" },
-  { tagId: "photography", name: "Photography" },
-  { tagId: "books", name: "Books" },
-  { tagId: "movies", name: "Movies" },
-  { tagId: "games", name: "Games" },
-  { tagId: "diy", name: "DIY" },
-  { tagId: "pets", name: "Pets" },
-  { tagId: "gardening", name: "Gardening" },
-  { tagId: "cars", name: "Cars" },
-  { tagId: "politics", name: "Politics" },
-  { tagId: "health", name: "Health" },
-  { tagId: "business", name: "Business" },
-  { tagId: "education", name: "Education" },
-  { tagId: "history", name: "History" },
-  { tagId: "nature", name: "Nature" },
-  { tagId: "culture", name: "Culture" },
-  { tagId: "religion", name: "Religion" },
-  { tagId: "lifestyle", name: "Lifestyle" },
-  { tagId: "beauty", name: "Beauty" },
-  { tagId: "home", name: "Home" },
-  { tagId: "parenting", name: "Parenting" },
-  { tagId: "relationships", name: "Relationships" },
-  { tagId: "finance", name: "Finance" },
-  { tagId: "shopping", name: "Shopping" },
-];
-
 export default function OnboardingPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(
     new Set(),
   );
+  const [interests, setInterests] = useState<Interest[] | null>([]);
   const [submitting, setSubmitting] = useState(false);
 
-  if (!user) {
-    redirect("/login");
-  }
+  useEffect(() => {
+    const getInterests = async () => {
+      const { interests, error } = await getInterestSuggestions();
+      if (interests) {
+        setInterests(interests);
+        console.log("Suggested Interests: ", interests);
+      } else {
+        console.error(error);
+      }
+    };
+
+    getInterests();
+  }, []);
 
   useEffect(() => {
     const storedInterests = localStorage.getItem(STORAGE_KEY);
-    console.log(storedInterests);
     if (storedInterests) {
       setSelectedInterests(new Set(JSON.parse(storedInterests)));
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedInterests]));
-  }, []);
+  }, [interests]);
+
+  // FIXME: This page has not implemented authentication yet.
+  if (!user) {
+    return router.push("/login");
+  }
 
   const handleSubmit = async () => {
     setSubmitting(true);
 
     const interests = Array.from(selectedInterests);
-    // TODO: Send selected interests to backend
-    const { success, error } = (() => {
-      localStorage.removeItem(STORAGE_KEY);
-      return {
-        success: true,
-        error: null,
-      };
-    })();
+
+    const { success, error } = await updateInterests(interests);
 
     if (success) {
-      redirect("/app/verify");
+      localStorage.removeItem(STORAGE_KEY);
+      router.push("/app/verify");
     } else {
-      // TODO: Handle error
       console.error(error);
     }
 
@@ -129,7 +106,7 @@ export default function OnboardingPage() {
             spacing={1}
             mt={{ xs: 2, sm: 4 }}
           >
-            {interests.map((interest) => (
+            {interests?.map((interest) => (
               <Grid key={interest.tagId}>
                 <Chip
                   label={interest.name}
@@ -160,7 +137,7 @@ export default function OnboardingPage() {
                 variant="contained"
                 color="quinary"
                 disabled={submitting}
-                onClick={() => redirect("/app/verify")}
+                onClick={() => router.push("/app/verify")}
                 fullWidth
               >
                 Skip
