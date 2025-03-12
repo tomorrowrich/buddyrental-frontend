@@ -13,6 +13,7 @@ import {
 } from "@/api/auth/api";
 import { User } from "@/model/user";
 import { redirect, usePathname } from "next/navigation";
+import { getUnverifiedUsers } from "@/api/verify/api";
 
 export interface AuthContextType {
   user: User | null;
@@ -49,10 +50,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
         !success &&
         pathname !== "/login" &&
         pathname !== "/register" &&
+        pathname !== "/register/complete" &&
         pathname !== "/login/forgetpassword" &&
         pathname !== "/login/resetpassword"
       ) {
         redirect("/login");
+      }
+
+      if (success && user) {
+        getUnverifiedUsers().then(({ success, users }) => {
+          if (success && users) {
+            const isUnverified = users.some((u) => u.email === user.email);
+            if (isUnverified) {
+              redirect("/app/verify");
+            }
+          }
+        });
       }
 
       if (success && (pathname === "/login" || pathname === "/register")) {
