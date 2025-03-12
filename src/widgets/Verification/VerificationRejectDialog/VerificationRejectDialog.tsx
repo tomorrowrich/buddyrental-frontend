@@ -1,18 +1,19 @@
-import { useState } from "react";
+import { verifyUser } from "@/api/verify/api";
+import CloseIcon from "@mui/icons-material/Close";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton,
-  Typography,
-  TextField,
   Button,
-  Stack,
   Checkbox,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   FormControlLabel,
   Grid,
+  IconButton,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import { useState } from "react";
 
 const reasonsList = [
   "Inaccurate Information",
@@ -25,14 +26,19 @@ const reasonsList = [
 const VerificationRejectDialog = ({
   open,
   onClose,
-  name,
+  user,
 }: {
   open: boolean;
   onClose: () => void;
-  name: string;
+  user: {
+    userId: string;
+    name: string;
+  };
 }) => {
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [extraReason, setExtraReason] = useState("");
+
+  const { userId, name } = user;
 
   const handleToggleReason = (reason: string) => {
     setSelectedReasons((prev) =>
@@ -40,6 +46,23 @@ const VerificationRejectDialog = ({
         ? prev.filter((r) => r !== reason)
         : [...prev, reason],
     );
+  };
+
+  const handleReject = async () => {
+    const reasons = [
+      ...selectedReasons,
+      extraReason ? "Other: " + extraReason : "",
+    ].filter(Boolean);
+    console.log("Reject", user, reasons);
+
+    const message =
+      reasons.length > 1
+        ? `${reasons.slice(0, -1).join(", ")} and ${reasons.slice(-1)}`
+        : reasons.join("");
+
+    const res = await verifyUser(false, userId, message);
+    console.log(res);
+    onClose();
   };
 
   return (
@@ -53,7 +76,7 @@ const VerificationRejectDialog = ({
           <Typography variant="h6" color="secondary" fontWeight={600}>
             Reject letter
           </Typography>
-          <IconButton onClick={onClose}>
+          <IconButton aria-label="close-button" onClick={onClose}>
             <CloseIcon color="secondary" />
           </IconButton>
         </Stack>
@@ -62,7 +85,13 @@ const VerificationRejectDialog = ({
         {/* Checkboxes Grid */}
         <Grid container spacing={1}>
           {reasonsList.map((reason, index) => (
-            <Grid item xs={12} sm={6} key={index}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              key={index}
+              aria-label={`Reason ${index + 1}`}
+            >
               <FormControlLabel
                 control={
                   <Checkbox
@@ -100,7 +129,7 @@ const VerificationRejectDialog = ({
           <Button
             variant="outlined"
             color="secondary"
-            onClick={onClose}
+            onClick={handleReject}
             endIcon={<CloseIcon />}
           >
             Reject
