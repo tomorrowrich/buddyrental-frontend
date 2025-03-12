@@ -16,6 +16,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import { NotificationsNone, ChatBubbleOutline } from "@mui/icons-material";
 import Image from "next/image";
 import { useAuth } from "@/context/auth/auth";
@@ -72,19 +73,17 @@ export function MobileNavigationBar({
           alignItems: "center",
         }}
       >
-        {/* Left Side - Logo */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Image
-            src="/logo-full.svg"
-            alt="BuddyRental Logo"
-            width={200}
-            height={40}
-          />
-
+        {/* Left Side - Menu */}
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 1, flexGrow: 1 }}
+        >
           <IconButton
+            aria-label="menu"
             sx={{ color: "primary.main" }}
             onClick={toggleDrawer(true)}
-          />
+          >
+            <MenuIcon />
+          </IconButton>
           <Drawer
             anchor={"top"}
             open={drawerState}
@@ -106,9 +105,7 @@ export function MobileNavigationBar({
                     <ListItemText primary={"Content 1"} />
                   </ListItemButton>
                 </ListItem>
-              </List>
-              <Divider />
-              <List>
+                <Divider />
                 <ListItem key={"Content 2"} disablePadding>
                   <ListItemButton>
                     <ListItemIcon>
@@ -117,6 +114,7 @@ export function MobileNavigationBar({
                     <ListItemText primary={"Content 2"} />
                   </ListItemButton>
                 </ListItem>
+                <Divider />
                 <ListItem key={"Content 3"} disablePadding>
                   <ListItemButton>
                     <ListItemIcon>
@@ -130,9 +128,27 @@ export function MobileNavigationBar({
           </Drawer>
         </Box>
 
+        {/* Middle Box (Centered) */}
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <Image
+            src="/logo.svg"
+            alt="BuddyRental Logo"
+            width={40}
+            height={40}
+          />
+        </Box>
+
         {/* Right Side - Notifications, Avatar */}
         {user && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 3,
+              flexGrow: 1,
+              justifyContent: "flex-end",
+            }}
+          >
             {/* Notifications */}
             <IconButton>
               <NotificationsNone sx={{ color: "primary.main" }} />
