@@ -133,9 +133,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                   >
                     <Avatar
                       src={
-                        user.profilePicture
-                          ? `data:image/png;base64,${user.profilePicture}`
-                          : undefined
+                        user.profilePicture ? user.profilePicture : undefined
                       }
                       alt="User"
                     >

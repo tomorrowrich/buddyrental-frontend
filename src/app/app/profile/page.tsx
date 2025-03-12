@@ -93,11 +93,7 @@ export default function PersonalProfile() {
 
         <Box display="flex" alignItems="center" gap={2} mt={12}>
           <Avatar
-            src={
-              user.profilePicture
-                ? `data:image/png;base64,${user.profilePicture}`
-                : undefined
-            }
+            src={user.profilePicture ? user.profilePicture : undefined}
             sx={{ width: 80, height: 80 }}
           >
             {!user.profilePicture && `${user.firstName.at(0)}`}
