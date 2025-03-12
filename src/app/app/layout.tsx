@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { NavigationBar } from "@/widgets/NavigationBar/NavigationBar";
+import NavigationSwitcher from "@/widgets/NavigationBar/NavigationSwitcher";
 
 export default function BuddyRentalRootLayout({
   children,
@@ -8,7 +8,7 @@ export default function BuddyRentalRootLayout({
 }>) {
   return (
     <>
-      <NavigationBar />
+      <NavigationSwitcher />
       <Box
         flex={1}
         sx={{
