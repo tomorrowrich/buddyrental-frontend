@@ -8,13 +8,15 @@ import {
   Avatar,
   Button,
   Menu,
+  Drawer,
+  Divider,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
-import {
-  NotificationsNone,
-  ChatBubbleOutline,
-  MenuBook,
-  Add,
-} from "@mui/icons-material";
+import { NotificationsNone, ChatBubbleOutline } from "@mui/icons-material";
 import Image from "next/image";
 import { useAuth } from "@/context/auth/auth";
 import { useState } from "react";
@@ -32,11 +34,25 @@ export function MobileNavigationBar({
   const theme = useTheme();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [drawerState, setDrawerState] = useState<boolean>(false);
 
   const handleLogout = async () => {
     console.log("Logging out");
     await logout();
   };
+
+  const toggleDrawer =
+    (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+      if (
+        event.type === "keydown" &&
+        ((event as React.KeyboardEvent).key === "Tab" ||
+          (event as React.KeyboardEvent).key === "Shift")
+      ) {
+        return;
+      }
+
+      setDrawerState(open);
+    };
 
   return (
     <AppBar
@@ -64,45 +80,59 @@ export function MobileNavigationBar({
             width={200}
             height={40}
           />
+
+          <IconButton
+            sx={{ color: "primary.main" }}
+            onClick={toggleDrawer(true)}
+          />
+          <Drawer
+            anchor={"top"}
+            open={drawerState}
+            onClose={toggleDrawer(false)}
+          >
+            {/*List Object Here */}
+            <Box
+              sx={{ width: "auto" }}
+              role="presentation"
+              onClick={toggleDrawer(false)}
+              onKeyDown={toggleDrawer(false)}
+            >
+              <List>
+                <ListItem key={"Content 1"} disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <ChatBubbleOutline />
+                    </ListItemIcon>
+                    <ListItemText primary={"Content 1"} />
+                  </ListItemButton>
+                </ListItem>
+              </List>
+              <Divider />
+              <List>
+                <ListItem key={"Content 2"} disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <ChatBubbleOutline />
+                    </ListItemIcon>
+                    <ListItemText primary={"Content 2"} />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem key={"Content 3"} disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <ChatBubbleOutline />
+                    </ListItemIcon>
+                    <ListItemText primary={"Content 3"} />
+                  </ListItemButton>
+                </ListItem>
+              </List>
+            </Box>
+          </Drawer>
         </Box>
 
-        {/* Right Side - Navigation, Balance, Notifications, Avatar */}
+        {/* Right Side - Notifications, Avatar */}
         {user && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-            <Button
-              startIcon={<MenuBook />}
-              sx={{ color: "primary.main", textTransform: "none" }}
-              onClick={() => router.push("/app/booking/history")}
-            >
-              Bookings
-            </Button>
-            <Button
-              startIcon={<ChatBubbleOutline />}
-              sx={{ color: "primary.main", textTransform: "none" }}
-              onClick={() => router.push("/chat")}
-            >
-              Chat
-            </Button>
-
-            {/* Balance */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                backgroundColor: "quinary.main",
-                borderRadius: "20px",
-                padding: "5px 10px",
-                gap: 1,
-              }}
-            >
-              <Typography color="secondary" fontWeight="bold">
-                123.00
-              </Typography>
-              <IconButton size="small" sx={{ color: "tertiary.main" }}>
-                <Add fontSize="small" />
-              </IconButton>
-            </Box>
-
             {/* Notifications */}
             <IconButton>
               <NotificationsNone sx={{ color: "primary.main" }} />
