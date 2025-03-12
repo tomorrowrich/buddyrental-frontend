@@ -92,7 +92,12 @@ export default function PersonalProfile() {
         </Typography>
 
         <Box display="flex" alignItems="center" gap={2} mt={12}>
-          <Avatar src={user.profilePicture} sx={{ width: 80, height: 80 }} />
+          <Avatar
+            src={user.profilePicture ? user.profilePicture : undefined}
+            sx={{ width: 80, height: 80 }}
+          >
+            {!user.profilePicture && `${user.firstName.at(0)}`}
+          </Avatar>
           <Box flexGrow={1}>
             <Typography variant="h5" fontWeight={500}>
               {user.firstName} {user.lastName}

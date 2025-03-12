@@ -8,34 +8,52 @@ import {
   Avatar,
   Button,
   Menu,
+  Drawer,
+  Divider,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
-import {
-  NotificationsNone,
-  ChatBubbleOutline,
-  MenuBook,
-  Add,
-  EventNote,
-} from "@mui/icons-material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { NotificationsNone, ChatBubbleOutline } from "@mui/icons-material";
 import Image from "next/image";
 import { useAuth } from "@/context/auth/auth";
 import { useState } from "react";
 import { useTheme } from "@mui/material";
 import { useRouter } from "next/navigation";
 
-export interface NavigationBarProps {
+export interface MobileNavigationBarProps {
   isAdmin?: boolean;
 }
 
-export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
+export function MobileNavigationBar({
+  isAdmin = false,
+}: MobileNavigationBarProps) {
   const { logout, user } = useAuth();
   const theme = useTheme();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [drawerState, setDrawerState] = useState<boolean>(false);
 
   const handleLogout = async () => {
     console.log("Logging out");
     await logout();
   };
+
+  const toggleDrawer =
+    (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+      if (
+        event.type === "keydown" &&
+        ((event as React.KeyboardEvent).key === "Tab" ||
+          (event as React.KeyboardEvent).key === "Shift")
+      ) {
+        return;
+      }
+
+      setDrawerState(open);
+    };
 
   return (
     <AppBar
@@ -55,60 +73,82 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
           alignItems: "center",
         }}
       >
-        {/* Left Side - Logo */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {/* Left Side - Menu */}
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 1, flexGrow: 1 }}
+        >
+          <IconButton
+            aria-label="menu"
+            sx={{ color: "primary.main" }}
+            onClick={toggleDrawer(true)}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Drawer
+            anchor={"top"}
+            open={drawerState}
+            onClose={toggleDrawer(false)}
+          >
+            {/*List Object Here */}
+            <Box
+              sx={{ width: "auto" }}
+              role="presentation"
+              onClick={toggleDrawer(false)}
+              onKeyDown={toggleDrawer(false)}
+            >
+              <List>
+                <ListItem key={"Content 1"} disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <ChatBubbleOutline />
+                    </ListItemIcon>
+                    <ListItemText primary={"Content 1"} />
+                  </ListItemButton>
+                </ListItem>
+                <Divider />
+                <ListItem key={"Content 2"} disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <ChatBubbleOutline />
+                    </ListItemIcon>
+                    <ListItemText primary={"Content 2"} />
+                  </ListItemButton>
+                </ListItem>
+                <Divider />
+                <ListItem key={"Content 3"} disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      <ChatBubbleOutline />
+                    </ListItemIcon>
+                    <ListItemText primary={"Content 3"} />
+                  </ListItemButton>
+                </ListItem>
+              </List>
+            </Box>
+          </Drawer>
+        </Box>
+
+        {/* Middle Box (Centered) */}
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Image
-            src="/logo-full.svg"
+            src="/logo.svg"
             alt="BuddyRental Logo"
-            width={200}
+            width={40}
             height={40}
           />
         </Box>
 
-        {/* Right Side - Navigation, Balance, Notifications, Avatar */}
+        {/* Right Side - Notifications, Avatar */}
         {user && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-            <Button
-              startIcon={<MenuBook />}
-              sx={{ color: "primary.main", textTransform: "none" }}
-              onClick={() => router.push("/app/booking/history")}
-            >
-              Bookings
-            </Button>
-            <Button
-              startIcon={<EventNote />}
-              sx={{ color: "primary.main", textTransform: "none" }}
-              onClick={() => router.push("/app/calendar")}
-            >
-              Calendar
-            </Button>
-            <Button
-              startIcon={<ChatBubbleOutline />}
-              sx={{ color: "primary.main", textTransform: "none" }}
-              onClick={() => router.push("/app/chat")}
-            >
-              Chat
-            </Button>
-
-            {/* Balance */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                backgroundColor: "quinary.main",
-                borderRadius: "20px",
-                padding: "5px 10px",
-                gap: 1,
-              }}
-            >
-              <Typography color="secondary" fontWeight="bold">
-                123.00
-              </Typography>
-              <IconButton size="small" sx={{ color: "tertiary.main" }}>
-                <Add fontSize="small" />
-              </IconButton>
-            </Box>
-
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 3,
+              flexGrow: 1,
+              justifyContent: "flex-end",
+            }}
+          >
             {/* Notifications */}
             <IconButton>
               <NotificationsNone sx={{ color: "primary.main" }} />
@@ -139,14 +179,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                       mb: 2,
                     }}
                   >
-                    <Avatar
-                      src={
-                        user.profilePicture ? user.profilePicture : undefined
-                      }
-                      alt="User"
-                    >
-                      {!user.profilePicture && `${user.firstName.at(0)}`}
-                    </Avatar>
+                    <Avatar src="https://i.pravatar.cc/40" alt="User" />
                     <Box>
                       <Typography variant="subtitle1">
                         {user.firstName + " " + user.lastName}
