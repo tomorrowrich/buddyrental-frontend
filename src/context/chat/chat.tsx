@@ -3,7 +3,7 @@ import { Socket } from "socket.io-client";
 import { useSocket } from "@/hooks/useSocket";
 import { useAuth } from "../auth/auth";
 import { baseURL } from "@/api";
-import axios from "axios";
+import { getChatList } from "@/api/chat/api";
 
 interface MetaProps {
   id: string;
@@ -64,6 +64,9 @@ type ChatAction =
 const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
   switch (action.type) {
     case "SET_CHATS":
+      if (!action.payload || action.payload.length === 0) {
+        return state;
+      }
       const chatsMap = action.payload.reduce(
         (acc, chat) => {
           acc[chat.id] = chat;
@@ -284,7 +287,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       console.log(baseURL);
-      const response = await axios.get(`${baseURL}/chat`);
+      const response = await getChatList();
       console.log(response);
 
       if (!response) throw new Error("Failed to fetch chats");
