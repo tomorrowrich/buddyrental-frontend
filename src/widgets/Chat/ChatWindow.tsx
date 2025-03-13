@@ -1,47 +1,98 @@
-import { useState } from "react";
-import { Avatar, Box, Paper, Typography, Button } from "@mui/material";
+import { useState, useEffect, useRef } from "react";
+import {
+  Avatar,
+  Box,
+  Paper,
+  Typography,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 import { BookingDialog } from "./BookingDialog";
 import { MessageInput } from "./MessageInput";
 import { useRouter } from "next/navigation";
+import { useChat } from "@/context/chat/chat";
 
-export function ChatWindow({
-  selectedChat,
-}: {
-  selectedChat: { name: string; avatar: string };
-}) {
-  const [messages, setMessages] = useState<
-    { id: number; text: string; sender: "user" | "buddy" }[]
-  >([]);
+interface ChatWindowProps {
+  selectedChat: {
+    id: string;
+    name: string;
+    avatar: string;
+    isTyping?: boolean;
+  };
+  chatId: string;
+}
+
+export function ChatWindow({ selectedChat, chatId }: ChatWindowProps) {
+  const { messages, sendMessage, isLoading, socket } = useChat();
   const [editDetails, setEditDetails] = useState<string | null>(null);
   const [editStartTime, setEditStartTime] = useState<string | null>(null);
   const [editEndTime, setEditEndTime] = useState<string | null>(null);
   const [editSelectedDate, setEditSelectedDate] = useState<string | null>(null);
-  const [openDialog, setOpenDialog] = useState(false); // State สำหรับเปิด/ปิด Dialog
+  const [openDialog, setOpenDialog] = useState(false);
   const router = useRouter();
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = (text: string) => {
+  // Get messages for this chat
+  const chatMessages = messages[chatId] || [];
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
+
+  // Handle typing notification
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleTyping = () => {
+    if (!socket) return;
+
+    // Send typing status only if not already set
+    if (!isTyping) {
+      setIsTyping(true);
+      socket.emit("operation", `typing ${chatId} true`);
+    }
+
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set timeout to stop typing notification after 2 seconds
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      socket.emit("operation", `typing ${chatId} false`);
+    }, 2000);
+  };
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleSendMessage = async (text: string) => {
     if (!text.trim()) return;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        text,
-        sender: "user",
-      },
-    ]);
+    await sendMessage(chatId, text);
   };
 
   const handleEditBooking = (message: string) => {
-    // แยกข้อมูลจากข้อความที่ได้รับ
+    // Parse booking details from message
     const parts = message.split("\n");
     const dateAndTime = parts[2].split(" Time: ")[1];
     const [startTime, endTime] = dateAndTime.split(" - ");
     setEditDetails(parts[1].split(": ")[1] || "");
-    setEditSelectedDate(parts[2].split(": ")[1] || "");
+    setEditSelectedDate(parts[2].split("Date: ")[1]?.split(" Time:")[0] || "");
     setEditStartTime(startTime || "10:00");
     setEditEndTime(endTime || "15:00");
 
-    // เปิด Dialog เมื่อคลิก "Edit Booking"
+    // Open edit dialog
     setOpenDialog(true);
   };
 
@@ -53,6 +104,8 @@ export function ChatWindow({
         borderRadius: 3,
         boxShadow: 3,
         position: "relative",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Box
@@ -63,7 +116,18 @@ export function ChatWindow({
       >
         <Box display="flex" alignItems="center" gap={2}>
           <Avatar src={selectedChat.avatar} sx={{ width: 50, height: 50 }} />
-          <Typography fontWeight="bold">{selectedChat.name}</Typography>
+          <Box>
+            <Typography fontWeight="bold">{selectedChat.name}</Typography>
+            {selectedChat.isTyping && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                fontStyle="italic"
+              >
+                typing...
+              </Typography>
+            )}
+          </Box>
         </Box>
 
         <Box display="flex" gap={2}>
@@ -80,7 +144,7 @@ export function ChatWindow({
           </Button>
           <Button
             variant="outlined"
-            onClick={() => setOpenDialog(true)} // เปิด Dialog เมื่อคลิกปุ่ม Edit Booking
+            onClick={() => setOpenDialog(true)}
             sx={{
               bgcolor: "#EB7BC0",
               color: "white",
@@ -93,32 +157,49 @@ export function ChatWindow({
       </Box>
 
       <Box
+        ref={messagesContainerRef}
         sx={{
-          height: "60vh",
+          flex: 1,
           overflowY: "auto",
           p: 2,
           bgcolor: "rgba(235, 123, 192, 0.1)",
           borderRadius: 2,
           display: "flex",
           flexDirection: "column",
-          alignItems: "flex-end",
+          mb: 2,
         }}
       >
-        {messages.length === 0 ? (
-          <Typography color="text.secondary" textAlign="center">
-            No messages yet.
+        {isLoading ? (
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            height="100%"
+          >
+            <CircularProgress color="secondary" />
+          </Box>
+        ) : chatMessages.length === 0 ? (
+          <Typography
+            color="text.secondary"
+            textAlign="center"
+            flex={1}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            No messages yet. Start a conversation!
           </Typography>
         ) : (
-          messages.map((msg) => (
+          chatMessages.map((msg) => (
             <Box
               key={msg.id}
               sx={{
-                p: 1,
+                p: 2,
                 maxWidth: "70%",
                 borderRadius: 2,
-                bgcolor: msg.sender === "user" ? "#EB7BC0" : "#EED5C2",
+                bgcolor: msg.senderId === "user" ? "#EB7BC0" : "#EED5C2",
                 color: "white",
-                alignSelf: "flex-end",
+                alignSelf: msg.senderId === "user" ? "flex-end" : "flex-start",
                 mb: 1,
               }}
             >
@@ -126,10 +207,10 @@ export function ChatWindow({
                 component="span"
                 sx={{ whiteSpace: "pre-wrap", color: "white" }}
               >
-                {msg.text}
+                {msg.content}
               </Typography>
 
-              {msg.text.includes("Buddy Reservation Request") && (
+              {msg.content.includes("Buddy Reservation Request") && (
                 <Box display="flex" justifyContent="center" mt={2}>
                   <Button
                     variant="contained"
@@ -145,7 +226,7 @@ export function ChatWindow({
                     variant="contained"
                     color="secondary"
                     sx={{ px: 4, ml: 1 }}
-                    onClick={() => handleEditBooking(msg.text)} // เมื่อคลิก "Edit Booking"
+                    onClick={() => handleEditBooking(msg.content)}
                   >
                     Edit Booking
                   </Button>
@@ -156,9 +237,9 @@ export function ChatWindow({
         )}
       </Box>
 
-      {/* แสดง Dialog เมื่อ openDialog เป็น true */}
+      {/* Booking Dialog */}
       <BookingDialog
-        onSendMessage={sendMessage}
+        onSendMessage={handleSendMessage}
         editDetails={editDetails}
         editStartTime={editStartTime}
         editEndTime={editEndTime}
@@ -167,10 +248,12 @@ export function ChatWindow({
         setEditStartTime={setEditStartTime}
         setEditEndTime={setEditEndTime}
         setEditSelectedDate={setEditSelectedDate}
-        open={openDialog} // ส่งค่า open ให้กับ Dialog
-        setOpen={setOpenDialog} // ฟังก์ชันสำหรับปิด Dialog
+        open={openDialog}
+        setOpen={setOpenDialog}
       />
-      <MessageInput onSendMessage={sendMessage} />
+
+      {/* Message Input */}
+      <MessageInput onSendMessage={handleSendMessage} onTyping={handleTyping} />
     </Paper>
   );
 }

@@ -1,26 +1,51 @@
+// src/app/chat/page.tsx
 "use client";
-import { useState } from "react";
+import { useEffect } from "react";
+import { Box } from "@mui/material";
 import { ChatSidebar } from "@/widgets/Chat/ChatSidebar";
 import { ChatWindow } from "@/widgets/Chat/ChatWindow";
-import { Box } from "@mui/material";
+import { ChatProvider, useChat } from "@/context/chat/chat";
+import { useAuth } from "@/context/auth/auth"; // Assuming you have an auth hook
 
 export default function ChatPage() {
-  const [selectedChat, setSelectedChat] = useState<{
-    name: string;
-    avatar: string;
-  }>({
-    name: "Alexa Rawles",
-    avatar: "https://picsum.photos/80",
-  });
+  const { isAuthenticated } = useAuth(); // Get user and token from your auth context
 
-  const handleSelectChat = (name: string, avatar: string) => {
-    setSelectedChat({ name, avatar });
-  };
+  if (!isAuthenticated) {
+    return <div>Please login to access chat</div>;
+  }
+
+  return (
+    <ChatProvider>
+      <ChatLayout />
+    </ChatProvider>
+  );
+}
+
+function ChatLayout() {
+  const { chats, activeChatId, setActiveChat } = useChat();
+
+  // Handle initial active chat
+  useEffect(() => {
+    // If we have chats but no active chat, set the first one active
+    const chatIds = Object.keys(chats);
+    if (chatIds.length > 0 && !activeChatId) {
+      setActiveChat(chatIds[0]);
+    }
+  }, [chats, activeChatId, setActiveChat]);
+
+  // Get selected chat information from activeChatId
+  const selectedChat = activeChatId ? chats[activeChatId] : null;
 
   return (
     <Box display="flex" height="100vh" bgcolor="#F7F7F7" p={3} gap={3}>
-      <ChatSidebar onSelectChat={handleSelectChat} />
-      <ChatWindow selectedChat={selectedChat} />
+      <ChatSidebar
+        onSelectChat={(chatId) => setActiveChat(chatId)}
+        chats={Object.values(chats)}
+        activeChatId={activeChatId}
+      />
+      {selectedChat && (
+        <ChatWindow selectedChat={selectedChat} chatId={activeChatId!} />
+      )}
     </Box>
   );
 }
