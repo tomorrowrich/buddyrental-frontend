@@ -14,4 +14,10 @@ export interface User {
   postalCode: string;
   profilePicture?: string;
   description?: string;
+  interests?: string[];
+}
+
+export interface Interest {
+  tagId: string;
+  name: string;
 }

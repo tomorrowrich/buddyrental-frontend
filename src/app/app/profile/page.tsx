@@ -19,22 +19,8 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 import { useAuth } from "@/context/auth/auth";
-
-type User = {
-  firstName: string;
-  lastName: string;
-  displayName: string;
-  dateOfBirth: string;
-  email: string;
-  gender: string;
-  phoneNumber: string;
-  citizenId: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  interests?: string[];
-  profilePicture?: string;
-};
+import { updateProfile } from "@/api/users/api";
+import { User } from "@/model/user";
 
 export default function PersonalProfile() {
   const { user: authUser } = useAuth();
@@ -60,7 +46,13 @@ export default function PersonalProfile() {
       ...prevUser,
       [name]: value,
     }));
-    // TODO: Update user data to the server
+  };
+
+  const handleSave = async () => {
+    console.log("Save", user);
+    const resp = await updateProfile(user);
+    console.log(resp);
+    setIsEditing(false);
   };
 
   return (
@@ -100,7 +92,12 @@ export default function PersonalProfile() {
         </Typography>
 
         <Box display="flex" alignItems="center" gap={2} mt={12}>
-          <Avatar src={user.profilePicture} sx={{ width: 80, height: 80 }} />
+          <Avatar
+            src={user.profilePicture ? user.profilePicture : undefined}
+            sx={{ width: 80, height: 80 }}
+          >
+            {!user.profilePicture && `${user.firstName.at(0)}`}
+          </Avatar>
           <Box flexGrow={1}>
             <Typography variant="h5" fontWeight={500}>
               {user.firstName} {user.lastName}
@@ -147,7 +144,7 @@ export default function PersonalProfile() {
                 textTransform: "none",
                 boxShadow: "none",
               }}
-              onClick={() => setIsEditing(false)}
+              onClick={handleSave}
             >
               Save Change
             </Button>

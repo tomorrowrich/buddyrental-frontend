@@ -16,13 +16,16 @@ import { redirect, usePathname } from "next/navigation";
 
 export interface AuthContextType {
   user: User | null;
-  login: ({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }) => Promise<{ success: boolean; error?: string } | undefined>;
+  login: (
+    {
+      email,
+      password,
+    }: {
+      email: string;
+      password: string;
+    },
+    options?: { redirectOnSuccess?: boolean },
+  ) => Promise<{ success: boolean; error?: string } | undefined>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -42,7 +45,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     getProfile().then(({ success, user }) => {
       setIsAuthenticated(success);
       setUser(user);
-      if (!success && pathname !== "/login" && pathname !== "/register") {
+      if (
+        !success &&
+        pathname !== "/login" &&
+        pathname !== "/register" &&
+        pathname !== "/login/forgetpassword" &&
+        pathname !== "/login/resetpassword"
+      ) {
         redirect("/login");
       }
 
@@ -52,16 +61,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
   }, [pathname]);
 
-  const login = async ({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }) => {
+  const login = async (
+    {
+      email,
+      password,
+    }: {
+      email: string;
+      password: string;
+    },
+    options: { redirectOnSuccess?: boolean } = { redirectOnSuccess: true },
+  ) => {
     const { success, error } = await requestLogin(email, password);
 
-    if (success) {
+    if (success && options.redirectOnSuccess) {
       redirect("/app");
     }
     return { success, error };
