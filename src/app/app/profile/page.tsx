@@ -398,6 +398,7 @@ export default function PersonalProfile() {
         maxWidth="sm"
       >
         <DialogTitle
+          textAlign="center"
           sx={{
             display: "flex",
             justifyContent: "space-between",
@@ -419,6 +420,7 @@ export default function PersonalProfile() {
           <Typography
             fontSize={14}
             fontWeight="bold"
+            textAlign="center"
             mb={1}
             sx={{ color: theme.palette.secondary.main }}
           >
