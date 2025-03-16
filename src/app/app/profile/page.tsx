@@ -32,7 +32,6 @@ export default function PersonalProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [registerBuddyStep, setRegisterBuddyStep] = useState(0); //State to control register buddy flow
   const [acceptedTerms, setAcceptedTerms] = useState(false); //buddy flow state for ToC acceptance, resets on close
-  const [open, setOpen] = useState(false); // State to control pop-up visibility
 
   const [user, setUser] = useState<User>({
     profilePicture: "https://picsum.photos/200",
@@ -216,9 +215,6 @@ export default function PersonalProfile() {
         fullWidth
         maxWidth="sm"
       >
-        <Typography fontSize={16} mb={1}>
-          Are you sure you want to become buddy?
-        </Typography>
         <DialogTitle
           sx={{
             display: "flex",
@@ -226,7 +222,12 @@ export default function PersonalProfile() {
             fontWeight: "bold",
           }}
         >
-          Terms and Conditions
+          <Box>
+            <Typography fontSize={12} mb={1}>
+              Are you sure you want to become buddy?
+            </Typography>
+            Terms and Conditions
+          </Box>
           <IconButton
             onClick={() => {
               setRegisterBuddyStep(0);
@@ -241,10 +242,13 @@ export default function PersonalProfile() {
           <Box
             display="flex"
             gap={2}
-            mt={3}
-            sx={{ color: theme.palette.quaternary.main }}
+            sx={{
+              borderWidth: 1,
+              borderRadius: 2,
+              color: theme.palette.quaternary.main,
+            }}
           >
-            <Typography sx={{ color: theme.palette.secondary.main }}>
+            <Typography sx={{ color: theme.palette.secondary.main, margin: 2 }}>
               A Terms and Conditions agreement acts as a legal contract between
               you (the company) and the user. It&apos;s where you maintain your
               rights to exclude users from your app in the event that they abuse
