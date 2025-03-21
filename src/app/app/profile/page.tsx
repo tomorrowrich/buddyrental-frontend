@@ -194,7 +194,7 @@ export default function PersonalProfile() {
         </Typography>
         <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
           {user.interests?.map((interest, index) => (
-            <Chip key={index} label={interest} variant="outlined" />
+            <Chip key={index} label={interest.name} variant="outlined" />
           ))}
         </Box>
       </Box>

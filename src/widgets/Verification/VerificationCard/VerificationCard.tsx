@@ -122,7 +122,7 @@ export const VerficationCard = (user: User & { onChange: () => void }) => {
 
                   <Stack direction="row" spacing={1}>
                     {interests?.map((interest) => (
-                      <Chip key={interest} label={interest} />
+                      <Chip key={interest.name} label={interest.name} />
                     ))}
                   </Stack>
                 </Stack>

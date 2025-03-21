@@ -489,13 +489,15 @@ function BuddyLoading() {
   );
 }
 
+type PageProps = {
+  params: Promise<{
+    buddyId: string;
+  }>;
+};
+
 // Main export component
-export default async function BuddyDetails({
-  params,
-}: {
-  params: { buddyId: string };
-}) {
-  const buddyId = params.buddyId;
+export default async function BuddyDetails({ params }: PageProps) {
+  const buddyId = (await params).buddyId;
 
   return (
     <Suspense fallback={<BuddyLoading />}>
