@@ -14,7 +14,7 @@ export interface User {
   postalCode: string;
   profilePicture?: string;
   description?: string;
-  interests?: string[];
+  interests?: Interest[];
 }
 
 export interface Interest {
