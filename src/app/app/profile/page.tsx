@@ -25,7 +25,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useAuth } from "@/context/auth/auth";
 import { updateProfile } from "@/api/users/api";
 import { User } from "@/model/user";
-import { makeBuddy } from "@/api/buddy/api";
+import { createBuddy } from "@/api/buddy/api";
 
 export default function PersonalProfile() {
   const { user: authUser } = useAuth();
@@ -405,7 +405,11 @@ export default function PersonalProfile() {
             }}
             onClick={() => {
               setRegisterBuddyStep(3);
-              makeBuddy({ minPrice, maxPrice, description });
+              createBuddy({
+                priceMin: minPrice,
+                priceMax: maxPrice,
+                userId: user.userId,
+              });
             }}
           >
             Finish !
