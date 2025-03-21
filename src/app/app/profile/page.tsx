@@ -25,6 +25,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useAuth } from "@/context/auth/auth";
 import { updateProfile } from "@/api/users/api";
 import { User } from "@/model/user";
+import { makeBuddy } from "@/api/buddy/api";
 
 export default function PersonalProfile() {
   const { user: authUser } = useAuth();
@@ -32,6 +33,9 @@ export default function PersonalProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [registerBuddyStep, setRegisterBuddyStep] = useState(0); //State to control register buddy flow
   const [acceptedTerms, setAcceptedTerms] = useState(false); //buddy flow state for ToC acceptance, resets on close
+  const [description, setDescription] = useState("");
+  const [minPrice, setMinPrice] = useState(500);
+  const [maxPrice, setMaxPrice] = useState(500);
 
   const [user, setUser] = useState<User>({
     profilePicture: "https://picsum.photos/200",
@@ -337,6 +341,10 @@ export default function PersonalProfile() {
             rows={4}
             placeholder="Tell customers about yourself! This information will show up on your profile."
             fullWidth
+            value={description}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setDescription(event.target.value);
+            }}
           />
 
           <Box display="flex" gap={2} mt={3}>
@@ -344,7 +352,15 @@ export default function PersonalProfile() {
               <Typography fontSize={14} fontWeight="bold">
                 Minimum Price / Day
               </Typography>
-              <Select fullWidth defaultValue={0}>
+              <Select
+                fullWidth
+                defaultValue={0}
+                value={minPrice}
+                onChange={() =>
+                  (event: React.ChangeEvent<HTMLInputElement>) => {
+                    setMinPrice(Number(event.target.value));
+                  }}
+              >
                 {[500, 1000, 1500, 2000].map((price) => (
                   <MenuItem key={price} value={price}>
                     {price}
@@ -357,7 +373,15 @@ export default function PersonalProfile() {
               <Typography fontSize={14} fontWeight="bold">
                 Maximum Price / Day
               </Typography>
-              <Select fullWidth defaultValue={0}>
+              <Select
+                fullWidth
+                defaultValue={0}
+                value={maxPrice}
+                onChange={() =>
+                  (event: React.ChangeEvent<HTMLInputElement>) => {
+                    setMaxPrice(Number(event.target.value));
+                  }}
+              >
                 {[1000, 1500, 2000, 2500].map((price) => (
                   <MenuItem key={price} value={price}>
                     {price}
@@ -381,7 +405,8 @@ export default function PersonalProfile() {
             }}
             onClick={() => {
               setRegisterBuddyStep(3);
-            }} //TODO: make this actually register the buddy
+              makeBuddy({ minPrice, maxPrice, description });
+            }}
           >
             Finish !
           </Button>
