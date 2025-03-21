@@ -1,31 +1,29 @@
-import {
-  Box,
-  Container,
-  Typography,
-  Avatar,
-  Chip,
-  Button,
-  Rating,
-  Card,
-  Divider,
-  Paper,
-  Stack,
-  IconButton,
-  Tooltip,
-  Grid2,
-  CircularProgress,
-} from "@mui/material";
-import ChatIcon from "@mui/icons-material/Chat";
+import { getBuddy } from "@/api/buddy/api";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import StarRoundedIcon from "@mui/icons-material/StarRounded";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import VerifiedIcon from "@mui/icons-material/Verified";
-import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
+import ChatIcon from "@mui/icons-material/Chat";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import HomeIcon from "@mui/icons-material/Home";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
+import VerifiedIcon from "@mui/icons-material/Verified";
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  Chip,
+  CircularProgress,
+  Container,
+  Divider,
+  Grid2,
+  Paper,
+  Rating,
+  Stack,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
-import { getBuddy } from "@/api/buddy/api";
 import { Suspense } from "react";
 
 // Error component
@@ -103,7 +101,10 @@ async function BuddyData({ buddyId }: { buddyId: string }) {
 
     if (!buddy) {
       return (
-        <BuddyError message="The buddy profile you're looking for doesn't exist or has been removed." />
+        <BuddyError
+          buddyId={buddyId}
+          message="The buddy profile you're looking for doesn't exist or has been removed."
+        />
       );
     }
 
@@ -127,19 +128,14 @@ async function BuddyData({ buddyId }: { buddyId: string }) {
           {/* Header Banner */}
           <Box
             sx={{
-              height: "160px",
-              background: "linear-gradient(135deg, #7C606B 0%, #C46BAE 100%)",
+              height: "80px",
               p: 3,
               display: "flex",
-              alignItems: "flex-end",
+              alignItems: "center",
+              borderBottom: "1px solid rgba(124, 96, 107, 0.15)",
             }}
           >
-            <Typography
-              variant="h4"
-              fontWeight={700}
-              color="white"
-              sx={{ textShadow: "0px 1px 2px rgba(0,0,0,0.2)" }}
-            >
+            <Typography variant="h4" fontWeight={700} color="primary">
               Buddy Profile
             </Typography>
           </Box>
@@ -275,19 +271,13 @@ async function BuddyData({ buddyId }: { buddyId: string }) {
 
                 <Divider sx={{ mb: 2 }} />
 
-                <Paper
-                  elevation={1}
+                <Chip
+                  label={`Price range: ${buddy.priceMin || 0} - ${buddy.priceMax || "Flexible"}`}
+                  color="secondary"
                   sx={{
-                    p: 2,
-                    borderRadius: 3,
                     mb: 2,
-                    background: "linear-gradient(to right, #f9f0f5, #fce8f3)",
                   }}
-                >
-                  <Typography color="secondary" fontWeight={600} variant="h6">
-                    ${buddy.priceMin || 0} - ${buddy.priceMax || "Flexible"}
-                  </Typography>
-                </Paper>
+                />
 
                 <Stack direction="row" spacing={1.5} justifyContent="center">
                   <Button
@@ -309,17 +299,12 @@ async function BuddyData({ buddyId }: { buddyId: string }) {
                     sx={{
                       borderRadius: 2,
                       px: 2,
+                      color: "white",
                       boxShadow: "0 3px 8px rgba(124, 96, 107, 0.2)",
                     }}
                   >
                     Book
                   </Button>
-                  <IconButton
-                    color="secondary"
-                    sx={{ border: "1px solid", borderColor: "secondary.light" }}
-                  >
-                    <BookmarkBorderIcon />
-                  </IconButton>
                 </Stack>
               </Card>
             </Grid2>
@@ -363,25 +348,6 @@ async function BuddyData({ buddyId }: { buddyId: string }) {
                       },
                     }}
                   />
-
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    sx={{
-                      mt: 1,
-                      borderRadius: 2,
-                      py: 1,
-                      boxShadow: "0 4px 10px rgba(124, 96, 107, 0.15)",
-                      transition: "all 0.2s",
-                      "&:hover": {
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 6px 14px rgba(124, 96, 107, 0.2)",
-                      },
-                    }}
-                  >
-                    Confirm Booking
-                  </Button>
                 </Card>
 
                 {/* Reviews Section */}
