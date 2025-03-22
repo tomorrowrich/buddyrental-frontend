@@ -15,17 +15,27 @@ import {
   DialogActions,
   Select,
   MenuItem,
+  useTheme,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 import { useAuth } from "@/context/auth/auth";
 import { updateProfile } from "@/api/users/api";
 import { User } from "@/model/user";
+import { createBuddy } from "@/api/buddy/api";
 
 export default function PersonalProfile() {
   const { user: authUser } = useAuth();
+  const theme = useTheme();
   const [isEditing, setIsEditing] = useState(false);
-  const [open, setOpen] = useState(false); // State to control pop-up visibility
+  const [registerBuddyStep, setRegisterBuddyStep] = useState(0); //State to control register buddy flow
+  const [acceptedTerms, setAcceptedTerms] = useState(false); //buddy flow state for ToC acceptance, resets on close
+  const [description, setDescription] = useState("");
+  const [minPrice, setMinPrice] = useState(500);
+  const [maxPrice, setMaxPrice] = useState(500);
 
   const [user, setUser] = useState<User>({
     profilePicture: "https://picsum.photos/200",
@@ -118,7 +128,7 @@ export default function PersonalProfile() {
                   fontSize="12px"
                   color="#EB7BC0"
                   style={{ cursor: "pointer" }}
-                  onClick={() => setOpen(true)}
+                  onClick={() => setRegisterBuddyStep(1)}
                 >
                   <span style={{ textDecoration: "underline" }}>
                     want to become a buddy ? click here !
@@ -199,10 +209,108 @@ export default function PersonalProfile() {
         </Box>
       </Box>
 
-      {/* Modal for pop-up card */}
+      {/* Step 1: Accept Terms and Conditions */}
       <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
+        open={registerBuddyStep === 1}
+        onClose={() => {
+          setRegisterBuddyStep(0);
+          setAcceptedTerms(false);
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontWeight: "bold",
+          }}
+        >
+          <Box>
+            <Typography fontSize={12} mb={1}>
+              Are you sure you want to become buddy?
+            </Typography>
+            Terms and Conditions
+          </Box>
+          <IconButton
+            onClick={() => {
+              setRegisterBuddyStep(0);
+              setAcceptedTerms(false);
+            }}
+            size="small"
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Box
+            display="flex"
+            gap={2}
+            sx={{
+              borderWidth: 1,
+              borderRadius: 2,
+              color: theme.palette.quaternary.main,
+            }}
+          >
+            <Typography sx={{ color: theme.palette.secondary.main, margin: 2 }}>
+              A Terms and Conditions agreement acts as a legal contract between
+              you (the company) and the user. It&apos;s where you maintain your
+              rights to exclude users from your app in the event that they abuse
+              your website/app, set out the rules for using your service and
+              note other important details and disclaimers. Having a Terms and
+              Conditions agreement is completely optional. No laws require you
+              to have one. Not even the super-strict and wide-reaching General
+              Data Protection Regulation (GDPR). Your Terms and Conditions
+              agreement will be uniquely yours. While some clauses are standard
+              and commonly seen in pretty much every Terms and Conditions
+              agreement, it&apos;s up to you to set the rules and guidelines
+              that the user must agree to. A Terms and Conditions agreement acts
+              as a legal contract between you (the company) and the user.
+              It&apos;s where you maintain your rights to
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={acceptedTerms}
+                  onChange={() => setAcceptedTerms(!acceptedTerms)}
+                  name="terms"
+                />
+              }
+              label="I agree to all the Terms and Privacy Policies"
+            />
+          </FormGroup>
+          <Button
+            disabled={!acceptedTerms}
+            variant="contained"
+            sx={{
+              bgcolor: "#EB7BC0",
+              color: "white",
+              px: 4,
+              fontWeight: "light",
+              borderRadius: "8px",
+              textTransform: "none",
+              "&:hover": { bgcolor: "#E67BA0" },
+            }}
+            onClick={() => {
+              setRegisterBuddyStep(2);
+            }}
+          >
+            Continue
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Step 2: Enter buddy information */}
+      <Dialog
+        open={registerBuddyStep === 2}
+        onClose={() => {
+          setRegisterBuddyStep(0);
+          setAcceptedTerms(false);
+        }}
         fullWidth
         maxWidth="sm"
       >
@@ -214,7 +322,13 @@ export default function PersonalProfile() {
           }}
         >
           Complete profile to Become Buddy
-          <IconButton onClick={() => setOpen(false)} size="small">
+          <IconButton
+            onClick={() => {
+              setRegisterBuddyStep(0);
+              setAcceptedTerms(false);
+            }}
+            size="small"
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -227,6 +341,10 @@ export default function PersonalProfile() {
             rows={4}
             placeholder="Tell customers about yourself! This information will show up on your profile."
             fullWidth
+            value={description}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setDescription(event.target.value);
+            }}
           />
 
           <Box display="flex" gap={2} mt={3}>
@@ -234,7 +352,15 @@ export default function PersonalProfile() {
               <Typography fontSize={14} fontWeight="bold">
                 Minimum Price / Day
               </Typography>
-              <Select fullWidth defaultValue={0}>
+              <Select
+                fullWidth
+                defaultValue={0}
+                value={minPrice}
+                onChange={() =>
+                  (event: React.ChangeEvent<HTMLInputElement>) => {
+                    setMinPrice(Number(event.target.value));
+                  }}
+              >
                 {[500, 1000, 1500, 2000].map((price) => (
                   <MenuItem key={price} value={price}>
                     {price}
@@ -247,7 +373,15 @@ export default function PersonalProfile() {
               <Typography fontSize={14} fontWeight="bold">
                 Maximum Price / Day
               </Typography>
-              <Select fullWidth defaultValue={0}>
+              <Select
+                fullWidth
+                defaultValue={0}
+                value={maxPrice}
+                onChange={() =>
+                  (event: React.ChangeEvent<HTMLInputElement>) => {
+                    setMaxPrice(Number(event.target.value));
+                  }}
+              >
                 {[1000, 1500, 2000, 2500].map((price) => (
                   <MenuItem key={price} value={price}>
                     {price}
@@ -269,9 +403,79 @@ export default function PersonalProfile() {
               textTransform: "none",
               "&:hover": { bgcolor: "#E67BA0" },
             }}
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setRegisterBuddyStep(3);
+              createBuddy({
+                priceMin: minPrice,
+                priceMax: maxPrice,
+                userId: user.userId,
+              });
+            }}
           >
             Finish !
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={registerBuddyStep === 3}
+        onClose={() => {
+          setRegisterBuddyStep(0);
+          setAcceptedTerms(false);
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle
+          textAlign="center"
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontWeight: "bold",
+          }}
+        >
+          Welcome to the Team, New Buddy!
+          <IconButton
+            onClick={() => {
+              setRegisterBuddyStep(0);
+              setAcceptedTerms(false);
+            }}
+            size="small"
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Typography
+            fontSize={14}
+            fontWeight="bold"
+            textAlign="center"
+            mb={1}
+            sx={{ color: theme.palette.secondary.main }}
+          >
+            A big welcome to our newest buddy! We&apos;re so glad you&apos;re
+            here and can&apos;t wait to see the positive energy you&apos;ll
+            bring!
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+          <Button
+            variant="contained"
+            sx={{
+              bgcolor: "#EB7BC0",
+              color: "white",
+              px: 4,
+              fontWeight: "light",
+              borderRadius: "8px",
+              textTransform: "none",
+              "&:hover": { bgcolor: "#E67BA0" },
+            }}
+            onClick={() => {
+              setRegisterBuddyStep(0);
+              setAcceptedTerms(false);
+            }}
+          >
+            Yeah !
           </Button>
         </DialogActions>
       </Dialog>
