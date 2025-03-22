@@ -63,35 +63,22 @@ export default function CompleteProfile() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
-    const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    const newFormData = {
-      ...existingData,
-      ...formData,
-      [name]: newValue,
-    };
-    setFormData((prev) => ({
-      ...prev,
-      [name]: newValue,
-    }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+
+    setFormData((prev) => {
+      const newFormData = { ...prev, [name]: newValue };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+      return newFormData;
+    });
   };
 
   const handleDateChange = (newValue: Dayjs | null) => {
-    const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    const newFormData = {
-      ...existingData,
-      ...formData,
-      dateOfBirth: newValue,
-    };
-
     if (!newValue) return;
 
-    setFormData((prev) => ({
-      ...prev,
-      dateOfBirth: newValue,
-    }));
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+    setFormData((prev) => {
+      const newFormData = { ...prev, dateOfBirth: newValue };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+      return newFormData;
+    });
   };
 
   const handleSubmit = async () => {
@@ -100,15 +87,18 @@ export default function CompleteProfile() {
     const { success, error } = await register(completeData);
     if (success) {
       localStorage.removeItem(STORAGE_KEY);
-      
-      login(
+
+      const loginResponse = await login(
         {
           email: completeData.email,
           password: completeData.password,
         },
         { redirectOnSuccess: false },
-      ).then(redirect("/app/onboard"));
-      
+      );
+
+      if (loginResponse?.success) {
+        redirect("/app/onboard");
+      }
     } else {
       console.error(error);
     }
