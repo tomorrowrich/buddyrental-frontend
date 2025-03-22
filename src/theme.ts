@@ -63,6 +63,14 @@ declare module "@mui/material/styles" {
   }
 }
 
+declare module "@mui/material/Chip" {
+  interface ChipPropsColorOverrides {
+    tertiary: true;
+    quaternary: true;
+    quinary: true;
+  }
+}
+
 declare module "@mui/material/TextField" {
   interface TextFieldPropsColorOverrides {
     tertiary: true;
