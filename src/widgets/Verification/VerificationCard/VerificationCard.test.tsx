@@ -22,7 +22,11 @@ const mockProps: User = {
   postalCode: "12345",
   profilePicture: "https://picsum.photos/200",
   description: "",
-  interests: ["Music", "Movies", "Art"],
+  interests: [
+    { name: "Music", tagId: "music" },
+    { name: "Movies", tagId: "movies" },
+    { name: "Art", tagId: "art" },
+  ],
 };
 
 const verifyUserMock = vi.hoisted(() =>
@@ -65,7 +69,7 @@ describe("BookingCard", () => {
     expect(screen.getByText(mockProps.address)).toBeInTheDocument();
 
     for (const interest of mockProps.interests ?? []) {
-      expect(screen.getByText(interest)).toBeInTheDocument();
+      expect(screen.getByText(interest.name)).toBeInTheDocument();
     }
   });
 
