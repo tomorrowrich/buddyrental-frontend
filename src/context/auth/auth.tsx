@@ -49,10 +49,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         !success &&
         pathname !== "/login" &&
         pathname !== "/register" &&
+        pathname !== "/register/complete" &&
         pathname !== "/login/forgetpassword" &&
         pathname !== "/login/resetpassword"
       ) {
         redirect("/login");
+      }
+
+      if (success && !user?.verified && pathname !== "/app/verify") {
+        redirect("/app/verify");
       }
 
       if (success && (pathname === "/login" || pathname === "/register")) {
