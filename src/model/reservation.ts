@@ -1,4 +1,4 @@
-export interface Reservation {
+export interface Booking {
   reservationId: string;
   price: number;
   reservationStart: string;
@@ -8,8 +8,6 @@ export interface Reservation {
   buddyId: string;
   scheduleId: string;
   createdAt: string;
-  updatedAt: string;
-  deletedAt: null;
   buddy: {
     buddyId: string;
     balanceWithdrawable: number;
@@ -21,8 +19,6 @@ export interface Reservation {
     tagsCount: number;
     userId: string;
     createdAt: string;
-    updatedAt: string;
-    deletedAt: null;
     user: {
       userId: string;
       firstName: string;
@@ -33,16 +29,30 @@ export interface Reservation {
       citizenId: string;
       address: string;
     };
-    tags: { id: string; name: string }[];
+    tags: { tagId: string; name: string }[];
   };
 }
 
-export interface BookingData {
-  id: string;
-  name: string;
-  email?: string;
-  avatar: string | null;
-  status: string;
-  date: string;
+export interface Reservation {
+  reservationId: string;
+  detail: string;
   price: number;
+  reservationStart: string;
+  reservationEnd: string;
+  status: string;
+  userId: string;
+  buddyId: string;
+  scheduleId: string;
+  createdAt: string;
+  user: {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    profilePicture: null | string;
+    email: string;
+    phoneNumber: string;
+    citizenId: string;
+    address: string;
+    interests: { tagId: string; name: string }[];
+  };
 }

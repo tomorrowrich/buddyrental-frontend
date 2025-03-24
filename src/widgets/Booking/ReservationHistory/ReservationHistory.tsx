@@ -1,28 +1,28 @@
 import { Box, Divider } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { ReviewCard } from "../ReviewCard/ReviewCard";
-import { Booking } from "@/model/reservation";
+import { Reservation } from "@/model/reservation";
+import { ReservationCard } from "../ReservationCard/ReservationCard";
 
-export const BookingHistory = ({ data }: { data: Booking[] }) => {
+export const ReservationHistory = ({ data }: { data: Reservation[] }) => {
   const theme = useTheme();
   return (
     <Box mt={2} flex={1}>
       {data.map((booking, index) => (
         <Box key={booking.reservationId}>
-          <ReviewCard
+          <ReservationCard
             reservationId={booking.reservationId}
-            name={
-              booking.buddy.user.firstName + " " + booking.buddy.user.lastName
-            }
-            email={booking.buddy.user.email}
-            avatar={booking.buddy.user.profilePicture || undefined}
-            citizenId={booking.buddy.user.citizenId}
-            phoneNumber={booking.buddy.user.phoneNumber}
-            address={booking.buddy.user.address}
-            rating={booking.buddy.ratingAvg}
-            tags={booking.buddy.tags.map((i) => i.name)}
+            name={booking.user.firstName + " " + booking.user.lastName}
+            email={booking.user.email}
+            avatar={booking.user.profilePicture || undefined}
+            citizenId={booking.user.citizenId}
+            phoneNumber={booking.user.phoneNumber}
+            address={booking.user.address}
             reservationCreatedAt={new Date(booking.createdAt).toLocaleString()}
             reservationEnd={new Date(booking.reservationEnd).toLocaleString()}
+            reservationStart={new Date(
+              booking.reservationStart,
+            ).toLocaleString()}
+            detail={booking.detail}
           />
           {index < data.length - 1 && (
             <Divider

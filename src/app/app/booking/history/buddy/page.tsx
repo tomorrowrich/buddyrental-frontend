@@ -1,20 +1,20 @@
 "use client";
-import { getUserReservationHistory } from "@/api/reservation/api";
-import { Booking } from "@/model/reservation";
-import { BookingHistory } from "@/widgets/Booking/BookingHistory/BookingHistory";
+import { getBuddyReservationHistory } from "@/api/reservation/api";
+import { Reservation } from "@/model/reservation";
+import { ReservationHistory } from "@/widgets/Booking/ReservationHistory/ReservationHistory";
 import { Box, Container, Typography, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 
 export default function Page() {
   const theme = useTheme();
-  const [bookingData, setBookingData] = useState<Booking[]>([]);
+  const [bookingData, setBookingData] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchReservationHistory = async () => {
       try {
         setIsLoading(true);
-        const response = await getUserReservationHistory();
+        const response = await getBuddyReservationHistory();
         setBookingData(response.data);
       } catch (error) {
         console.error("Error fetching reservation history:", error);
@@ -67,7 +67,7 @@ export default function Page() {
               No booking history found.
             </Typography>
           ) : (
-            <BookingHistory data={bookingData} />
+            <ReservationHistory data={bookingData} />
           )}
         </Box>
       </Box>

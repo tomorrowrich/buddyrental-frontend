@@ -38,6 +38,9 @@ export async function getBuddyReservationHistory(
       };
     })
     .catch((err) => {
+      if (err.status === 403) {
+        redirect("/app/booking/history");
+      }
       return {
         success: false,
         data: null,
@@ -99,6 +102,39 @@ export async function createReservation(reservationData: CreateReservationDto) {
 
   return await axios
     .post(`${baseURL}/reservation`, reservationData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => {
+      return {
+        success: true,
+        data: res.data.data,
+        error: null,
+      };
+    })
+    .catch((err) => {
+      return {
+        success: false,
+        data: null,
+        error: err.response?.data?.message || "Unknown error",
+      };
+    });
+}
+
+/**
+ * Get reservation status
+ */
+export async function getReservationStatus(reservationId: string) {
+  const cookie = await cookies();
+  const token = cookie.get("token")?.value;
+
+  if (!token) {
+    return redirect("/login");
+  }
+
+  return await axios
+    .get(`${baseURL}/reservation/status/${reservationId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -4,24 +4,32 @@ import { BookingHistory } from "./BookingHistory";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "@/theme";
 import "@testing-library/jest-dom";
-import { Reservation } from "@/model/reservation";
+import { Booking } from "@/model/reservation";
 
 describe("BookingHistory", () => {
-  const mockData: Reservation[] = [
+  const mockData: Booking[] = [
     {
       reservationId: "550e8400-e29b-41d4-a716-446655440000",
       price: 100,
       reservationStart: "2023-01-01T10:00:00Z",
       reservationEnd: "2023-01-01T12:00:00Z",
+      status: "ACCEPTED",
+      userId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      buddyId: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      scheduleId: "schedule-001",
       createdAt: "2023-01-01T09:00:00Z",
-      updatedAt: "2023-01-01T09:00:00Z",
-      status: "confirmed",
-      user: {
-        userId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-        email: "user@example.com",
-      },
       buddy: {
         buddyId: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+        balanceWithdrawable: 75,
+        description:
+          "Professional gaming buddy with experience in various games",
+        ratingAvg: 4.5,
+        totalReviews: 12,
+        priceMin: 50,
+        priceMax: 150,
+        tagsCount: 1,
+        userId: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        createdAt: "2022-12-15T08:00:00Z",
         user: {
           userId: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
           firstName: "John",
@@ -32,26 +40,32 @@ describe("BookingHistory", () => {
           phoneNumber: "0812345678",
           address: "123 Main St",
         },
-        ratingAvg: 4.5,
-        tags: [{ id: 1, name: "Gaming" }],
+        tags: [{ tagId: "1", name: "Gaming" }],
       },
     },
     {
-      reservationId: 2,
+      reservationId: "550e8400-e29b-41d4-a716-446655440001",
       price: 150,
       reservationStart: "2023-01-02T10:00:00Z",
       reservationEnd: "2023-01-02T12:00:00Z",
+      status: "REJECTED",
+      userId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
+      buddyId: "f47ac10b-58cc-4372-a567-0e02b2c3d480",
+      scheduleId: "schedule-002",
       createdAt: "2023-01-02T09:00:00Z",
-      updatedAt: "2023-01-02T09:00:00Z",
-      status: "confirmed",
-      user: {
-        userId: 1,
-        email: "user@example.com",
-      },
       buddy: {
-        buddyId: 2,
+        buddyId: "f47ac10b-58cc-4372-a567-0e02b2c3d480",
+        balanceWithdrawable: 100,
+        description: "Experienced reading companion",
+        ratingAvg: 4.8,
+        totalReviews: 15,
+        priceMin: 75,
+        priceMax: 200,
+        tagsCount: 1,
+        userId: "7c9e6679-7425-40de-944b-e07fc1f90ae8",
+        createdAt: "2022-12-10T08:00:00Z",
         user: {
-          userId: 3,
+          userId: "7c9e6679-7425-40de-944b-e07fc1f90ae8",
           firstName: "Jane",
           lastName: "Smith",
           email: "jane@example.com",
@@ -60,8 +74,7 @@ describe("BookingHistory", () => {
           phoneNumber: "0823456789",
           address: "456 Oak St",
         },
-        ratingAvg: 4.8,
-        tags: [{ id: 2, name: "Reading" }],
+        tags: [{ tagId: "2", name: "Reading" }],
       },
     },
   ];

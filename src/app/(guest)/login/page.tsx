@@ -50,7 +50,6 @@ export default function Login() {
       email: values.email,
       password: values.password,
     });
-    console.log(resp);
     if (resp && resp.error) {
       setErrors({
         email: resp.error || "Invalid email or password",

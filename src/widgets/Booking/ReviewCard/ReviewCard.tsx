@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Stack,
   Avatar,
@@ -19,6 +19,7 @@ import {
   TextField,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { cancelReservation, getReservationStatus } from "@/api/reservation/api";
 
 // Review Dialog Component
 const ReviewDialog = ({
@@ -86,6 +87,7 @@ const ReviewDialog = ({
 
 // Booking Card Component
 export const ReviewCard = ({
+  reservationId,
   name,
   email,
   avatar,
@@ -95,8 +97,9 @@ export const ReviewCard = ({
   reservationCreatedAt,
   reservationEnd,
   rating,
-  interests,
+  tags,
 }: {
+  reservationId: string;
   name: string;
   email: string;
   avatar?: string;
@@ -106,11 +109,58 @@ export const ReviewCard = ({
   reservationCreatedAt: string;
   reservationEnd: string;
   rating: number;
-  interests: string[];
+  tags: string[];
 }) => {
   const [open, setOpen] = useState(false);
   const [openReview, setOpenReview] = useState(false);
   const theme = useTheme();
+
+  const [status, setStatus] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchReservationStatus = useCallback(async () => {
+    try {
+      const response = await getReservationStatus(reservationId);
+      if (response.success) {
+        setStatus(response.data.status);
+      }
+      if (response.error) {
+        console.error(response.error);
+      }
+    } catch (error) {
+      console.error("Failed to fetch reservation status:", error);
+    }
+  }, [reservationId]);
+
+  useEffect(() => {
+    if (open) {
+      fetchReservationStatus();
+    }
+  }, [open, fetchReservationStatus]);
+
+  const handleCancelReservation = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      await cancelReservation(reservationId);
+      // Update status locally instead of closing the dialog
+      setStatus("CANCELLED");
+    } catch (error) {
+      console.error("Error canceling booking:", error);
+      // Could add error notification here
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOpenReview = () => {
+    setOpenReview(true);
+  };
+
+  const handleCloseReview = () => {
+    setOpenReview(false);
+  };
 
   return (
     <>
@@ -195,7 +245,7 @@ export const ReviewCard = ({
                     {email}
                   </Typography>
                   <Stack direction="row" spacing={1} flexWrap="wrap">
-                    {interests.map((interest, index) => (
+                    {tags.map((interest, index) => (
                       <Chip key={index} label={interest} color="default" />
                     ))}
                   </Stack>
@@ -235,14 +285,37 @@ export const ReviewCard = ({
             </Box>
 
             <Stack direction="row" justifyContent="space-between" mt={3} mb={2}>
-              <Button
-                variant="contained"
-                color="secondary"
-                sx={{ borderRadius: 3 }}
-                onClick={() => setOpenReview(true)}
-              >
-                Review
-              </Button>
+              {status === "COMPLETED" && (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  sx={{ borderRadius: 3 }}
+                  onClick={handleOpenReview}
+                >
+                  Review
+                </Button>
+              )}
+              {status === "CANCELLED" && (
+                <Typography
+                  variant="caption"
+                  color="primary"
+                  align="center"
+                  fontWeight={400}
+                >
+                  Booking Cancelled
+                </Typography>
+              )}
+              {status !== "COMPLETED" && status !== "CANCELLED" && (
+                <Button
+                  variant="outlined"
+                  color="tertiary"
+                  sx={{ borderRadius: 3 }}
+                  onClick={handleCancelReservation}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Cancelling..." : "Cancel Booking"}
+                </Button>
+              )}
               <Box textAlign="right">
                 <Typography variant="body2" color="tertiary" fontWeight={400}>
                   Booking Date: {reservationCreatedAt}
@@ -257,7 +330,7 @@ export const ReviewCard = ({
       </Dialog>
 
       {/* Review Popup */}
-      <ReviewDialog open={openReview} onClose={() => setOpenReview(false)} />
+      <ReviewDialog open={openReview} onClose={handleCloseReview} />
     </>
   );
 };
