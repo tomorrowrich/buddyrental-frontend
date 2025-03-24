@@ -49,6 +49,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         !success &&
         pathname !== "/login" &&
         pathname !== "/register" &&
+        pathname !== "/register/complete" &&
         pathname !== "/login/forgetpassword" &&
         pathname !== "/login/resetpassword"
       ) {
