@@ -15,6 +15,7 @@ import { useState, FormEvent } from "react";
 import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
 import { useAuth } from "@/context/auth/auth";
 import { useRouter } from "next/navigation";
+import { requestPasswordReset } from "@/api/auth/api";
 
 export default function Login() {
   const auth = useAuth();
@@ -43,12 +44,22 @@ export default function Login() {
     e.preventDefault();
 
     if (!isValidEmail(values.email)) {
-      // EDITED: Validate email
       setErrors({ email: "Invalid email format" });
       return;
     }
 
-    router.push("/login/resetpassword"); // EDITED: Redirect if valid
+    try {
+      const response = await requestPasswordReset(values.email);
+
+      if (response.success && response.token) {
+        // EDIT: Ensure both `success` and `token` exist
+        router.push(`/login/resetpassword?code=${response.token}`);
+      } else {
+        alert(response.error || "Failed to send reset password email"); // EDIT: Show alert if no token
+      }
+    } catch (error) {
+      alert("An error occurred while processing your request.");
+    }
   };
 
   return (
