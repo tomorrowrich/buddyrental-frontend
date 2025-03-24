@@ -98,3 +98,33 @@ export async function logout() {
   });
   return { success: true };
 }
+
+export async function requestPasswordReset(email: string) {
+  try {
+    const response = await axios.post(
+      `${baseURL}/users/reset-password`,
+      { email },
+      {
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+
+    console.log("API response:", response);
+
+    if (response.status === 200 && response.data.token) {
+      return response.data.token;
+    } else {
+      throw new Error("No token returned or unexpected status");
+    }
+  } catch (err: unknown) {
+    console.error("Request error:", err);
+
+    if (axios.isAxiosError(err)) {
+      return (
+        err.response?.data?.message || "An error occurred during the request"
+      );
+    }
+
+    return;
+  }
+}
