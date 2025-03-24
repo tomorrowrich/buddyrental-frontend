@@ -29,6 +29,7 @@ const ReviewDialog = ({
   onClose: () => void;
 }) => {
   const [reviewText, setReviewText] = useState("");
+  const [rating, setRating] = useState<number | null>(null);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -47,8 +48,14 @@ const ReviewDialog = ({
 
       <DialogContent>
         <Container>
-          <Stack spacing={1}>
-            <Rating name="half-rating" defaultValue={0} precision={0.5} />
+          <Stack spacing={1} alignItems="center" my={4}>
+            <Rating
+              name="half-rating"
+              size="large"
+              precision={0.5}
+              value={rating}
+              onChange={(_, newValue) => setRating(newValue)}
+            />
           </Stack>
           <TextField
             label="Give your comment review !"
@@ -66,8 +73,9 @@ const ReviewDialog = ({
         <Button
           variant="contained"
           color="secondary"
-          sx={{ borderRadius: 3 }}
+          sx={{ borderRadius: 3, mr: 4, m: 2 }}
           onClick={onClose}
+          disabled={!rating}
         >
           Submit Review
         </Button>
@@ -81,10 +89,24 @@ export const ReviewCard = ({
   name,
   email,
   avatar,
+  citizenId,
+  phoneNumber,
+  address,
+  reservationCreatedAt,
+  reservationEnd,
+  rating,
+  interests,
 }: {
   name: string;
   email: string;
-  avatar: string;
+  avatar?: string;
+  citizenId: string;
+  phoneNumber: string;
+  address: string;
+  reservationCreatedAt: string;
+  reservationEnd: string;
+  rating: number;
+  interests: string[];
 }) => {
   const [open, setOpen] = useState(false);
   const [openReview, setOpenReview] = useState(false);
@@ -164,7 +186,7 @@ export const ReviewCard = ({
                     <Rating
                       name="half-rating"
                       sx={{ color: theme.palette.tertiary.main }}
-                      defaultValue={2.5}
+                      defaultValue={rating}
                       precision={0.5}
                       readOnly
                     />
@@ -172,11 +194,10 @@ export const ReviewCard = ({
                   <Typography variant="body2" color="secondary">
                     {email}
                   </Typography>
-                  <Stack direction="row" spacing={1}>
-                    <Chip label="Chip" color="default" />
-                    <Chip label="Chip" color="default" />
-                    <Chip label="Chip" color="default" />
-                    <Chip label="Chip" color="default" />
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {interests.map((interest, index) => (
+                      <Chip key={index} label={interest} color="default" />
+                    ))}
                   </Stack>
                 </Stack>
               </Grid2>
@@ -190,7 +211,7 @@ export const ReviewCard = ({
                   </Typography>
                 </Grid2>
                 <Grid2 size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2">X-XXXX-XXXXX-XX-X</Typography>
+                  <Typography variant="body2">{citizenId}</Typography>
                 </Grid2>
 
                 <Grid2 size={{ xs: 12, md: 6 }}>
@@ -199,7 +220,7 @@ export const ReviewCard = ({
                   </Typography>
                 </Grid2>
                 <Grid2 size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2">XXX-XXX-XXXX</Typography>
+                  <Typography variant="body2">{phoneNumber}</Typography>
                 </Grid2>
 
                 <Grid2 size={{ xs: 12, md: 6 }}>
@@ -208,9 +229,7 @@ export const ReviewCard = ({
                   </Typography>
                 </Grid2>
                 <Grid2 size={{ xs: 12, md: 6 }}>
-                  <Typography variant="body2">
-                    Address Address Address Address Address Address Address
-                  </Typography>
+                  <Typography variant="body2">{address}</Typography>
                 </Grid2>
               </Grid2>
             </Box>
@@ -226,10 +245,10 @@ export const ReviewCard = ({
               </Button>
               <Box textAlign="right">
                 <Typography variant="body2" color="tertiary" fontWeight={400}>
-                  Booking Date: 11/11/2024
+                  Booking Date: {reservationCreatedAt}
                 </Typography>
                 <Typography variant="body2" color="tertiary" fontWeight={400}>
-                  Hangout Date: 15/11/2024
+                  Hangout Date: {reservationEnd}
                 </Typography>
               </Box>
             </Stack>
