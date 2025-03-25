@@ -6,8 +6,14 @@ import { cookies } from "next/headers";
 import { User } from "@/model/user";
 
 export async function register(data: SignUpFormData) {
+  const payload = {
+    ...data,
+    citizenId: data.idCard,
+    postalCode: data.zipcode,
+  };
+  console.log(payload);
   return axios
-    .post(`${baseURL}/auth/register`, data, {
+    .post(`${baseURL}/auth/register`, payload, {
       headers: { "Content-Type": "application/json" },
     })
     .then((res) => {
