@@ -58,7 +58,7 @@ export default function OnboardingPage() {
 
     if (success) {
       localStorage.removeItem(STORAGE_KEY);
-      router.push("/app/verify");
+      router.push("/app");
     } else {
       console.error(error);
     }
