@@ -56,8 +56,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         redirect("/login");
       }
 
-      if (success && (pathname === "/login" || pathname === "/register")) {
-        redirect("/app");
+      if (user) {
+        if (
+          user.verified &&
+          (pathname === "/app/onboard" ||
+            pathname === "/login" ||
+            pathname === "/register" ||
+            pathname === "/auth/verify")
+        ) {
+          redirect("/app");
+        }
       }
     });
   }, [pathname]);

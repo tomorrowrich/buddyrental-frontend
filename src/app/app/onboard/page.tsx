@@ -49,11 +49,6 @@ export default function OnboardingPage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedInterests]));
   }, [interests]);
 
-  // FIXME: This page has not implemented authentication yet.
-  if (!user) {
-    return router.push("/login");
-  }
-
   const handleSubmit = async () => {
     setSubmitting(true);
 
