@@ -11,7 +11,6 @@ export async function register(data: SignUpFormData) {
     citizenId: data.idCard,
     postalCode: data.zipcode,
   };
-  console.log(payload);
   return axios
     .post(`${baseURL}/auth/register`, payload, {
       headers: { "Content-Type": "application/json" },
