@@ -10,13 +10,13 @@ import {
   Menu,
 } from "@mui/material";
 import {
-  NotificationsNone,
   ChatBubbleOutline,
   MenuBook,
   Add,
   EventNote,
 } from "@mui/icons-material";
 import Image from "next/image";
+import NotificationTray from "../NotificationTray/NotificationTray";
 import { useAuth } from "@/context/auth/auth";
 import { useState } from "react";
 import { useTheme } from "@mui/material";
@@ -110,9 +110,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
             </Box>
 
             {/* Notifications */}
-            <IconButton>
-              <NotificationsNone sx={{ color: "primary.main" }} />
-            </IconButton>
+            <NotificationTray userId={user.userId} />
 
             {/* User Avatar with Dialog */}
             <Box>
