@@ -356,7 +356,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                       setReportModalOpen(true);
                     }}
                   >
-                    Report Issues
+                    Report
                   </Button>
                   <Button
                     fullWidth

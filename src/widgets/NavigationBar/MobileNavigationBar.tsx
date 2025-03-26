@@ -356,7 +356,7 @@ export function MobileNavigationBar({
                       setReportModalOpen(true);
                     }}
                   >
-                    Report Issues
+                    Report
                   </Button>
                   <Button
                     fullWidth
