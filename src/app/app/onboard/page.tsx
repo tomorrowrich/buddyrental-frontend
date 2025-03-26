@@ -58,11 +58,6 @@ export default function OnboardingPage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedInterests]));
   }, [selectedInterests]);
 
-  // FIXME: This page has not implemented authentication yet.
-  // if (!user) {
-  //   return router.push("/login");
-  // }
-
   const handleSubmit = async () => {
     setSubmitting(true);
 
@@ -75,7 +70,7 @@ export default function OnboardingPage() {
     const success = true;
     if (success) {
       localStorage.removeItem(STORAGE_KEY);
-      router.push("/register/verify");
+      router.push("/app");
     } else {
       console.error("Error updating interests");
     }
