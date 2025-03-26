@@ -1,3 +1,29 @@
+# [2.2.0](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.1.1...v2.2.0) (2025-03-14)
+
+### Bug Fixes
+
+- **navbar:** fix navbar switching ([4092465](https://github.com/tomorrowrich/buddyrental-frontend/commit/4092465f6582372652a5750a1daedc95c0a2aecb))
+- **onboard:** verified user can no longer access the page ([edf170f](https://github.com/tomorrowrich/buddyrental-frontend/commit/edf170f3cfae2e4941f1ee479e60a3e86d3ac3a0))
+- **profile:** make avatar no longer expect base64 ([5fd0bf3](https://github.com/tomorrowrich/buddyrental-frontend/commit/5fd0bf3557adf244eedef31357d92b081579e863))
+
+### Features
+
+- **chat:** implement chat flow ([a36c9ce](https://github.com/tomorrowrich/buddyrental-frontend/commit/a36c9cef2093f5acce1453051b5378cb9b1fc3d6))
+- **forget_Password:** pc and mobile ([488faad](https://github.com/tomorrowrich/buddyrental-frontend/commit/488faad1ee0a342c98eba943fd6a67194c85718a))
+- **nav-bar:** add calendar to navbar ([9a0b8f8](https://github.com/tomorrowrich/buddyrental-frontend/commit/9a0b8f893601ea830d3d5aa9d5a259a44f70e1a5))
+- **navbar:** add center logo ([199e8e2](https://github.com/tomorrowrich/buddyrental-frontend/commit/199e8e297fc6008b741d9f18083f853b19c8827e))
+- **navbar:** add drawer to mobile-navbar ([664231e](https://github.com/tomorrowrich/buddyrental-frontend/commit/664231e45fae6c5360554d14768edb2d621c8427))
+- **navbar:** copy NavigationBar ([721041d](https://github.com/tomorrowrich/buddyrental-frontend/commit/721041ddd4030c40ed66d2f1c8e77bd40e2f437b))
+- **navbar:** implement navbar breakpoint logic ([0e934f1](https://github.com/tomorrowrich/buddyrental-frontend/commit/0e934f1eb4c68a41e8976ba60084ee8b92459f36))
+- **onboard:** api integration ([34a336c](https://github.com/tomorrowrich/buddyrental-frontend/commit/34a336c94205615ac1d562edaa55679ea5dd5076))
+- **onboard:** onboarding page ([5d2b14f](https://github.com/tomorrowrich/buddyrental-frontend/commit/5d2b14fb8c9a101bf399add19a384e01788b9aa2))
+- **onboard:** register now has onboarding ([8e32e08](https://github.com/tomorrowrich/buddyrental-frontend/commit/8e32e08a950f792c5577a39d94035d087341cadc))
+- **user:** update user profile ([18c1e4c](https://github.com/tomorrowrich/buddyrental-frontend/commit/18c1e4c90825ff88a4545549d55f5fd679c2fdb0))
+- **user:** update user profile ([a647775](https://github.com/tomorrowrich/buddyrental-frontend/commit/a647775b18dc6ebeae2d6012c859efba6170be66))
+- **verify:** admin verify api ([d469ac9](https://github.com/tomorrowrich/buddyrental-frontend/commit/d469ac9ce8d9ab6051f169f4abc467f1366bbaa9))
+- **verify:** mobile version ([6bfa865](https://github.com/tomorrowrich/buddyrental-frontend/commit/6bfa86555095bf95c78024254cf2caffb9c12cc9))
+- **verify:** verify api integration ([e6b033f](https://github.com/tomorrowrich/buddyrental-frontend/commit/e6b033f9a69c95d8e9921e832ea4707ac35fc46f))
+
 ## [2.1.1](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.1.0...v2.1.1) (2025-02-16)
 
 ### Bug Fixes
