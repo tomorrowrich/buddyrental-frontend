@@ -231,10 +231,11 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value)}
                       sx={{
-                        "& .MuiInputLabel-root": { color: "#EDA4BD" },
+                        "& .MuiInputLabel-root": { color: "#EDA4BD" }, // สีของ label
                         "& .MuiOutlinedInput-root": {
-                          "& fieldset": { borderColor: "#EDA4BD" },
-                          "&:hover fieldset": { borderColor: "#D16BA5" },
+                          "& fieldset": { borderColor: "#EDA4BD" }, // สีเส้นขอบปกติ
+                          "&:hover fieldset": { borderColor: "#D16BA5" }, // สีเส้นขอบเมื่อ hover
+                          "& input": { color: "#EDA4BD" }, // สีตัวอักษรในช่อง input
                         },
                       }}
                     />

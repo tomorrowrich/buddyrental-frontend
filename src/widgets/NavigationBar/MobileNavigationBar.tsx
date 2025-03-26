@@ -245,9 +245,12 @@ export function MobileNavigationBar({
                       fullWidth
                       margin="normal"
                       sx={{
+                        "& .MuiInputLabel-root": { color: "#EDA4BD" },
                         "& .MuiOutlinedInput-root": {
                           "& fieldset": { borderColor: "#EDA4BD" },
+                          "&:hover fieldset": { borderColor: "#D16BA5" },
                         },
+                        "& input": { color: "#EDA4BD" },
                       }}
                     />
                   )}
@@ -261,9 +264,12 @@ export function MobileNavigationBar({
                     rows={3}
                     margin="normal"
                     sx={{
+                      "& .MuiInputLabel-root": { color: "#EDA4BD" },
                       "& .MuiOutlinedInput-root": {
                         "& fieldset": { borderColor: "#EDA4BD" },
+                        "&:hover fieldset": { borderColor: "#D16BA5" },
                       },
+                      "& textarea": { color: "#EDA4BD" },
                     }}
                   />
 
