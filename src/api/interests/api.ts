@@ -92,6 +92,9 @@ export async function getInterestSuggestions() {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      params: {
+        take: 5,
+      },
     })
     .then((res) => {
       const interests = res.data.suggestions.map(
