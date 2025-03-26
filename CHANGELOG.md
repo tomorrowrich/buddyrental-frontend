@@ -1,3 +1,24 @@
+# [2.3.0](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.2.0...v2.3.0) (2025-03-26)
+
+### Bug Fixes
+
+- **auth:** add CompleteProfile to auth whitelist ([2ad027d](https://github.com/tomorrowrich/buddyrental-frontend/commit/2ad027d1f6eff6efef7b470ed55829c19da43a55))
+- **auth:** make register payload fit backend schema ([9477800](https://github.com/tomorrowrich/buddyrental-frontend/commit/94778003aeb4a4f7e67ed4951abdb662b57992c9))
+- **buddy:** refined ui ([b845252](https://github.com/tomorrowrich/buddyrental-frontend/commit/b845252e07edbd4b9c323f2d79dbf2cf0f9f7d84))
+- **onboard:** make it use api with params to not error ([db51bbc](https://github.com/tomorrowrich/buddyrental-frontend/commit/db51bbc9e124cd59ff7ab6b6738bbf1a726608f3))
+- **onboard:** make onboard redirect to app ([015dcb3](https://github.com/tomorrowrich/buddyrental-frontend/commit/015dcb389fe8e09e7e675d8c2b1892cdb9ada635))
+- **profile:** adjust dialog title ([2dedc39](https://github.com/tomorrowrich/buddyrental-frontend/commit/2dedc39c1218963926c09aa7f1eb7158a1773219))
+- **profile:** center text in final dialog ([ca7df85](https://github.com/tomorrowrich/buddyrental-frontend/commit/ca7df850850943b3eed894818f66074703bb3b20))
+- **profile:** fix page according to merge ([0d0c6da](https://github.com/tomorrowrich/buddyrental-frontend/commit/0d0c6da12e85ce2662052af75d30704717ee0380))
+- **register:** make register redirect to verify... ([c28056b](https://github.com/tomorrowrich/buddyrental-frontend/commit/c28056bd1bbdcf6fc66318bbece70e29aed77d4f))
+- **types:** fix server props types ([c980206](https://github.com/tomorrowrich/buddyrental-frontend/commit/c9802063c788de11247ff2abec5b1cefda454ed6))
+
+### Features
+
+- **buddy:** buddy profile integration ([09a9d67](https://github.com/tomorrowrich/buddyrental-frontend/commit/09a9d67f91173f6f3ccd875fc28b712392bdf968))
+- **profile:** implement register buddy flow ([d184949](https://github.com/tomorrowrich/buddyrental-frontend/commit/d184949e5dcff11f878c32971de55472282ff8a1))
+- **profile:** make register buddy dialog make buddy ([0f8bb32](https://github.com/tomorrowrich/buddyrental-frontend/commit/0f8bb32aaedf6a147067e040a4a2998e26d3adf5))
+
 # [2.2.0](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.1.1...v2.2.0) (2025-03-14)
 
 ### Bug Fixes

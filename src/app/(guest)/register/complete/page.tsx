@@ -100,15 +100,14 @@ export default function CompleteProfile() {
     const { success, error } = await register(completeData);
     if (success) {
       localStorage.removeItem(STORAGE_KEY);
-      
+
       login(
         {
           email: completeData.email,
           password: completeData.password,
         },
         { redirectOnSuccess: false },
-      ).then(redirect("/app/onboard"));
-      
+      ).then(redirect("/app/verify"));
     } else {
       console.error(error);
     }
