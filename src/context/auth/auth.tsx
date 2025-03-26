@@ -43,23 +43,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     getProfile().then(({ success, user }) => {
-      // setIsAuthenticated(success);
-      // setUser(user);
-      // if (
-      //   !success &&
-      //   pathname !== "/login" &&
-      //   pathname !== "/register" &&
-      //   pathname !== "/login/forgetpassword" &&
-      //   pathname !== "/login/resetpassword" &&
-      //   pathname !== "/register/complete" &&
-      //   pathname !== "/app/onboard" &&
-      //   pathname !== "/register/verify"
-      // ) {
-      //   redirect("/login");
-      // }
-      // if (success && (pathname === "/login" || pathname === "/register")) {
-      //   redirect("/app");
-      // }
+      setIsAuthenticated(success);
+      setUser(user);
+      if (
+        !success &&
+        pathname !== "/login" &&
+        pathname !== "/register" &&
+        pathname !== "/login/forgetpassword" &&
+        pathname !== "/login/resetpassword" &&
+        pathname !== "/register/complete" &&
+        pathname !== "/app/onboard" &&
+        pathname !== "/register/verify"
+      ) {
+        redirect("/login");
+      }
+      if (success && (pathname === "/login" || pathname === "/register")) {
+        redirect("/app");
+      }
     });
   }, [pathname]);
 
