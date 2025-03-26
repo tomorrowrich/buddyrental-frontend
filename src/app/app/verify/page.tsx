@@ -12,6 +12,7 @@ import {
 import { useTheme } from "@mui/material/styles";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { logout } from "@/api/auth/api";
 
 export default function VerificationPage() {
   const { user } = useAuth();
@@ -86,6 +87,10 @@ export default function VerificationPage() {
           px: 5,
           py: 1.5,
           display: { xs: "none", sm: "inline-block" },
+        }}
+        onClick={() => {
+          logout();
+          router.push("/login");
         }}
       >
         Thanks!
