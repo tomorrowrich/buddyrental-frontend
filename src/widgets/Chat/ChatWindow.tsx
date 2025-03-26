@@ -1,16 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar, Box, Paper, Typography, Button } from "@mui/material";
 import { BookingDialog } from "./BookingDialog";
 import { MessageInput } from "./MessageInput";
 import { useRouter } from "next/navigation";
+import { Chat, ChatMessage } from "@/api/chat/interface";
+import { getChatMessages } from "@/api/chat/api";
+import { useAuth } from "@/context/auth/auth";
+import {  socket } from "@/api/chat/socket";
+
+import { randomUUID } from "crypto";
+import { connect } from "http2";
 
 export function ChatWindow({
   selectedChat,
 }: {
-  selectedChat: { name: string; avatar: string };
+  selectedChat: { role: "buddy" | "customer" | null; chat: Chat | null };
 }) {
   const [messages, setMessages] = useState<
-    { id: number; text: string; sender: "user" | "buddy" }[]
+    { id: string; text: string; sender: "user" | "buddy" }[]
   >([]);
   const [editDetails, setEditDetails] = useState<string | null>(null);
   const [editStartTime, setEditStartTime] = useState<string | null>(null);
@@ -18,18 +25,84 @@ export function ChatWindow({
   const [editSelectedDate, setEditSelectedDate] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false); // State สำหรับเปิด/ปิด Dialog
   const router = useRouter();
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [socketTransport, setSocketTransport] = useState("N/A");
 
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        text,
-        sender: "user",
-      },
-    ]);
+  const { user } = useAuth();
+
+  const role = selectedChat.role;
+  const chat = selectedChat.chat;
+
+  if (!chat) return;
+
+  function reformatMessage(chat: Chat, message: ChatMessage): {
+    id: string;
+    text: string;
+    sender: "user" | "buddy";
+  } {
+    return {
+      id: message.id,
+      text: message.content,
+      sender: chat.customer.userId === user?.userId ? "user" : "buddy",
+    };
+  }
+
+  const fetchChatHistory = async () => {
+    const { success, messages: rawMessages } = await getChatMessages(chat.id);
+
+    if (success) {
+      const formattedMsg = rawMessages.map((msg: ChatMessage) => {
+        return reformatMessage(chat, msg);
+      });
+
+      setMessages(formattedMsg);
+    }
   };
+  fetchChatHistory();
+
+  useEffect(() => {
+    if (socket.connected) {
+      
+    }
+
+    function onConnect() {
+      setSocketConnected(true);
+      setSocketTransport(socket.io.engine.transport.name);
+
+      socket.io.engine.on("upgrade", (transport) => {
+        setSocketTransport(transport.name);
+      })
+    }
+
+    function onDisconnect() {
+      setSocketConnected(false);
+      setSocketTransport("N/A");
+    }
+
+    socket.on("message", (message: ChatMessage) => {
+      setMessages((prev) => [...prev, reformatMessage(chat, message)]);
+    });
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    return () => {
+      socket.off("message");
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    }
+  }, []);
+
+  const sendMessage = (message: string) => {
+    if (!chat) return;
+    socket.emit("message", {
+      trackId: randomUUID().toString(),
+      chatId: chat.id,
+      senderId: user?.userId,
+      content: message,
+      meta: { metaId: randomUUID().toString(), timestamp: new Date(), type: "text" }
+    });
+  }
 
   const handleEditBooking = (message: string) => {
     // แยกข้อมูลจากข้อความที่ได้รับ
@@ -62,8 +135,19 @@ export function ChatWindow({
         mb={2}
       >
         <Box display="flex" alignItems="center" gap={2}>
-          <Avatar src={selectedChat.avatar} sx={{ width: 50, height: 50 }} />
-          <Typography fontWeight="bold">{selectedChat.name}</Typography>
+          <Avatar
+            src={
+              role === "buddy"
+                ? chat?.customer.profilePicture
+                : chat?.buddy.profilePicture
+            }
+            sx={{ width: 50, height: 50 }}
+          />
+          <Typography fontWeight="bold">
+            {role === "buddy"
+              ? chat?.customer.displayName
+              : chat?.buddy.displayName}
+          </Typography>
         </Box>
 
         <Box display="flex" gap={2}>

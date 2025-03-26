@@ -30,6 +30,7 @@
     "react": "^19.0.0",
     "react-big-calendar": "^1.17.1",
     "react-dom": "^19.0.0",
+    "socket.io-client": "^4.8.1",
     "swiper": "^11.2.2"
   },
   "devDependencies": {
@@ -62,5 +63,6 @@
     "typescript": "^5",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.5"
-  }
+  },
+  "packageManager": "pnpm@10.6.3+sha1.43e3aa4a371d889dfb0ffe7a9b5d4ca0668ccaa9"
 }
