@@ -1,7 +1,25 @@
 "use client";
 
 import { UnresolvedReport } from "@/widgets/UnresolvedReport/UnresolvedReport";
-import { Box, Container, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Menu,
+  MenuItem,
+  Checkbox,
+  FormControlLabel,
+} from "@mui/material";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+const filters = [
+  { label: "Payment Issue", value: "payment" },
+  { label: "App/System Issue", value: "app_system" },
+  { label: "Buddy/Customer Report", value: "buddy_customer" },
+  { label: "Others", value: "others" },
+];
 
 // TODO Fetch real booking data from API
 const bookingData = [
@@ -65,70 +83,29 @@ const bookingData = [
     email: "rtaylor@gmail.com",
     avatar: "https://picsum.photos/200?random=10",
   },
-  {
-    id: 11,
-    name: "Patricia Lee",
-    email: "plee@gmail.com",
-    avatar: "https://picsum.photos/200?random=11",
-  },
-  {
-    id: 12,
-    name: "Thomas Martin",
-    email: "tmartin@gmail.com",
-    avatar: "https://picsum.photos/200?random=12",
-  },
-  {
-    id: 13,
-    name: "Sandra White",
-    email: "swhite@gmail.com",
-    avatar: "https://picsum.photos/200?random=13",
-  },
-  {
-    id: 14,
-    name: "Kevin Moore",
-    email: "kmoore@gmail.com",
-    avatar: "https://picsum.photos/200?random=14",
-  },
-  {
-    id: 15,
-    name: "Nancy Davis",
-    email: "ndavis@gmail.com",
-    avatar: "https://picsum.photos/200?random=15",
-  },
-  {
-    id: 16,
-    name: "Daniel Miller",
-    email: "dmiller@gmail.com",
-    avatar: "https://picsum.photos/200?random=16",
-  },
-  {
-    id: 17,
-    name: "Elizabeth Clark",
-    email: "eclark@gmail.com",
-    avatar: "https://picsum.photos/200?random=17",
-  },
-  {
-    id: 18,
-    name: "Richard Hall",
-    email: "rhall@gmail.com",
-    avatar: "https://picsum.photos/200?random=18",
-  },
-  {
-    id: 19,
-    name: "Jennifer Young",
-    email: "jyoung@gmail.com",
-    avatar: "https://picsum.photos/200?random=19",
-  },
-  {
-    id: 20,
-    name: "William King",
-    email: "wking@gmail.com",
-    avatar: "https://picsum.photos/200?random=20",
-  },
 ];
 
 export default function Page() {
-  const theme = useTheme();
+  const router = useRouter();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+
+  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleFilterChange = (value: string) => {
+    setSelectedFilters((prev) =>
+      prev.includes(value)
+        ? prev.filter((item) => item !== value)
+        : [...prev, value],
+    );
+  };
+
   return (
     <Container sx={{ flex: 1, paddingTop: 5, borderRadius: 4 }}>
       <Box
@@ -144,19 +121,63 @@ export default function Page() {
           boxShadow: "0px 5px 30px rgba(237, 164, 189, 0.8)",
         }}
       >
-        <Typography
-          variant="h5"
-          fontWeight={700}
+        <Box
           sx={{
-            background: `linear-gradient(90deg, ${theme.palette.tertiary.main} , ${theme.palette.quinary.main})`,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            background: "linear-gradient(90deg, #f8a5c2 , #ffcccc)",
             padding: 2,
             color: "white",
             borderTopLeftRadius: 2,
             borderTopRightRadius: 2,
           }}
         >
-          Unresolve Report
-        </Typography>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Typography variant="h5" fontWeight={700} color="white">
+              Unresolved Report
+            </Typography>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => router.push("/history")}
+            >
+              History
+            </Button>
+          </Box>
+
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleFilterClick}
+            >
+              Filter Report
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Filter Dropdown Menu */}
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleFilterClose}
+        >
+          {filters.map((filter) => (
+            <MenuItem
+              key={filter.value}
+              onClick={() => handleFilterChange(filter.value)}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox checked={selectedFilters.includes(filter.value)} />
+                }
+                label={filter.label}
+              />
+            </MenuItem>
+          ))}
+        </Menu>
+
         <Box
           data-testid="booking-history-container"
           sx={{ width: "100%", padding: 2, flex: 1 }}
