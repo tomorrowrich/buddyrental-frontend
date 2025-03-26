@@ -15,9 +15,18 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Modal,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  TextField,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { NotificationsNone, ChatBubbleOutline } from "@mui/icons-material";
+import {
+  NotificationsNone,
+  ChatBubbleOutline,
+  Close as CloseIcon,
+} from "@mui/icons-material";
 import Image from "next/image";
 import { useAuth } from "@/context/auth/auth";
 import { useState } from "react";
@@ -36,6 +45,10 @@ export function MobileNavigationBar({
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [drawerState, setDrawerState] = useState<boolean>(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportType, setReportType] = useState("Payment Issues");
+  const [reportText, setReportText] = useState("");
+  const [accountName, setAccountName] = useState("");
 
   const handleLogout = async () => {
     console.log("Logging out");
@@ -156,6 +169,135 @@ export function MobileNavigationBar({
 
             {/* User Avatar with Dialog */}
             <Box>
+              {/* Report Issues Modal */}
+              <Modal
+                open={reportModalOpen}
+                onClose={() => setReportModalOpen(false)}
+                aria-labelledby="report-issues-title"
+                aria-describedby="report-issues-description"
+              >
+                <Box
+                  sx={{
+                    p: 4,
+                    backgroundColor: "white",
+                    borderRadius: 2,
+                    width: 300,
+                    mx: "auto",
+                    mt: 10,
+                    position: "relative",
+                    textAlign: "center",
+                  }}
+                >
+                  <IconButton
+                    onClick={() => setReportModalOpen(false)}
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      color: "#C46BAE",
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                  <Typography variant="h6" id="report-issues-title" mb={2}>
+                    Report Issues
+                  </Typography>
+                  <RadioGroup
+                    value={reportType}
+                    onChange={(e) => setReportType(e.target.value)}
+                    id="report-issues-description"
+                  >
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr",
+                        gap: 2,
+                      }}
+                    >
+                      <FormControlLabel
+                        value="Payment Issues"
+                        control={<Radio sx={{ color: "#EDA4BD" }} />}
+                        label="Payment Issues"
+                      />
+                      <FormControlLabel
+                        value="Buddy/Customer Report"
+                        control={<Radio sx={{ color: "#EDA4BD" }} />}
+                        label="Buddy/Customer Report"
+                      />
+                      <FormControlLabel
+                        value="App/System Issues"
+                        control={<Radio sx={{ color: "#EDA4BD" }} />}
+                        label="App/System Issues"
+                      />
+                      <FormControlLabel
+                        value="Others"
+                        control={<Radio sx={{ color: "#EDA4BD" }} />}
+                        label="Others"
+                      />
+                    </Box>
+                  </RadioGroup>
+
+                  {reportType === "Buddy/Customer Report" && (
+                    <TextField
+                      label="Account Name"
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                      fullWidth
+                      margin="normal"
+                      sx={{
+                        "& .MuiInputLabel-root": { color: "#EDA4BD" },
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { borderColor: "#EDA4BD" },
+                          "&:hover fieldset": { borderColor: "#D16BA5" },
+                        },
+                        "& input": { color: "#EDA4BD" },
+                      }}
+                    />
+                  )}
+
+                  <TextField
+                    label="Details"
+                    value={reportText}
+                    onChange={(e) => setReportText(e.target.value)}
+                    fullWidth
+                    multiline
+                    rows={3}
+                    margin="normal"
+                    sx={{
+                      "& .MuiInputLabel-root": { color: "#EDA4BD" },
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": { borderColor: "#EDA4BD" },
+                        "&:hover fieldset": { borderColor: "#D16BA5" },
+                      },
+                      "& textarea": { color: "#EDA4BD" },
+                    }}
+                  />
+
+                  <Button
+                    variant="contained"
+                    sx={{
+                      mt: 2,
+                      backgroundColor: "#C46BAE",
+                      "&:hover": { backgroundColor: "#AB5493" },
+                      fontSize: "0.875rem",
+                      padding: "6px 16px",
+                      display: "block",
+                      mx: "auto",
+                    }}
+                    onClick={() => {
+                      console.log("Report Submitted", {
+                        reportType,
+                        reportText,
+                        accountName,
+                      });
+                      setReportModalOpen(false); // แก้ให้เมื่อกดปุ่มแล้วทำการ Report ด้วย
+                    }}
+                  >
+                    Report
+                  </Button>
+                </Box>
+              </Modal>
+
               <Avatar
                 src={user.profilePicture ? user.profilePicture : undefined}
                 alt="User"
@@ -210,6 +352,17 @@ export function MobileNavigationBar({
                     }}
                   >
                     Settings
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="text"
+                    sx={{ justifyContent: "flex-start", mb: 1 }}
+                    onClick={() => {
+                      setAnchorEl(null);
+                      setReportModalOpen(true);
+                    }}
+                  >
+                    Report
                   </Button>
                   <Button
                     fullWidth
