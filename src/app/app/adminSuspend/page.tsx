@@ -12,7 +12,7 @@ import {
   Stack,
 } from "@mui/material";
 
-export const SuspendData = ({
+const SuspendData = ({
   data,
 }: {
   data: {
