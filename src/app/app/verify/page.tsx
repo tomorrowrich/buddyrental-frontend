@@ -9,15 +9,24 @@ import {
   Stepper,
   Typography,
 } from "@mui/material";
-import { redirect } from "next/navigation";
 import { useTheme } from "@mui/material/styles";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { logout } from "@/api/auth/api";
 
 export default function VerificationPage() {
   const { user } = useAuth();
   const theme = useTheme();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/login"); // Use router.push instead of redirect
+    }
+  }, [user, router]);
 
   if (!user) {
-    redirect("/login");
+    return null; // Prevent rendering the rest of the component before redirecting
   }
 
   return (
@@ -78,6 +87,10 @@ export default function VerificationPage() {
           px: 5,
           py: 1.5,
           display: { xs: "none", sm: "inline-block" },
+        }}
+        onClick={() => {
+          logout();
+          router.push("/login");
         }}
       >
         Thanks!

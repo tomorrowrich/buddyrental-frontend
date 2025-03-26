@@ -6,6 +6,8 @@ import { ThemeProvider } from "@mui/material";
 import { AuthProvider } from "@/context/auth/auth";
 import { BuddyRentalLoader } from "./loading";
 import { Suspense } from "react";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 export default function BuddyRentalRootLayout({
   children,
@@ -23,9 +25,13 @@ export default function BuddyRentalRootLayout({
         <AppRouterCacheProvider>
           <AuthProvider>
             <ThemeProvider theme={BuddyRentalTheme}>
-              <main className="flex flex-col min-h-screen">
-                <Suspense fallback={<BuddyRentalLoader />}>{children}</Suspense>
-              </main>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <main className="flex flex-col min-h-screen">
+                  <Suspense fallback={<BuddyRentalLoader />}>
+                    {children}
+                  </Suspense>
+                </main>
+              </LocalizationProvider>
             </ThemeProvider>
           </AuthProvider>
         </AppRouterCacheProvider>
