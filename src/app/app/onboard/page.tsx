@@ -1,7 +1,9 @@
 "use client";
 
+import { getInterestSuggestions } from "@/api/interests/api";
+import { updateInterests } from "@/api/users/api";
 import { useAuth } from "@/context/auth/auth";
-import { useRouter } from "next/navigation";
+import { Interest } from "@/model/user";
 import {
   Box,
   Button,
@@ -11,33 +13,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "interests-onboarding";
-
-// Mock data interests (20 อัน)
-const mockInterests = [
-  { tagId: "1", name: "Music" },
-  { tagId: "2", name: "Sports" },
-  { tagId: "3", name: "Movies" },
-  { tagId: "4", name: "Technology" },
-  { tagId: "5", name: "Travel" },
-  { tagId: "6", name: "Food" },
-  { tagId: "7", name: "Gaming" },
-  { tagId: "8", name: "Art" },
-  { tagId: "9", name: "Fitness" },
-  { tagId: "10", name: "Books" },
-  { tagId: "11", name: "Photography" },
-  { tagId: "12", name: "Coding" },
-  { tagId: "13", name: "Fashion" },
-  { tagId: "14", name: "Music Production" },
-  { tagId: "15", name: "Science" },
-  { tagId: "16", name: "Health" },
-  { tagId: "17", name: "Finance" },
-  { tagId: "18", name: "Business" },
-  { tagId: "19", name: "Nature" },
-  { tagId: "20", name: "Pets" },
-];
 
 export default function OnboardingPage() {
   const { user } = useAuth();
@@ -45,40 +24,50 @@ export default function OnboardingPage() {
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(
     new Set(),
   );
+  const [interests, setInterests] = useState<Interest[] | null>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const getInterests = async () => {
+      const { interests, error } = await getInterestSuggestions();
+      if (interests) {
+        setInterests(interests);
+        console.log("Suggested Interests: ", interests);
+      } else {
+        console.error(error);
+      }
+    };
+
+    getInterests();
+  }, []);
 
   useEffect(() => {
     const storedInterests = localStorage.getItem(STORAGE_KEY);
     if (storedInterests) {
       setSelectedInterests(new Set(JSON.parse(storedInterests)));
     }
-  }, []);
-
-  useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedInterests]));
-  }, [selectedInterests]);
+  }, [interests]);
 
   const handleSubmit = async () => {
     setSubmitting(true);
 
     const interests = Array.from(selectedInterests);
 
-    // Simulate an API request here for updating interests
-    // const { success, error } = await updateInterests(interests);
+    const { success, error } = await updateInterests(interests);
 
-    // Simulating success
-    const success = true;
     if (success) {
       localStorage.removeItem(STORAGE_KEY);
       router.push("/app");
     } else {
-      console.error("Error updating interests");
+      console.error(error);
     }
 
     setSubmitting(false);
   };
 
   const handleChipClick = (interest: string) => {
+    console.log(interest);
     const newInterests = new Set(selectedInterests);
     if (newInterests.has(interest)) {
       newInterests.delete(interest);
@@ -86,6 +75,7 @@ export default function OnboardingPage() {
       newInterests.add(interest);
     }
     setSelectedInterests(newInterests);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(newInterests)));
   };
 
   return (
@@ -106,17 +96,12 @@ export default function OnboardingPage() {
 
           <Grid
             container
-            justifyContent="flex-start"
-            alignItems="flex-start"
+            justifyContent="center"
+            alignItems="center"
             spacing={1}
             mt={{ xs: 2, sm: 4 }}
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(5, 1fr)",
-              gap: "8px",
-            }}
           >
-            {mockInterests.map((interest) => (
+            {interests?.map((interest) => (
               <Grid key={interest.tagId}>
                 <Chip
                   label={interest.name}
@@ -125,22 +110,14 @@ export default function OnboardingPage() {
                       ? "filled"
                       : "outlined"
                   }
-                  color={
-                    selectedInterests.has(interest.tagId)
-                      ? "tertiary"
-                      : "primary"
-                  }
+                  disabled={submitting}
+                  clickable
+                  color="primary"
                   onClick={() => handleChipClick(interest.tagId)}
-                  sx={{
-                    borderRadius: "16px",
-                    padding: "8px 16px",
-                    width: "100%",
-                  }}
                 />
               </Grid>
             ))}
           </Grid>
-
           <Box width={{ xs: "100%", sm: "50%" }} mt={{ xs: 2, sm: 4 }}>
             <Typography
               variant="body2"
@@ -155,7 +132,7 @@ export default function OnboardingPage() {
                 variant="contained"
                 color="quinary"
                 disabled={submitting}
-                onClick={() => router.push("/register/verify")}
+                onClick={() => router.push("/app/verify")}
                 fullWidth
               >
                 Skip
