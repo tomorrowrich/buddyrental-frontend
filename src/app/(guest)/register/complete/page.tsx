@@ -63,35 +63,22 @@ export default function CompleteProfile() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
-    const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    const newFormData = {
-      ...existingData,
-      ...formData,
-      [name]: newValue,
-    };
-    setFormData((prev) => ({
-      ...prev,
-      [name]: newValue,
-    }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+
+    setFormData((prev) => {
+      const newFormData = { ...prev, [name]: newValue };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+      return newFormData;
+    });
   };
 
   const handleDateChange = (newValue: Dayjs | null) => {
-    const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    const newFormData = {
-      ...existingData,
-      ...formData,
-      dateOfBirth: newValue,
-    };
-
     if (!newValue) return;
 
-    setFormData((prev) => ({
-      ...prev,
-      dateOfBirth: newValue,
-    }));
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+    setFormData((prev) => {
+      const newFormData = { ...prev, dateOfBirth: newValue };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData));
+      return newFormData;
+    });
   };
 
   const handleSubmit = async () => {
