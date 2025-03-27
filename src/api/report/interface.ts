@@ -22,3 +22,21 @@ export interface CategoriesResponse {
   id: string;
   name: string;
 }
+
+export interface ReportData {
+  id: string;
+  reporterId: string;
+  userId: string;
+  buddyId: string;
+  categoryId: string;
+  details: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export enum status {
+  "PENDING",
+  "RESOLVED",
+}
