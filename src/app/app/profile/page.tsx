@@ -58,44 +58,46 @@ export default function PersonalProfile() {
     }));
   };
 
-const handleSave = async () => {
-  // ตรวจสอบ firstName และ lastName (ต้องเป็นตัวอักษรเท่านั้น)
-  const nameRegex = /^[A-Za-z]+$/;
-  if (!user.firstName || !nameRegex.test(user.firstName)) {
-    alert("First Name is required and can only contain letters.");
-    return;
-  }
+  const handleSave = async () => {
+    // ตรวจสอบ firstName และ lastName (ต้องเป็นตัวอักษรเท่านั้น)
+    const nameRegex = /^[A-Za-z]+$/;
+    if (!user.firstName || !nameRegex.test(user.firstName)) {
+      alert("First Name is required and can only contain letters.");
+      return;
+    }
 
-  if (!user.lastName || !nameRegex.test(user.lastName)) {
-    alert("Last Name is required and can only contain letters.");
-    return;
-  }
+    if (!user.lastName || !nameRegex.test(user.lastName)) {
+      alert("Last Name is required and can only contain letters.");
+      return;
+    }
 
-  // ตรวจสอบ displayName (สามารถใช้ตัวอักษรและตัวเลข แต่ไม่อนุญาตให้ใช้ตัวอักษรพิเศษ)
-  const displayNameRegex = /^[A-Za-z0-9]+$/;
-  if (!user.displayName || !displayNameRegex.test(user.displayName)) {
-    alert("Display Name is required and can only contain letters and numbers, no special characters allowed.");
-    return;
-  }
+    // ตรวจสอบ displayName (สามารถใช้ตัวอักษรและตัวเลข แต่ไม่อนุญาตให้ใช้ตัวอักษรพิเศษ)
+    const displayNameRegex = /^[A-Za-z0-9]+$/;
+    if (!user.displayName || !displayNameRegex.test(user.displayName)) {
+      alert(
+        "Display Name is required and can only contain letters and numbers, no special characters allowed.",
+      );
+      return;
+    }
 
-  // ตรวจสอบ phoneNumber (ต้องเป็นตัวเลขเท่านั้น)
-  const phoneRegex = /^[0-9]+$/;
-  if (!user.phoneNumber || !phoneRegex.test(user.phoneNumber)) {
-    alert("Phone Number is required and can only contain numbers.");
-    return;
-  }
+    // ตรวจสอบ phoneNumber (ต้องเป็นตัวเลขเท่านั้น)
+    const phoneRegex = /^[0-9]+$/;
+    if (!user.phoneNumber || !phoneRegex.test(user.phoneNumber)) {
+      alert("Phone Number is required and can only contain numbers.");
+      return;
+    }
 
-  // ตรวจสอบ postalCode (ต้องเป็นตัวเลขเท่านั้น)
-  if (!user.postalCode || !phoneRegex.test(user.postalCode)) {
-    alert("Postal Code is required and can only contain numbers.");
-    return;
-  }
+    // ตรวจสอบ postalCode (ต้องเป็นตัวเลขเท่านั้น)
+    if (!user.postalCode || !phoneRegex.test(user.postalCode)) {
+      alert("Postal Code is required and can only contain numbers.");
+      return;
+    }
 
-  // ถ้าผ่านการตรวจสอบแล้ว ก็ทำการเซฟข้อมูล
-  const resp = await updateProfile(user);
-  console.log(resp);
-  setIsEditing(false);
-};
+    // ถ้าผ่านการตรวจสอบแล้ว ก็ทำการเซฟข้อมูล
+    const resp = await updateProfile(user);
+    console.log(resp);
+    setIsEditing(false);
+  };
 
   return (
     <Container sx={{ py: "0px" }}>
@@ -203,11 +205,20 @@ const handleSave = async () => {
             { label: "First Name", name: "firstName" },
             { label: "Last Name", name: "lastName" },
             { label: "Nickname", name: "displayName" },
-            { label: "Email", name: "email",disabled:true },
-            { label: "Date of Birth", name: "dateOfBirth", type: "date", disabled: true },
+            { label: "Email", name: "email", disabled: true },
+            {
+              label: "Date of Birth",
+              name: "dateOfBirth",
+              type: "date",
+              disabled: true,
+            },
             { label: "Gender", name: "gender", disabled: true },
             { label: "Phone Number", name: "phoneNumber" },
-            { label: "Identity Card Number", name: "citizenId", disabled: true },
+            {
+              label: "Identity Card Number",
+              name: "citizenId",
+              disabled: true,
+            },
             { label: "Address", name: "address" },
             { label: "City", name: "city" },
             { label: "ZIP Code", name: "postalCode" },
