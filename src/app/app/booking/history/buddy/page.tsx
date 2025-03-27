@@ -1,20 +1,20 @@
 "use client";
-import { getUserReservationHistory } from "@/api/reservation/api";
-import { Booking } from "@/model/reservation";
-import { BookingHistory } from "@/widgets/Booking/BookingHistory/BookingHistory";
+import { getBuddyReservationHistory } from "@/api/reservation/api";
+import { Reservation } from "@/model/reservation";
+import { ReservationHistory } from "@/widgets/Booking/ReservationHistory/ReservationHistory";
 import { Box, Container, Typography, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 
 export default function Page() {
   const theme = useTheme();
-  const [bookingData, setBookingData] = useState<Booking[]>([]);
+  const [bookingData, setBookingData] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchReservationHistory = async () => {
       try {
         setIsLoading(true);
-        const response = await getUserReservationHistory();
+        const response = await getBuddyReservationHistory();
         setBookingData(response.data);
       } catch (error) {
         console.error("Error fetching reservation history:", error);
@@ -37,30 +37,23 @@ export default function Page() {
           width: "100%",
           height: "100%",
           mb: 10,
-          borderRadius: 8,
+          borderRadius: 2,
           boxShadow: "0px 5px 30px rgba(237, 164, 189, 0.8)",
-          overflow: "hidden",
         }}
       >
-        <Box
+        <Typography
+          variant="h5"
+          fontWeight={700}
           sx={{
             background: `linear-gradient(90deg, ${theme.palette.tertiary.main} , ${theme.palette.quinary.main})`,
             padding: 2,
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
+            color: "white",
+            borderTopLeftRadius: 2,
+            borderTopRightRadius: 2,
           }}
         >
-          <Typography
-            variant="h5"
-            fontWeight={700}
-            sx={{
-              color: "white",
-              mt: 1,
-            }}
-          >
-            Booking History
-          </Typography>
-        </Box>
+          Booking History
+        </Typography>
         <Box
           data-testid="booking-history-container"
           sx={{ width: "100%", padding: 2, flex: 1 }}
@@ -74,7 +67,7 @@ export default function Page() {
               No booking history found.
             </Typography>
           ) : (
-            <BookingHistory data={bookingData} />
+            <ReservationHistory data={bookingData} />
           )}
         </Box>
       </Box>
