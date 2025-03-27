@@ -55,10 +55,6 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const [reportText, setReportText] = useState("");
   const [accountName, setAccountName] = useState("");
 
-  if (!user) {
-    return null;
-  }
-
   const handleLogout = async () => {
     console.log("Logging out");
     await logout();
@@ -67,7 +63,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const handleSubmit = async () => {
     const categoryId = getCategoryId(reportType);
     const data = {
-      userId: user.userId,
+      userId: user?.userId,
       buddyId: accountName || "123e4567-e89b-12d3-a456-426614174000",
       categoryId: categoryId,
       details: reportText,
