@@ -98,3 +98,24 @@ export async function logout() {
   });
   return { success: true };
 }
+
+export async function requestPasswordReset(email: string) {
+  try {
+    const response = await axios.post(
+      `${baseURL}/users/reset-password`,
+      { email },
+      {
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    return response.data;
+  } catch (err: unknown) {
+    console.error("Request error:", err);
+
+    if (axios.isAxiosError(err)) {
+      return err.response?.data;
+    }
+
+    return;
+  }
+}
