@@ -6,8 +6,8 @@ export interface Chat {
   updatedAt: Date;
   deletedAt: Date | null;
   ChatMessage: ChatMessage[];
-  buddy: userInfo;
-  customer: userInfo;
+  buddy: { user: UserInfo };
+  customer: UserInfo;
 }
 
 export interface ChatMessage {
@@ -31,8 +31,7 @@ export interface ChatMessageDTO {
   meta: ChatMessageMeta;
 }
 
-export interface userInfo {
-  userId: string;
+export interface UserInfo {
   displayName: string;
   profilePicture: string;
 }

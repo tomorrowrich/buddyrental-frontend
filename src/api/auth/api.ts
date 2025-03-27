@@ -52,6 +52,12 @@ export async function login(email: string, password: string) {
     });
 }
 
+export async function getToken() {
+  const cookie = await cookies();
+  const token = cookie.get("token")?.value;
+  return token || null;
+}
+
 export async function getProfile() {
   const cookie = await cookies();
   const token = cookie.get("token")?.value;
@@ -101,9 +107,32 @@ export async function logout() {
 
 export async function requestPasswordReset(email: string) {
   try {
+    console.log(`${process.env.HOST}/reset`);
     const response = await axios.post(
       `${baseURL}/users/reset-password`,
-      { email },
+      { email, host: `${process.env.HOST}/reset` },
+      {
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    return response.data;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      return err.response?.data;
+    }
+    return;
+  }
+}
+
+export async function resetPassword(
+  email: string,
+  token: string,
+  password: string,
+) {
+  try {
+    const response = await axios.post(
+      `${baseURL}/users/reset-password`,
+      { email, token, password },
       {
         headers: { "Content-Type": "application/json" },
       },

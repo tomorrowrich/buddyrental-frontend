@@ -20,7 +20,6 @@ import {
   MenuBook,
   Add,
   EventNote,
-  RequestQuote,
   Close as CloseIcon,
 } from "@mui/icons-material";
 import Image from "next/image";
@@ -114,15 +113,6 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
         {/* Right Side - Navigation, Balance, Notifications, Avatar */}
         {user && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-            {user.buddy?.buddyId && (
-              <Button
-                startIcon={<RequestQuote />}
-                sx={{ color: "primary.main", textTransform: "none" }}
-                onClick={() => router.push("/app/booking/history/buddy")}
-              >
-                Requests
-              </Button>
-            )}
             <Button
               startIcon={<MenuBook />}
               sx={{ color: "primary.main", textTransform: "none" }}

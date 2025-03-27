@@ -1,42 +1,77 @@
-"use client";
 import { useState } from "react";
-import { Box, TextField, IconButton } from "@mui/material";
+import { Box, TextField, IconButton, Tooltip } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 
-interface MessageInputProps {
-  onSendMessage: (text: string) => void;
-}
-
-export function MessageInput({ onSendMessage }: MessageInputProps) {
-  const [input, setInput] = useState("");
+export function MessageInput({
+  onSendMessage,
+  disabled = false,
+}: {
+  onSendMessage: (message: string) => void;
+  disabled?: boolean;
+}) {
+  const [message, setMessage] = useState("");
 
   const handleSend = () => {
-    if (input.trim() === "") return;
-    onSendMessage(input);
-    setInput(""); // เคลียร์ช่องข้อความ
+    if (message.trim() && !disabled) {
+      onSendMessage(message.trim());
+      setMessage("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   return (
     <Box
-      display="flex"
-      alignItems="center"
-      gap={2}
-      mt={2}
-      borderTop="1px solid #ddd"
-      pt={2}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        position: "relative",
+      }}
     >
-      {/* เพิ่ม value และ onChange */}
       <TextField
         fullWidth
-        placeholder="Type a message..."
+        placeholder={disabled ? "Connecting..." : "Type a message..."}
         variant="outlined"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSend()} // กด Enter เพื่อส่งข้อความ
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyDown={handleKeyPress}
+        disabled={disabled}
+        multiline
+        maxRows={3}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: 3,
+            pr: 5,
+          },
+        }}
       />
-      <IconButton color="primary" onClick={handleSend}>
-        <SendIcon />
-      </IconButton>
+      <Tooltip title={disabled ? "Connecting..." : "Send message"}>
+        <span>
+          <IconButton
+            onClick={handleSend}
+            disabled={!message.trim() || disabled}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: "50%",
+              transform: "translateY(-50%)",
+              bgcolor: message.trim() ? "#EB7BC0" : "transparent",
+              color: message.trim() ? "white" : "gray",
+              "&:hover": {
+                bgcolor: message.trim() ? "#D667A7" : "transparent",
+              },
+            }}
+          >
+            <SendIcon />
+          </IconButton>
+        </span>
+      </Tooltip>
     </Box>
   );
 }

@@ -160,7 +160,7 @@ export default function Login() {
                 color="primary"
                 label="Remember me"
               />
-              <Link href="/login/forgetpassword" color="tertiary">
+              <Link href="/reset" color="tertiary">
                 Forgot Password
               </Link>
             </Stack>

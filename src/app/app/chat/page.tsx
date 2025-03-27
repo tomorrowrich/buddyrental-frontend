@@ -19,7 +19,7 @@ export default function ChatPage() {
   };
 
   return (
-    <Box display="flex" height="100vh" bgcolor="#F7F7F7" p={3} gap={3}>
+    <Box display="flex" height="100%" flex={1} bgcolor="#F7F7F7" p={3} gap={3}>
       <ChatSidebar onSelectChat={handleSelectChat} />
       <ChatWindow selectedChat={selectedChat} />
     </Box>

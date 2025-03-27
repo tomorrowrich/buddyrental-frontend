@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Avatar, Box, Paper, Typography, Button } from "@mui/material";
 import { BookingDialog } from "./BookingDialog";
 import { MessageInput } from "./MessageInput";
 import { useRouter } from "next/navigation";
-import { Chat, ChatMessage, ChatMessageDTO } from "@/api/chat/interface";
+import { Chat, ChatMessage, ChatMessageMetaType } from "@/api/chat/interface";
 import { getChatMessages } from "@/api/chat/api";
 import { useAuth } from "@/context/auth/auth";
-import { initializeSocket, socket } from "@/api/chat/socket";
-
-import { randomUUID } from "crypto";
+import { subscribeToMessages, sendMessage } from "@/api/chat/socket";
+import { v4 as uuidv4 } from "uuid";
+import { useSocket } from "@/context/socket/SocketProvider";
 
 export function ChatWindow({
   selectedChat,
@@ -16,28 +16,30 @@ export function ChatWindow({
   selectedChat: { role: "buddy" | "customer" | null; chat: Chat | null };
 }) {
   const [messages, setMessages] = useState<
-    { id: string; text: string; sender: "user" | "buddy" }[]
+    {
+      id: string;
+      text: string;
+      sender: "user" | "buddy";
+    }[]
   >([]);
   const [editDetails, setEditDetails] = useState<string | null>(null);
   const [editStartTime, setEditStartTime] = useState<string | null>(null);
   const [editEndTime, setEditEndTime] = useState<string | null>(null);
   const [editSelectedDate, setEditSelectedDate] = useState<string | null>(null);
-  const [openDialog, setOpenDialog] = useState(false); // State สำหรับเปิด/ปิด Dialog
+  const [openDialog, setOpenDialog] = useState(false);
   const router = useRouter();
   const [socketConnected, setSocketConnected] = useState(false);
-  const [socketTransport, setSocketTransport] = useState("N/A");
-  const [chatHistory, setChatHistory] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
-
+  const { socket } = useSocket();
   const role = selectedChat.role;
   const chat = selectedChat.chat;
 
-  initializeSocket(user?.userId ?? "");
-
+  // Format a message for display
   function reformatMessage(
-    chat: Chat,
     message: ChatMessage,
+    isFromUser: boolean,
   ): {
     id: string;
     text: string;
@@ -46,85 +48,113 @@ export function ChatWindow({
     return {
       id: message.id,
       text: message.content,
-      sender: chat.customer.userId === user?.userId ? "user" : "buddy",
+      sender: isFromUser ? "user" : "buddy",
     };
   }
 
   useEffect(() => {
-    if (!chat) return;
-    if (chatHistory) return;
+    setSocketConnected(socket?.connected || false);
+  }, [socket]);
+
+  // Fetch chat history when a chat is selected
+  useEffect(() => {
+    if (!chat || !user) return;
+
+    // Reset messages when changing chats
+    setMessages([]);
+
     const fetchChatHistory = async () => {
-      const { success, messages: rawMessages } = await getChatMessages(chat.id);
+      try {
+        const { success, messages: rawMessages } = await getChatMessages(
+          chat.id,
+        );
 
-      if (success) {
-        const formattedMsg = rawMessages.map((msg: ChatMessage) => {
-          return reformatMessage(chat, msg);
-        });
+        if (success && rawMessages) {
+          const formattedMessages = rawMessages.map((msg: ChatMessage) => {
+            const isFromUser = msg.senderId === user.userId;
+            return reformatMessage(msg, isFromUser);
+          });
 
-        setMessages(formattedMsg);
+          setMessages(formattedMessages);
+        }
+      } catch (error) {
+        console.error("Error fetching chat history:", error);
       }
     };
-    setChatHistory(true);
+
     fetchChatHistory();
-  }, [chatHistory]);
+  }, [chat, user]);
 
+  // Subscribe to messages for the selected chat
   useEffect(() => {
-    if (!chat) return;
+    if (!chat || !user) return;
 
-    if (socket.connected) {
-      onSocketConnected();
-    }
-
-    function onSocketConnected() {
-      setSocketConnected(true);
-      setSocketTransport(socket.io.engine.transport.name);
-
-      socket.io.engine.on("upgrade", () => {
-        setSocketTransport(socket.io.engine.transport.name);
-      });
-    }
-
-    function onSocketDisconnected() {
-      setSocketConnected(false);
-      setSocketTransport("N/A");
-    }
-
-    socket.on("connect", onSocketConnected);
-    socket.on("disconnect", onSocketDisconnected);
+    const unsubscribe = subscribeToMessages((newMessage: ChatMessage) => {
+      const isFromUser = newMessage.senderId === user.userId;
+      setMessages((prev) => [...prev, reformatMessage(newMessage, isFromUser)]);
+    });
 
     return () => {
-      socket.off("connect", onSocketConnected);
-      socket.off("disconnect", onSocketDisconnected);
-      socket.off("message");
+      if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [chat, user]);
 
-  const sendMessage = (message: string) => {
-    if (!chat) return;
-    socket.emit("message", {
-      trackId: randomUUID(),
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendMessage = (message: string) => {
+    if (!chat || !user) return;
+
+    // Add message to local state immediately (optimistic UI update)
+    const newMessage = {
+      id: uuidv4(),
+      text: message,
+      sender: "user" as const,
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+
+    // Send message to server
+    sendMessage({
+      trackId: uuidv4(),
       chatId: chat.id,
-      senderId: user?.userId,
+      senderId: user.userId,
       content: message,
       meta: {
-        metaId: randomUUID(),
+        metaId: uuidv4(),
         timestamp: new Date(),
-        type: "text",
+        type: ChatMessageMetaType.TEXT,
       },
-    } as ChatMessageDTO);
+    });
   };
 
   const handleEditBooking = (message: string) => {
-    // แยกข้อมูลจากข้อความที่ได้รับ
+    // Split the message to extract booking details
     const parts = message.split("\n");
-    const dateAndTime = parts[2].split(" Time: ")[1];
-    const [startTime, endTime] = dateAndTime.split(" - ");
-    setEditDetails(parts[1].split(": ")[1] || "");
-    setEditSelectedDate(parts[2].split(": ")[1] || "");
-    setEditStartTime(startTime || "10:00");
-    setEditEndTime(endTime || "15:00");
+    if (parts.length < 3) return;
 
-    // เปิด Dialog เมื่อคลิก "Edit Booking"
+    // Extract date and time information
+    const dateTimeString = parts[2].includes("Time:")
+      ? parts[2].split("Time: ")[1]
+      : "";
+
+    const [startTime, endTime] = dateTimeString.includes(" - ")
+      ? dateTimeString.split(" - ")
+      : ["10:00", "15:00"];
+
+    // Set the extracted details to state
+    setEditDetails(parts[1].includes(": ") ? parts[1].split(": ")[1] : "");
+    setEditSelectedDate(
+      parts[2].includes("Date: ")
+        ? parts[2].split("Date: ")[1].split(" Time")[0]
+        : "",
+    );
+    setEditStartTime(startTime);
+    setEditEndTime(endTime);
+
+    // Open the dialog
     setOpenDialog(true);
   };
 
@@ -136,8 +166,13 @@ export function ChatWindow({
         borderRadius: 3,
         boxShadow: 3,
         position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        height: "90vh",
+        maxHeight: "90vh",
       }}
     >
+      {/* Chat header */}
       <Box
         display="flex"
         alignItems="center"
@@ -149,20 +184,20 @@ export function ChatWindow({
             src={
               role === "buddy"
                 ? chat?.customer.profilePicture
-                : chat?.buddy.profilePicture
+                : chat?.buddy?.user?.profilePicture
             }
             sx={{ width: 50, height: 50 }}
           />
           <Typography fontWeight="bold">
             {role === "buddy"
               ? chat?.customer.displayName
-              : chat?.buddy.displayName}
+              : chat?.buddy?.user?.displayName}
           </Typography>
         </Box>
 
         <Box display="flex" gap={2}>
           <Button
-            variant="outlined"
+            variant="contained"
             onClick={() => router.push("/app/profile/buddy")}
             sx={{
               bgcolor: "#EB7BC0",
@@ -173,8 +208,8 @@ export function ChatWindow({
             Profile
           </Button>
           <Button
-            variant="outlined"
-            onClick={() => setOpenDialog(true)} // เปิด Dialog เมื่อคลิกปุ่ม Edit Booking
+            variant="contained"
+            onClick={() => setOpenDialog(true)}
             sx={{
               bgcolor: "#EB7BC0",
               color: "white",
@@ -186,60 +221,72 @@ export function ChatWindow({
         </Box>
       </Box>
 
+      {/* Messages area */}
       <Box
         sx={{
-          height: "60vh",
+          flexGrow: 1,
           overflowY: "auto",
           p: 2,
           bgcolor: "rgba(235, 123, 192, 0.1)",
           borderRadius: 2,
           display: "flex",
           flexDirection: "column",
-          alignItems: "flex-end",
+          mb: 2,
         }}
       >
-        {messages.length === 0 ? (
-          <Typography color="text.secondary" textAlign="center">
-            No messages yet.
+        {!chat ? (
+          <Typography
+            color="text.secondary"
+            textAlign="center"
+            sx={{ alignSelf: "center", margin: "auto" }}
+          >
+            Select a chat to start messaging
+          </Typography>
+        ) : messages.length === 0 ? (
+          <Typography
+            color="text.secondary"
+            textAlign="center"
+            sx={{ alignSelf: "center", margin: "auto" }}
+          >
+            No messages yet. Start the conversation!
           </Typography>
         ) : (
           messages.map((msg) => (
             <Box
               key={msg.id}
               sx={{
-                p: 1,
+                p: 2,
                 maxWidth: "70%",
                 borderRadius: 2,
                 bgcolor: msg.sender === "user" ? "#EB7BC0" : "#EED5C2",
-                color: "white",
-                alignSelf: "flex-end",
-                mb: 1,
+                color: msg.sender === "user" ? "white" : "#7C606B",
+                alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
+                mb: 1.5,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
               }}
             >
-              <Typography
-                component="span"
-                sx={{ whiteSpace: "pre-wrap", color: "white" }}
-              >
+              <Typography sx={{ whiteSpace: "pre-wrap" }}>
                 {msg.text}
               </Typography>
 
               {msg.text.includes("Buddy Reservation Request") && (
-                <Box display="flex" justifyContent="center" mt={2}>
+                <Box display="flex" justifyContent="center" mt={2} gap={1}>
                   <Button
                     variant="contained"
-                    color="primary"
-                    sx={{ px: 4, mr: 1 }}
+                    color="error"
+                    size="small"
                     onClick={() => {
                       /* Handle Cancel Booking Action */
+                      handleSendMessage("I would like to cancel this booking.");
                     }}
                   >
                     Cancel Booking
                   </Button>
                   <Button
                     variant="contained"
-                    color="secondary"
-                    sx={{ px: 4, ml: 1 }}
-                    onClick={() => handleEditBooking(msg.text)} // เมื่อคลิก "Edit Booking"
+                    color="primary"
+                    size="small"
+                    onClick={() => handleEditBooking(msg.text)}
                   >
                     Edit Booking
                   </Button>
@@ -248,11 +295,12 @@ export function ChatWindow({
             </Box>
           ))
         )}
+        <div ref={messagesEndRef} />
       </Box>
 
-      {/* แสดง Dialog เมื่อ openDialog เป็น true */}
+      {/* Booking dialog */}
       <BookingDialog
-        onSendMessage={sendMessage}
+        onSendMessage={handleSendMessage}
         editDetails={editDetails}
         editStartTime={editStartTime}
         editEndTime={editEndTime}
@@ -261,10 +309,26 @@ export function ChatWindow({
         setEditStartTime={setEditStartTime}
         setEditEndTime={setEditEndTime}
         setEditSelectedDate={setEditSelectedDate}
-        open={openDialog} // ส่งค่า open ให้กับ Dialog
-        setOpen={setOpenDialog} // ฟังก์ชันสำหรับปิด Dialog
+        open={openDialog}
+        setOpen={setOpenDialog}
       />
-      <MessageInput onSendMessage={sendMessage} />
+
+      {/* Message input */}
+      <MessageInput
+        onSendMessage={handleSendMessage}
+        disabled={!chat || !socketConnected}
+      />
+
+      {/* Connection status indicator */}
+      {!socketConnected && (
+        <Typography
+          color="error"
+          variant="caption"
+          sx={{ position: "absolute", bottom: 2, right: 12 }}
+        >
+          Reconnecting to server...
+        </Typography>
+      )}
     </Paper>
   );
 }

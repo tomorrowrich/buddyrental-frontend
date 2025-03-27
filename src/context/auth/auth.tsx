@@ -8,6 +8,7 @@ import {
 } from "react";
 import {
   getProfile,
+  getToken,
   login as requestLogin,
   logout as requestLogout,
 } from "@/api/auth/api";
@@ -28,6 +29,7 @@ export interface AuthContextType {
   ) => Promise<{ success: boolean; error?: string } | undefined>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  token: string | null;
 }
 
 interface AuthProviderProps {
@@ -39,6 +41,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -50,11 +53,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         pathname !== "/login" &&
         pathname !== "/register" &&
         pathname !== "/register/complete" &&
-        pathname !== "/login/forgetpassword" &&
-        pathname !== "/login/resetpassword" &&
+        pathname !== "/register/verify" &&
+        pathname !== "/reset" &&
         pathname !== "/register/complete" &&
-        pathname !== "/app/onboard" &&
-        pathname !== "/register/verify"
+        pathname !== "/app/onboard"
       ) {
         redirect("/login");
       }
@@ -76,6 +78,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     });
   }, [pathname]);
+
+  useEffect(() => {
+    getToken().then((token) => setToken(token));
+  }, [user]);
 
   const login = async (
     {
@@ -108,6 +114,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     isAuthenticated,
     user,
+    token,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

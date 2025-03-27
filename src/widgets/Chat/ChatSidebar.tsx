@@ -23,8 +23,8 @@ export function ChatSidebar({
         const chatLists = chats.map((chat: Chat) => {
           if (chat.customerId === user?.userId) {
             return {
-              name: chat.buddy.displayName,
-              avatar: chat.buddy.profilePicture,
+              name: chat.buddy.user.displayName,
+              avatar: chat.buddy.user.profilePicture,
               role: "customer",
               chat: chat,
             };
@@ -37,13 +37,11 @@ export function ChatSidebar({
             };
           }
         });
-
         setChatList(chatLists);
       }
     };
-
     fetchChatList();
-  });
+  }, [user]);
 
   return (
     <Paper sx={{ width: 320, p: 2, borderRadius: 3, boxShadow: 3 }}>

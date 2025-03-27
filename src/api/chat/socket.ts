@@ -1,30 +1,51 @@
-"use client";
-
 import { io, Socket } from "socket.io-client";
-import { socketURL } from "..";
-import Cookies from "js-cookie";
+import { ChatMessage, ChatMessageDTO } from "./interface";
 
-export let socket: Socket;
+let socket: Socket;
 
-export async function initializeSocket(userId: string) {
-  const token = Cookies.get("token");
-
-  socket = io(socketURL, {
-    withCredentials: true,
-    auth: {
-      token,
-      userId,
-    },
-    path: "/api/ws",
-    // extraHeaders: {
-    //   "userId": userId,
-    //   "token": token,
-    // }
-  });
-}
-
-export async function disconnectSocket() {
-  if (socket) {
-    socket.disconnect();
+export const initializeSocket = (userId: string, token: string): Socket => {
+  if (!socket) {
+    // Use a secure WebSocket connection to your backend
+    socket = io(`${process.env.NEXT_PUBLIC_API_URL}/chats`, {
+      path: "/api/ws",
+      withCredentials: true,
+      auth: {
+        userid: userId,
+        token,
+      },
+      extraHeaders: {
+        userid: userId,
+        token,
+      },
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      autoConnect: true,
+    });
   }
-}
+  return socket;
+};
+
+export const subscribeToMessages = (
+  callback: (message: ChatMessage) => void,
+) => {
+  if (!socket) return;
+
+  socket.on(`message`, (message: ChatMessage) => {
+    callback(message);
+    console.log(message);
+  });
+
+  return () => {
+    socket.off(`message`);
+  };
+};
+
+export const sendMessage = (message: ChatMessageDTO): void => {
+  if (!socket || !socket.connected) {
+    console.error("Socket not connected");
+    return;
+  }
+  socket.emit("message", message);
+};
+
+export { socket };
