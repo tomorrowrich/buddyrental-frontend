@@ -8,7 +8,13 @@ import {
   Avatar,
   Button,
   Menu,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  Modal,
+  TextField,
 } from "@mui/material";
+
 import {
   NotificationsNone,
   ChatBubbleOutline,
@@ -16,6 +22,7 @@ import {
   Add,
   EventNote,
   RequestQuote,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import Image from "next/image";
 import { useAuth } from "@/context/auth/auth";
@@ -32,6 +39,10 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const theme = useTheme();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportType, setReportType] = useState("Payment Issues");
+  const [reportText, setReportText] = useState("");
+  const [accountName, setAccountName] = useState("");
 
   const handleLogout = async () => {
     await logout();
@@ -125,6 +136,164 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
 
             {/* User Avatar with Dialog */}
             <Box>
+              {/* Report Issues Modal */}
+              <Modal
+                open={reportModalOpen}
+                onClose={() => setReportModalOpen(false)}
+                aria-labelledby="report-issues-title"
+                aria-describedby="report-issues-description"
+              >
+                <Box
+                  sx={{
+                    p: 4,
+                    backgroundColor: "white",
+                    borderRadius: 2,
+                    width: 550,
+                    mx: "auto",
+                    mt: 10,
+                    position: "relative",
+                  }}
+                >
+                  {/* Close button at the top-right corner */}
+                  <IconButton
+                    onClick={() => setReportModalOpen(false)}
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      color: "#C46BAE",
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+
+                  <Typography variant="h6" id="report-issues-title" mb={2}>
+                    Report Issues
+                  </Typography>
+                  <RadioGroup
+                    value={reportType}
+                    onChange={(e) => setReportType(e.target.value)}
+                    id="report-issues-description"
+                  >
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 2,
+                      }}
+                    >
+                      <FormControlLabel
+                        value="Payment Issues"
+                        control={
+                          <Radio
+                            sx={{
+                              color: "#EDA4BD",
+                              "&.Mui-checked": { color: "#EDA4BD" },
+                            }}
+                          />
+                        }
+                        label="Payment Issues"
+                      />
+                      <FormControlLabel
+                        value="Buddy/Customer Report"
+                        control={
+                          <Radio
+                            sx={{
+                              color: "#EDA4BD",
+                              "&.Mui-checked": { color: "#EDA4BD" },
+                            }}
+                          />
+                        }
+                        label="Buddy/Customer Report"
+                      />
+                      <FormControlLabel
+                        value="App/System Issues"
+                        control={
+                          <Radio
+                            sx={{
+                              color: "#EDA4BD",
+                              "&.Mui-checked": { color: "#EDA4BD" },
+                            }}
+                          />
+                        }
+                        label="App/System Issues"
+                      />
+                      <FormControlLabel
+                        value="Others"
+                        control={
+                          <Radio
+                            sx={{
+                              color: "#EDA4BD",
+                              "&.Mui-checked": { color: "#EDA4BD" },
+                            }}
+                          />
+                        }
+                        label="Others"
+                      />
+                    </Box>
+                  </RadioGroup>
+                  {reportType === "Buddy/Customer Report" && (
+                    <TextField
+                      fullWidth
+                      margin="normal"
+                      label="Account Name"
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                      sx={{
+                        "& .MuiInputLabel-root": { color: "#EDA4BD" }, // สีของ label
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { borderColor: "#EDA4BD" }, // สีเส้นขอบปกติ
+                          "&:hover fieldset": { borderColor: "#D16BA5" }, // สีเส้นขอบเมื่อ hover
+                          "& input": { color: "#EDA4BD" }, // สีตัวอักษรในช่อง input
+                        },
+                      }}
+                    />
+                  )}
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    margin="normal"
+                    placeholder="Please give more details about the problem"
+                    value={reportText}
+                    onChange={(e) => setReportText(e.target.value)}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": { borderColor: "#EDA4BD" },
+                        "&:hover fieldset": { borderColor: "#D16BA5" },
+                      },
+                      "& .MuiInputBase-root": { color: "#EDA4BD" },
+                    }}
+                  />
+                  {/* Submit button */}
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", mt: 2 }}
+                  >
+                    <Button
+                      variant="contained"
+                      sx={{
+                        backgroundColor: "#EB7BC0",
+                        color: "white",
+                        "&:hover": { backgroundColor: "#D16BA5" },
+                        padding: "8px 16px",
+                        fontSize: "14px",
+                        width: "auto",
+                      }}
+                      onClick={() => {
+                        console.log("Report Submitted", {
+                          reportType,
+                          reportText,
+                          accountName,
+                        });
+                        setReportModalOpen(false);
+                      }} // แก้ให้เมื่อกดปุ่มแล้วทำการ Report ด้วย
+                    >
+                      Report
+                    </Button>
+                  </Box>
+                </Box>
+              </Modal>
+
               <Avatar
                 src={user.profilePicture ? user.profilePicture : undefined}
                 alt="User"
@@ -186,6 +355,18 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     }}
                   >
                     Settings
+                  </Button>
+
+                  <Button
+                    fullWidth
+                    variant="text"
+                    sx={{ justifyContent: "flex-start", mb: 1 }}
+                    onClick={() => {
+                      setAnchorEl(null);
+                      setReportModalOpen(true);
+                    }}
+                  >
+                    Report
                   </Button>
                   <Button
                     fullWidth
