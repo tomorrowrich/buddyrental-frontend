@@ -28,10 +28,22 @@ import { useAuth } from "@/context/auth/auth";
 import { useState } from "react";
 import { useTheme } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { submitReport } from "@/api/report/api";
 
 export interface NavigationBarProps {
   isAdmin?: boolean;
 }
+
+const ReportCategoryMap: Record<string, string> = {
+  "Payment Issues": "25d40017-05ad-498b-bfcf-88632cff85d9",
+  "Buddy/Customer Report": "123e4567-e89b-12d3-a456-426614174000",
+  "App/System Issues": "cebae3c6-4ba6-4747-b351-325eb000243c",
+  Others: "6fb1dfaf-d12e-4ce7-a392-f5d83d91a46e",
+};
+
+const getCategoryId = (categoryName: string): string => {
+  return ReportCategoryMap[categoryName];
+};
 
 export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const { logout, user } = useAuth();
@@ -39,13 +51,34 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [reportModalOpen, setReportModalOpen] = useState(false);
-  const [reportType, setReportType] = useState("Payment Issues");
+  const [reportType, setReportType] = useState("Buddy/Customer Report");
   const [reportText, setReportText] = useState("");
   const [accountName, setAccountName] = useState("");
 
   const handleLogout = async () => {
     console.log("Logging out");
     await logout();
+  };
+
+  const handleSubmit = async () => {
+    const categoryId = getCategoryId(reportType);
+    const data = {
+      userId: user?.userId,
+      buddyId: accountName || "123e4567-e89b-12d3-a456-426614174000",
+      categoryId: categoryId,
+      details: reportText,
+    };
+    try {
+      const response = await submitReport(data);
+      console.log(response);
+    } catch (error) {
+      console.error("An error occurred while submitting the report:", error);
+    } finally {
+      setReportText("");
+      setAccountName("");
+      setReportType("Payment Issues");
+      setReportModalOpen(false);
+    }
   };
 
   return (
@@ -91,7 +124,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
             <Button
               startIcon={<EventNote />}
               sx={{ color: "primary.main", textTransform: "none" }}
-              onClick={() => router.push("/app/calendar")}
+              onClick={() => router.push("/app/booking/schedule")}
             >
               Calendar
             </Button>
@@ -270,14 +303,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                         fontSize: "14px",
                         width: "auto",
                       }}
-                      onClick={() => {
-                        console.log("Report Submitted", {
-                          reportType,
-                          reportText,
-                          accountName,
-                        });
-                        setReportModalOpen(false);
-                      }} // แก้ให้เมื่อกดปุ่มแล้วทำการ Report ด้วย
+                      onClick={handleSubmit} // แก้ให้เมื่อกดปุ่มแล้วทำการ Report ด้วย
                     >
                       Report
                     </Button>

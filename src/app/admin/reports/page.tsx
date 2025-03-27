@@ -11,8 +11,10 @@ import {
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getReports } from "@/api/report/api";
+import { ReportData } from "@/api/report/interface";
 
 const filters = [
   { label: "Payment Issue", value: "payment" },
@@ -21,74 +23,26 @@ const filters = [
   { label: "Others", value: "others" },
 ];
 
-// TODO Fetch real booking data from API
-const bookingData = [
-  {
-    id: 1,
-    name: "Alexa Rawles",
-    email: "alexarawles@gmail.com",
-    avatar: "https://picsum.photos/200?random=1",
-  },
-  {
-    id: 2,
-    name: "John Smith",
-    email: "johnsmith@gmail.com",
-    avatar: "https://picsum.photos/200?random=2",
-  },
-  {
-    id: 3,
-    name: "Emma Wilson",
-    email: "emmaw@gmail.com",
-    avatar: "https://picsum.photos/200?random=3",
-  },
-  {
-    id: 4,
-    name: "Michael Chen",
-    email: "mchen@gmail.com",
-    avatar: "https://picsum.photos/200?random=4",
-  },
-  {
-    id: 5,
-    name: "Sarah Johnson",
-    email: "sarahj@gmail.com",
-    avatar: "https://picsum.photos/200?random=5",
-  },
-  {
-    id: 6,
-    name: "David Brown",
-    email: "dbrown@gmail.com",
-    avatar: "https://picsum.photos/200?random=6",
-  },
-  {
-    id: 7,
-    name: "Lisa Anderson",
-    email: "landerson@gmail.com",
-    avatar: "https://picsum.photos/200?random=7",
-  },
-  {
-    id: 8,
-    name: "James Wilson",
-    email: "jwilson@gmail.com",
-    avatar: "https://picsum.photos/200?random=8",
-  },
-  {
-    id: 9,
-    name: "Maria Garcia",
-    email: "mgarcia@gmail.com",
-    avatar: "https://picsum.photos/200?random=9",
-  },
-  {
-    id: 10,
-    name: "Robert Taylor",
-    email: "rtaylor@gmail.com",
-    avatar: "https://picsum.photos/200?random=10",
-  },
-];
-
 export default function Page() {
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [reports, setReports] = useState<ReportData[]>([]);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const data = await getReports();
+        setReports(data);
+      } catch (err) {
+        throw err;
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  console.log(reports);
 
   const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -182,7 +136,7 @@ export default function Page() {
           data-testid="booking-history-container"
           sx={{ width: "100%", padding: 2, flex: 1 }}
         >
-          <UnresolvedReport data={bookingData} />
+          <UnresolvedReport datas={reports} />
         </Box>
       </Box>
     </Container>
