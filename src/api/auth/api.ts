@@ -6,8 +6,13 @@ import { cookies } from "next/headers";
 import { User } from "@/model/user";
 
 export async function register(data: SignUpFormData) {
+  const payload = {
+    ...data,
+    citizenId: data.idCard,
+    postalCode: data.zipcode,
+  };
   return axios
-    .post(`${baseURL}/auth/register`, data, {
+    .post(`${baseURL}/auth/register`, payload, {
       headers: { "Content-Type": "application/json" },
     })
     .then((res) => {
@@ -92,4 +97,25 @@ export async function logout() {
     partitioned: true,
   });
   return { success: true };
+}
+
+export async function requestPasswordReset(email: string) {
+  try {
+    const response = await axios.post(
+      `${baseURL}/users/reset-password`,
+      { email },
+      {
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    return response.data;
+  } catch (err: unknown) {
+    console.error("Request error:", err);
+
+    if (axios.isAxiosError(err)) {
+      return err.response?.data;
+    }
+
+    return;
+  }
 }
