@@ -3,18 +3,19 @@ import { useState } from "react";
 import { ChatSidebar } from "@/widgets/Chat/ChatSidebar";
 import { ChatWindow } from "@/widgets/Chat/ChatWindow";
 import { Box } from "@mui/material";
+import { Chat } from "@/api/chat/interface";
 
 export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState<{
-    name: string;
-    avatar: string;
+    role: "buddy" | "customer" | null;
+    chat: Chat | null;
   }>({
-    name: "Alexa Rawles",
-    avatar: "https://picsum.photos/80",
+    role: null,
+    chat: null,
   });
 
-  const handleSelectChat = (name: string, avatar: string) => {
-    setSelectedChat({ name, avatar });
+  const handleSelectChat = (role: "buddy" | "customer", chat: Chat) => {
+    setSelectedChat({ role, chat });
   };
 
   return (
