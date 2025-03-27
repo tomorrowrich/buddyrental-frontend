@@ -23,7 +23,7 @@ export async function getUnverifiedUsers() {
   }
 
   return axios
-    .get<User[]>(`${baseURL}/admin/verify`, {
+    .get<{ data: User[] }>(`${baseURL}/admin/verify`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -53,7 +53,6 @@ export default function Signup() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
 
     if (!formData.agreeToTerms) {
       setDialogMessage("Please agree to the terms and conditions");
