@@ -1,15 +1,30 @@
 "use client";
 
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { socketURL } from "..";
 import Cookies from "js-cookie";
-import { getProfile } from "../auth/api";
 
+export let socket: Socket;
 
-export const socket = io(socketURL, {
-  auth: {
-    userId: getProfile().user?.userId,
-    token: Cookies.get("token"),
-  },
-  path: "/api/ws",
-})
+export async function initializeSocket(userId: string) {
+  const token = Cookies.get("token");
+
+  socket = io(socketURL, {
+    withCredentials: true,
+    auth: {
+      token,
+      userId,
+    },
+    path: "/api/ws",
+    // extraHeaders: {
+    //   "userId": userId,
+    //   "token": token,
+    // }
+  });
+}
+
+export async function disconnectSocket() {
+  if (socket) {
+    socket.disconnect();
+  }
+}

@@ -3,13 +3,12 @@ import { Avatar, Box, Paper, Typography, Button } from "@mui/material";
 import { BookingDialog } from "./BookingDialog";
 import { MessageInput } from "./MessageInput";
 import { useRouter } from "next/navigation";
-import { Chat, ChatMessage } from "@/api/chat/interface";
+import { Chat, ChatMessage, ChatMessageDTO } from "@/api/chat/interface";
 import { getChatMessages } from "@/api/chat/api";
 import { useAuth } from "@/context/auth/auth";
-import {  socket } from "@/api/chat/socket";
+import { initializeSocket, socket } from "@/api/chat/socket";
 
 import { randomUUID } from "crypto";
-import { connect } from "http2";
 
 export function ChatWindow({
   selectedChat,
@@ -27,15 +26,19 @@ export function ChatWindow({
   const router = useRouter();
   const [socketConnected, setSocketConnected] = useState(false);
   const [socketTransport, setSocketTransport] = useState("N/A");
+  const [chatHistory, setChatHistory] = useState(false);
 
   const { user } = useAuth();
 
   const role = selectedChat.role;
   const chat = selectedChat.chat;
 
-  if (!chat) return;
+  initializeSocket(user?.userId ?? "");
 
-  function reformatMessage(chat: Chat, message: ChatMessage): {
+  function reformatMessage(
+    chat: Chat,
+    message: ChatMessage,
+  ): {
     id: string;
     text: string;
     sender: "user" | "buddy";
@@ -47,62 +50,69 @@ export function ChatWindow({
     };
   }
 
-  const fetchChatHistory = async () => {
-    const { success, messages: rawMessages } = await getChatMessages(chat.id);
+  useEffect(() => {
+    if (!chat) return;
+    if (chatHistory) return;
+    const fetchChatHistory = async () => {
+      const { success, messages: rawMessages } = await getChatMessages(chat.id);
 
-    if (success) {
-      const formattedMsg = rawMessages.map((msg: ChatMessage) => {
-        return reformatMessage(chat, msg);
-      });
+      if (success) {
+        const formattedMsg = rawMessages.map((msg: ChatMessage) => {
+          return reformatMessage(chat, msg);
+        });
 
-      setMessages(formattedMsg);
-    }
-  };
-  fetchChatHistory();
+        setMessages(formattedMsg);
+      }
+    };
+    setChatHistory(true);
+    fetchChatHistory();
+  }, [chatHistory]);
 
   useEffect(() => {
+    if (!chat) return;
+
     if (socket.connected) {
-      
+      onSocketConnected();
     }
 
-    function onConnect() {
+    function onSocketConnected() {
       setSocketConnected(true);
       setSocketTransport(socket.io.engine.transport.name);
 
-      socket.io.engine.on("upgrade", (transport) => {
-        setSocketTransport(transport.name);
-      })
+      socket.io.engine.on("upgrade", () => {
+        setSocketTransport(socket.io.engine.transport.name);
+      });
     }
 
-    function onDisconnect() {
+    function onSocketDisconnected() {
       setSocketConnected(false);
       setSocketTransport("N/A");
     }
 
-    socket.on("message", (message: ChatMessage) => {
-      setMessages((prev) => [...prev, reformatMessage(chat, message)]);
-    });
-
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    socket.on("connect", onSocketConnected);
+    socket.on("disconnect", onSocketDisconnected);
 
     return () => {
+      socket.off("connect", onSocketConnected);
+      socket.off("disconnect", onSocketDisconnected);
       socket.off("message");
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-    }
+    };
   }, []);
 
   const sendMessage = (message: string) => {
     if (!chat) return;
     socket.emit("message", {
-      trackId: randomUUID().toString(),
+      trackId: randomUUID(),
       chatId: chat.id,
       senderId: user?.userId,
       content: message,
-      meta: { metaId: randomUUID().toString(), timestamp: new Date(), type: "text" }
-    });
-  }
+      meta: {
+        metaId: randomUUID(),
+        timestamp: new Date(),
+        type: "text",
+      },
+    } as ChatMessageDTO);
+  };
 
   const handleEditBooking = (message: string) => {
     // แยกข้อมูลจากข้อความที่ได้รับ

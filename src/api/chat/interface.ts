@@ -18,7 +18,7 @@ export interface ChatMessage {
   meta: ChatMessageMeta;
   status: ChatMessageStatus;
   readAt: Date | null;
-  createdAt: Date;  
+  createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
 }

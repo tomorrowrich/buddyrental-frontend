@@ -14,7 +14,7 @@ export default function ChatPage() {
     chat: null,
   });
 
-  const handleSelectChat = ( role: "buddy" | "customer", chat: Chat) => {
+  const handleSelectChat = (role: "buddy" | "customer", chat: Chat) => {
     setSelectedChat({ role, chat });
   };
 

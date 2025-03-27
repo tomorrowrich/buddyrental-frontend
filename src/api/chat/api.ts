@@ -2,10 +2,9 @@
 
 import axios from "axios";
 import { baseURL } from "..";
-import { Chat } from "./interface";
 import { cookies } from "next/headers";
 
-export async function getChatList(take: number = 25, skip: number = 0){
+export async function getChatList(take: number = 25, skip: number = 0) {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -38,7 +37,7 @@ export async function createChat(buddyId: string) {
   if (!token) {
     return { success: false, chatId: null, error: "Token not found" };
   }
-  
+
   return await axios
     .post(`${baseURL}/chat/${buddyId}`, null, {
       headers: {
@@ -46,15 +45,23 @@ export async function createChat(buddyId: string) {
       },
     })
     .then((res) => {
-      //FIXME 
+      //FIXME
       return { success: true, chatId: res.data.chatId, error: null };
     })
     .catch((err) => {
-      return { success: false, chatId: null, error: err.response.data.message || "Unknown error" };
+      return {
+        success: false,
+        chatId: null,
+        error: err.response.data.message || "Unknown error",
+      };
     });
 }
 
-export async function getChatMessages(chatId: string, take: number = 50, skip: number = 0) {
+export async function getChatMessages(
+  chatId: string,
+  take: number = 50,
+  skip: number = 0,
+) {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -72,6 +79,10 @@ export async function getChatMessages(chatId: string, take: number = 50, skip: n
       return { success: true, messages: res.data.data, error: null };
     })
     .catch((err) => {
-      return { success: false, messages: null, error: err.response.data.message || "Unknown error" };
+      return {
+        success: false,
+        messages: null,
+        error: err.response.data.message || "Unknown error",
+      };
     });
 }
