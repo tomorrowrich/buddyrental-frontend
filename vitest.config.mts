@@ -19,6 +19,7 @@ export default defineConfig({
         "**/*.d.ts",
         ".next/**",
         "coverage/**",
+        "tests/**",
       ],
       reporter: ["text", "json", "html"],
       provider: "v8",
