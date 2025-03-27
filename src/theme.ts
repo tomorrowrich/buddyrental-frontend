@@ -22,6 +22,50 @@ let BuddyRentalTheme = createTheme({
       fontWeight: 600,
     },
   },
+});
+
+BuddyRentalTheme = createTheme(BuddyRentalTheme, {
+  palette: {
+    primary: BuddyRentalTheme.palette.augmentColor({
+      color: { main: "#7C606B" },
+      name: "primary",
+    }),
+    secondary: BuddyRentalTheme.palette.augmentColor({
+      color: { main: "#C46BAE" },
+      name: "secondary",
+    }),
+    tertiary: BuddyRentalTheme.palette.augmentColor({
+      color: { main: "#EB7BC0" },
+      name: "tertiary",
+    }),
+    quaternary: BuddyRentalTheme.palette.augmentColor({
+      color: { main: "#EDA4BD" },
+      name: "quaternary",
+    }),
+    quinary: BuddyRentalTheme.palette.augmentColor({
+      color: { main: "#EED5C2" },
+      name: "quinary",
+    }),
+    background: {
+      default: "#FAFAFA",
+      paper: "#FFFFFF",
+    },
+    text: {
+      primary: "#7C606B",
+      secondary: "#8A7883",
+    },
+    error: {
+      main: "#F44336",
+    },
+  },
+  shadows: [
+    "none",
+    "0 2px 4px rgba(124, 96, 107, 0.05)",
+    "0 4px 8px rgba(124, 96, 107, 0.1)",
+    "0 6px 16px rgba(124, 96, 107, 0.15)",
+    "0 8px 20px rgba(124, 96, 107, 0.2)",
+    ...Array(20).fill(""),
+  ],
   components: {
     MuiLink: {
       styleOverrides: {
@@ -83,50 +127,6 @@ let BuddyRentalTheme = createTheme({
       },
     },
   },
-});
-
-BuddyRentalTheme = createTheme(BuddyRentalTheme, {
-  palette: {
-    primary: BuddyRentalTheme.palette.augmentColor({
-      color: { main: "#7C606B" },
-      name: "primary",
-    }),
-    secondary: BuddyRentalTheme.palette.augmentColor({
-      color: { main: "#C46BAE" },
-      name: "secondary",
-    }),
-    tertiary: BuddyRentalTheme.palette.augmentColor({
-      color: { main: "#EB7BC0" },
-      name: "tertiary",
-    }),
-    quaternary: BuddyRentalTheme.palette.augmentColor({
-      color: { main: "#EDA4BD" },
-      name: "quaternary",
-    }),
-    quinary: BuddyRentalTheme.palette.augmentColor({
-      color: { main: "#EED5C2" },
-      name: "quinary",
-    }),
-    background: {
-      default: "#FAFAFA",
-      paper: "#FFFFFF",
-    },
-    text: {
-      primary: "#7C606B",
-      secondary: "#8A7883",
-    },
-    error: {
-      main: "#F44336",
-    },
-  },
-  shadows: [
-    "none",
-    "0 2px 4px rgba(124, 96, 107, 0.05)",
-    "0 4px 8px rgba(124, 96, 107, 0.1)",
-    "0 6px 16px rgba(124, 96, 107, 0.15)",
-    "0 8px 20px rgba(124, 96, 107, 0.2)",
-    ...Array(20).fill(""),
-  ],
 });
 
 declare module "@mui/material/styles" {
