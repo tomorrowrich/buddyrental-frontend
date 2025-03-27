@@ -88,17 +88,13 @@ export default function CompleteProfile() {
     if (success) {
       localStorage.removeItem(STORAGE_KEY);
 
-      const loginResponse = await login(
+      login(
         {
           email: completeData.email,
           password: completeData.password,
         },
         { redirectOnSuccess: false },
-      );
-
-      if (loginResponse?.success) {
-        redirect("/app/onboard");
-      }
+      ).then(redirect("/app/verify"));
     } else {
       console.error(error);
     }
