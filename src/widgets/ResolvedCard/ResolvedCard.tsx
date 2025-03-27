@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Stack,
   Avatar,
@@ -17,19 +17,109 @@ import {
   Radio,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { ReportData } from "@/api/report/interface";
+import { User } from "@/model/user";
+import { getUser } from "@/api/users/api";
+import { getBuddy } from "@/api/buddy/api";
 
-export const ResolvedCard = ({
-  name,
-  email,
-  avatar,
-}: {
-  name: string;
-  email: string;
-  avatar: string;
-}) => {
+const bookingData = [
+  {
+    id: 1,
+    name: "Alexa Rawles",
+    email: "alexarawles@gmail.com",
+    avatar: "https://picsum.photos/200?random=1",
+  },
+  {
+    id: 2,
+    name: "John Smith",
+    email: "johnsmith@gmail.com",
+    avatar: "https://picsum.photos/200?random=2",
+  },
+  {
+    id: 3,
+    name: "Emma Wilson",
+    email: "emmaw@gmail.com",
+    avatar: "https://picsum.photos/200?random=3",
+  },
+  {
+    id: 4,
+    name: "Michael Chen",
+    email: "mchen@gmail.com",
+    avatar: "https://picsum.photos/200?random=4",
+  },
+  {
+    id: 5,
+    name: "Sarah Johnson",
+    email: "sarahj@gmail.com",
+    avatar: "https://picsum.photos/200?random=5",
+  },
+  {
+    id: 6,
+    name: "David Brown",
+    email: "dbrown@gmail.com",
+    avatar: "https://picsum.photos/200?random=6",
+  },
+  {
+    id: 7,
+    name: "Lisa Anderson",
+    email: "landerson@gmail.com",
+    avatar: "https://picsum.photos/200?random=7",
+  },
+  {
+    id: 8,
+    name: "James Wilson",
+    email: "jwilson@gmail.com",
+    avatar: "https://picsum.photos/200?random=8",
+  },
+  {
+    id: 9,
+    name: "Maria Garcia",
+    email: "mgarcia@gmail.com",
+    avatar: "https://picsum.photos/200?random=9",
+  },
+  {
+    id: 10,
+    name: "Robert Taylor",
+    email: "rtaylor@gmail.com",
+    avatar: "https://picsum.photos/200?random=10",
+  },
+];
+
+const ReportCategoryMap: Record<string, string> = {
+  "25d40017-05ad-498b-bfcf-88632cff85d9": "Payment Issues",
+  "123e4567-e89b-12d3-a456-426614174000": "Buddy/Customer Report",
+  "cebae3c6-4ba6-4747-b351-325eb000243c": "App/System Issues",
+  "6fb1dfaf-d12e-4ce7-a392-f5d83d91a46e": "Others",
+};
+
+export const ResolvedCard = (data: ReportData) => {
   const [open, setOpen] = useState(false);
   const theme = useTheme();
   const [action, setAction] = useState<string>("");
+  const [user, setUser] = useState<User>();
+  const [buddy, setBuddy] = useState<User>();
+  const [buddyId, setBuddyId] = useState<string>("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userRes = await getUser(data.userId);
+        setUser(userRes);
+
+        const buddyRes = await getBuddy({ buddyId });
+        if (buddyRes?.userId) {
+          const buddyUserRes = await getUser(buddyRes.userId);
+          setBuddy(buddyUserRes);
+        } else {
+          console.warn(`No buddy found for buddyId: ${buddyId}`);
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <>
@@ -42,18 +132,21 @@ export const ResolvedCard = ({
         }}
       >
         <Stack direction="row" spacing={2} alignItems="center">
-          <Avatar src={avatar} alt={name} />
+          <Avatar src={bookingData[0].avatar} alt={user?.displayName} />
           <Box>
             <Typography variant="body1" fontWeight={600} color="primary">
-              {name}
+              {user?.displayName}
             </Typography>
             <Typography variant="body2" color="secondary">
-              {email}
+              {user?.email}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
-              <Chip label="Chip Filled" color="primary" />
+              <Chip
+                label={ReportCategoryMap[data.categoryId]}
+                color="primary"
+              />
               <Typography variant="body2" color="text.secondary">
-                จ่ายเงินมีปัญหา โปรแกรมไม่ดีเอาตังค์ไม่ยอมคืน
+                {data.details}
               </Typography>
             </Box>
           </Box>
@@ -96,17 +189,21 @@ export const ResolvedCard = ({
                 Reported Account
               </Typography>
               <Box display="flex" alignItems="center" mt={1}>
-                <Avatar src={avatar} sx={{ width: 56, height: 56, mr: 2 }} />
+                <Avatar
+                  src={bookingData[1].avatar}
+                  sx={{ width: 56, height: 56, mr: 2 }}
+                />
                 <Box>
-                  <Typography fontWeight="bold">{name}</Typography>
+                  <Typography fontWeight="bold">
+                    {buddy?.displayName}
+                  </Typography>
                   <Typography color="text.secondary" variant="body2">
-                    {email}
+                    {buddy?.email}
                   </Typography>
                 </Box>
               </Box>
               <Typography variant="body2" color="text.secondary" mt={2}>
-                แอคเค้าท์คนนี้หลอกลวง ใช้รูปปลอม ไปถึงตัวจริงไม่เห็นตรงปกเลย
-                ช่วยเตะออกไปด้วยค่ะ
+                {data.details}
               </Typography>
             </Box>
 
