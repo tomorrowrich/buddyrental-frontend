@@ -139,23 +139,30 @@ export default function Page() {
           width: "100%",
           height: "100%",
           mb: 10,
-          borderRadius: 2,
+          borderRadius: 8,
           boxShadow: "0px 5px 30px rgba(237, 164, 189, 0.8)",
+          overflow: "hidden",
         }}
       >
-        <Typography
-          variant="h5"
-          fontWeight={700}
+        <Box
           sx={{
             background: `linear-gradient(90deg, ${theme.palette.tertiary.main} , ${theme.palette.quinary.main})`,
             padding: 2,
-            color: "white",
-            borderTopLeftRadius: 2,
-            borderTopRightRadius: 2,
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
-          Booking History
-        </Typography>
+          <Typography
+            variant="h5"
+            fontWeight={700}
+            sx={{
+              color: "white",
+              mt: 1,
+            }}
+          >
+            Booking History
+          </Typography>
+        </Box>
         <Box
           data-testid="booking-history-container"
           sx={{ width: "100%", padding: 2, flex: 1 }}
