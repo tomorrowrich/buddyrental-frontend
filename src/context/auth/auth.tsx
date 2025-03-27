@@ -51,7 +51,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         pathname !== "/register" &&
         pathname !== "/register/complete" &&
         pathname !== "/login/forgetpassword" &&
-        pathname !== "/login/resetpassword"
+        pathname !== "/login/resetpassword" &&
+        pathname !== "/register/complete" &&
+        pathname !== "/app/onboard" &&
+        pathname !== "/register/verify"
       ) {
         redirect("/login");
       }
