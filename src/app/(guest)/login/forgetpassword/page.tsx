@@ -10,24 +10,26 @@ import {
   InputLabel,
   OutlinedInput,
   FormHelperText,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { useState, FormEvent } from "react";
 import { LoginCarousel } from "@/widgets/LoginCarousel/LoginCarousel";
-import { useAuth } from "@/context/auth/auth";
 import { useRouter } from "next/navigation";
 import { requestPasswordReset } from "@/api/auth/api";
 
-export default function Login() {
-  const auth = useAuth();
+export default function PasswordResetPage() {
   const router = useRouter();
-
-  const [showPassword, setShowPassword] = useState(false);
   const [values, setValues] = useState({
     email: "",
   });
   const [errors, setErrors] = useState({
     email: "",
   });
+  const [openDialog, setOpenDialog] = useState(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValues({ email: event.target.value });
@@ -40,6 +42,11 @@ export default function Login() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    router.push("/login");
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -50,15 +57,14 @@ export default function Login() {
 
     try {
       const response = await requestPasswordReset(values.email);
+      console.log(response);
 
-      if (response.success && response.token) {
-        // EDIT: Ensure both `success` and `token` exist
-        router.push(`/login/resetpassword?code=${response.token}`);
-      } else {
-        alert(response.error || "Failed to send reset password email"); // EDIT: Show alert if no token
+      if (response.success) {
+        setOpenDialog(true);
       }
     } catch (error) {
-      alert("An error occurred while processing your request.");
+      setErrors({ email: "An error occurred while processing your request." });
+      setOpenDialog(true);
     }
   };
 
@@ -73,6 +79,27 @@ export default function Login() {
         flex: 1,
       }}
     >
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="password-reset-dialog"
+      >
+        <DialogTitle id="password-reset-dialog">
+          Password Reset Requested
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            A password reset link has been sent to your email. Please check your
+            inbox and follow the instructions to reset your password.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={{ xs: 4, md: 8 }}

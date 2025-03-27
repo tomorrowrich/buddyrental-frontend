@@ -90,6 +90,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
         color: "primary.main",
         px: 2,
         boxShadow: `0px 2px 4px ${!isAdmin ? "rgba(0, 0, 0, 0.05)" : "rgba(0, 0, 0, 0.1)"}`,
+        borderRadius: 0,
       }}
     >
       <Toolbar
@@ -97,6 +98,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          borderRadius: 0,
         }}
       >
         {/* Left Side - Logo */}
