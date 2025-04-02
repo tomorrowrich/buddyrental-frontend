@@ -30,6 +30,8 @@ export function ChatWindow({
   const router = useRouter();
   const [socketConnected, setSocketConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState<number | null>(null);
 
   const { user } = useAuth();
   const { socket } = useSocket();
@@ -56,6 +58,29 @@ export function ChatWindow({
     setSocketConnected(socket?.connected || false);
   }, [socket]);
 
+  // Set the container height on first render only
+  useEffect(() => {
+    if (containerRef.current && !containerHeight) {
+      const height = containerRef.current.clientHeight;
+      setContainerHeight(height);
+    }
+  }, []);
+
+  // Handle window resize to adjust container height
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.clientHeight;
+        setContainerHeight(height);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   // Fetch chat history when a chat is selected
   useEffect(() => {
     if (!chat || !user) return;
@@ -75,7 +100,7 @@ export function ChatWindow({
             return reformatMessage(msg, isFromUser);
           });
 
-          setMessages(formattedMessages);
+          setMessages(formattedMessages.reverse());
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
@@ -162,33 +187,40 @@ export function ChatWindow({
     <Paper
       sx={{
         flex: 1,
-        p: 3,
-        borderRadius: 3,
+        p: 4,
+        borderRadius: 4,
         boxShadow: 3,
         position: "relative",
         display: "flex",
         flexDirection: "column",
-        height: "90vh",
-        maxHeight: "90vh",
+        bgcolor: "background.paper",
+        overflow: "hidden",
+        height: containerHeight ? `${containerHeight}px` : "auto",
       }}
+      ref={containerRef}
     >
       {/* Chat header */}
       <Box
         display="flex"
         alignItems="center"
         justifyContent="space-between"
-        mb={2}
+        mb={3}
+        px={1}
       >
-        <Box display="flex" alignItems="center" gap={2}>
+        <Box display="flex" alignItems="center" gap={2.5}>
           <Avatar
             src={
               role === "buddy"
                 ? chat?.customer.profilePicture
                 : chat?.buddy?.user?.profilePicture
             }
-            sx={{ width: 50, height: 50 }}
+            sx={{
+              width: 56,
+              height: 56,
+              boxShadow: 2,
+            }}
           />
-          <Typography fontWeight="bold">
+          <Typography variant="h6" fontWeight="600" color="text.primary">
             {role === "buddy"
               ? chat?.customer.displayName
               : chat?.buddy?.user?.displayName}
@@ -198,22 +230,36 @@ export function ChatWindow({
         <Box display="flex" gap={2}>
           <Button
             variant="contained"
+            color="quinary"
             onClick={() => router.push("/app/profile/buddy")}
             sx={{
-              bgcolor: "#EB7BC0",
-              color: "white",
-              "&:hover": { bgcolor: "#D667A7" },
+              px: 3,
+              py: 1.2,
+              fontWeight: 600,
+              boxShadow: 2,
+              transition: "transform 0.2s ease-in-out",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: 3,
+              },
             }}
           >
             Profile
           </Button>
           <Button
             variant="contained"
+            color="tertiary"
             onClick={() => setOpenDialog(true)}
             sx={{
-              bgcolor: "#EB7BC0",
-              color: "white",
-              "&:hover": { bgcolor: "#D667A7" },
+              px: 3,
+              py: 1.2,
+              fontWeight: 600,
+              boxShadow: 2,
+              transition: "transform 0.2s ease-in-out",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: 3,
+              },
             }}
           >
             Edit Booking
@@ -226,27 +272,54 @@ export function ChatWindow({
         sx={{
           flexGrow: 1,
           overflowY: "auto",
-          p: 2,
-          bgcolor: "rgba(235, 123, 192, 0.1)",
-          borderRadius: 2,
+          p: 3,
+          bgcolor: "rgba(238, 213, 194, 0.15)",
+          borderRadius: 3,
           display: "flex",
           flexDirection: "column",
-          mb: 2,
+          mb: 3,
+          scrollbarWidth: "thin",
+          "&::-webkit-scrollbar": {
+            width: "8px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "rgba(124, 96, 107, 0.05)",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "rgba(124, 96, 107, 0.2)",
+            borderRadius: "10px",
+            "&:hover": {
+              background: "rgba(124, 96, 107, 0.3)",
+            },
+          },
         }}
       >
         {!chat ? (
           <Typography
+            variant="h6"
             color="text.secondary"
             textAlign="center"
-            sx={{ alignSelf: "center", margin: "auto" }}
+            sx={{
+              alignSelf: "center",
+              margin: "auto",
+              fontWeight: 500,
+              opacity: 0.8,
+            }}
           >
             Select a chat to start messaging
           </Typography>
         ) : messages.length === 0 ? (
           <Typography
+            variant="h6"
             color="text.secondary"
             textAlign="center"
-            sx={{ alignSelf: "center", margin: "auto" }}
+            sx={{
+              alignSelf: "center",
+              margin: "auto",
+              fontWeight: 500,
+              opacity: 0.8,
+            }}
           >
             No messages yet. Start the conversation!
           </Typography>
@@ -255,28 +328,55 @@ export function ChatWindow({
             <Box
               key={msg.id}
               sx={{
-                p: 2,
+                p: 2.5,
                 maxWidth: "70%",
-                borderRadius: 2,
-                bgcolor: msg.sender === "user" ? "#EB7BC0" : "#EED5C2",
-                color: msg.sender === "user" ? "white" : "#7C606B",
+                borderRadius:
+                  msg.sender === "user"
+                    ? "16px 16px 4px 16px"
+                    : "16px 16px 16px 4px",
+                bgcolor:
+                  msg.sender === "user" ? "tertiary.main" : "quinary.main",
+                color: msg.sender === "user" ? "white" : "text.primary",
                 alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
-                mb: 1.5,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                mb: 2.5,
+                boxShadow: 1,
+                position: "relative",
+                transition: "transform 0.1s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: 2,
+                },
               }}
             >
-              <Typography sx={{ whiteSpace: "pre-wrap" }}>
+              <Typography
+                sx={{
+                  whiteSpace: "pre-wrap",
+                  fontSize: "0.95rem",
+                  lineHeight: 1.5,
+                  fontWeight: 400,
+                }}
+              >
                 {msg.text}
               </Typography>
 
               {msg.text.includes("Buddy Reservation Request") && (
-                <Box display="flex" justifyContent="center" mt={2} gap={1}>
+                <Box display="flex" justifyContent="center" mt={3} gap={2}>
                   <Button
                     variant="contained"
                     color="error"
                     size="small"
+                    sx={{
+                      borderRadius: "12px",
+                      px: 2,
+                      py: 1,
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      boxShadow: 1,
+                      "&:hover": {
+                        boxShadow: 2,
+                      },
+                    }}
                     onClick={() => {
-                      /* Handle Cancel Booking Action */
                       handleSendMessage("I would like to cancel this booking.");
                     }}
                   >
@@ -284,8 +384,19 @@ export function ChatWindow({
                   </Button>
                   <Button
                     variant="contained"
-                    color="primary"
+                    color="secondary"
                     size="small"
+                    sx={{
+                      borderRadius: "12px",
+                      px: 2,
+                      py: 1,
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      boxShadow: 1,
+                      "&:hover": {
+                        boxShadow: 2,
+                      },
+                    }}
                     onClick={() => handleEditBooking(msg.text)}
                   >
                     Edit Booking
@@ -324,8 +435,26 @@ export function ChatWindow({
         <Typography
           color="error"
           variant="caption"
-          sx={{ position: "absolute", bottom: 2, right: 12 }}
+          fontWeight={500}
+          sx={{
+            position: "absolute",
+            bottom: 4,
+            right: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+          }}
         >
+          <span
+            style={{
+              display: "inline-block",
+              width: "8px",
+              height: "8px",
+              borderRadius: "50%",
+              backgroundColor: "#F44336",
+              marginRight: "6px",
+            }}
+          ></span>
           Reconnecting to server...
         </Typography>
       )}

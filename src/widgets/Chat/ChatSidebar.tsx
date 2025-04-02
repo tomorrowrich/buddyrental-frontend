@@ -7,8 +7,10 @@ import { Chat } from "@/api/chat/interface";
 
 export function ChatSidebar({
   onSelectChat,
+  selectedChatId,
 }: {
   onSelectChat: (role: "buddy" | "customer", chat: Chat) => void;
+  selectedChatId?: string;
 }) {
   const { user } = useAuth();
 
@@ -44,8 +46,8 @@ export function ChatSidebar({
   }, [user]);
 
   return (
-    <Paper sx={{ width: 320, p: 2, borderRadius: 3, boxShadow: 3 }}>
-      <Typography variant="h6" fontWeight="bold" mb={2}>
+    <Paper sx={{ width: 320, p: 2, boxShadow: 2 }}>
+      <Typography variant="h6" mb={2}>
         Chats
       </Typography>
       {chatList.map((chat, index) => (
@@ -57,20 +59,41 @@ export function ChatSidebar({
             gap: 2,
             p: 2,
             borderRadius: 2,
-            bgcolor: "rgba(235, 123, 192, 0.1)",
+            bgcolor:
+              selectedChatId === chat.chat.id
+                ? "rgba(235, 123, 192, 0.2)"
+                : "transparent",
             cursor: "pointer",
             mb: 1,
+            transition: "all 0.2s ease",
+            "&:hover": {
+              bgcolor: "rgba(235, 123, 192, 0.1)",
+            },
           }}
           onClick={() => onSelectChat(chat.role, chat.chat)}
         >
-          <Avatar src={chat.avatar} />
+          <Avatar
+            src={chat.avatar}
+            sx={{
+              bgcolor: "quaternary.light",
+            }}
+          />
           <Box flexGrow={1}>
-            <Typography fontWeight="medium">{chat.name}</Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography fontWeight={500}>{chat.name}</Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                maxWidth: "180px",
+              }}
+            >
               {chat.chat.ChatMessage[0].content}
             </Typography>
           </Box>
-          <IconButton>
+          <IconButton color="tertiary">
             <ChatBubbleOutlineIcon />
           </IconButton>
         </Box>

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import {
   Badge,
   Box,
+  Button,
   Divider,
   IconButton,
   List,
@@ -13,7 +14,7 @@ import {
   CircularProgress,
   Tooltip,
 } from "@mui/material";
-import { NotificationsNone } from "@mui/icons-material";
+import { NotificationsNone, DoneAll } from "@mui/icons-material";
 import { markAsRead } from "@/api/notification/api";
 import { useRouter } from "next/navigation";
 import { Notification } from "@/api/notification/interface";
@@ -134,6 +135,29 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
     handleClose();
   };
 
+  const handleMarkAllAsRead = async () => {
+    try {
+      // Mark all unread notifications as read
+      const unreadNotifications = notifications.filter(
+        (notification) => notification.status === "unread",
+      );
+
+      for (const notification of unreadNotifications) {
+        await markAsRead(notification.notificationId);
+      }
+
+      // Update local state
+      setNotifications(
+        notifications.map((n) =>
+          n.status === "unread" ? { ...n, status: "read" } : n,
+        ),
+      );
+      setUnreadCount(0);
+    } catch (err) {
+      console.error("Error marking all notifications as read:", err);
+    }
+  };
+
   const formatTime = (dateString: string): string => {
     const date = new Date(dateString);
 
@@ -150,13 +174,13 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
     <Box component="div">
       <Tooltip title="Notifications">
         <IconButton
-          color="inherit"
+          color="primary"
           onClick={handleClick}
           aria-describedby={id}
           size="large"
         >
-          <Badge badgeContent={unreadCount} color="error">
-            <NotificationsNone sx={{ color: "primary.main" }} />
+          <Badge badgeContent={unreadCount} color="secondary">
+            <NotificationsNone />
           </Badge>
         </IconButton>
       </Tooltip>
@@ -174,10 +198,47 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
           vertical: "top",
           horizontal: "right",
         }}
+        slotProps={{
+          paper: {
+            sx: {
+              width: 320,
+              border: "1px solid rgba(237, 164, 189, 0.8)",
+              borderRadius: 3,
+              boxShadow: "0px 5px 30px rgba(237, 164, 189, 0.8)",
+              overflow: "hidden",
+            },
+          },
+        }}
       >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            px: 2,
+            py: 1.5,
+            borderBottom: "1px solid rgba(124, 96, 107, 0.1)",
+          }}
+        >
+          <Typography variant="h6" color="primary">
+            Notifications
+          </Typography>
+          {unreadCount > 0 && (
+            <Button
+              startIcon={<DoneAll />}
+              size="small"
+              color="tertiary"
+              onClick={handleMarkAllAsRead}
+              sx={{ fontSize: "0.75rem" }}
+            >
+              Mark all as read
+            </Button>
+          )}
+        </Box>
+
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-            <CircularProgress size={24} />
+            <CircularProgress size={24} color="tertiary" />
           </Box>
         ) : error ? (
           <Typography color="error" sx={{ p: 2 }}>
@@ -186,7 +247,7 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
         ) : notifications.length === 0 ? (
           <Typography sx={{ p: 2 }}>No notifications found.</Typography>
         ) : (
-          <List sx={{ width: "100%", p: 0 }}>
+          <List sx={{ width: "100%", p: 0, maxHeight: 400, overflow: "auto" }}>
             {notifications.map((notification, index) => (
               <span key={notification.notificationId}>
                 <ListItem
@@ -196,10 +257,10 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
                     cursor: "pointer",
                     backgroundColor:
                       notification.status === "unread"
-                        ? "rgba(25, 118, 210, 0.08)"
+                        ? "rgba(124, 96, 107, 0.08)"
                         : "inherit",
                     "&:hover": {
-                      backgroundColor: "rgba(0, 0, 0, 0.04)",
+                      backgroundColor: "rgba(124, 96, 107, 0.04)",
                     },
                     px: 2,
                     py: 1,
@@ -212,6 +273,7 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
                         variant="subtitle1"
                         color="primary"
                         component="span"
+                        sx={{ fontWeight: 600 }}
                       >
                         {notification.title}
                       </Typography>
@@ -240,7 +302,7 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
                           </Typography>
                           <Typography
                             variant="body2"
-                            color="text.secondary"
+                            color="quaternary.main"
                             component="span"
                             sx={{ ml: 2, whiteSpace: "nowrap" }}
                           >
@@ -251,7 +313,9 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
                     }
                   />
                 </ListItem>
-                {index < notifications.length - 1 && <Divider />}
+                {index < notifications.length - 1 && (
+                  <Divider sx={{ margin: 0 }} />
+                )}
               </span>
             ))}
           </List>

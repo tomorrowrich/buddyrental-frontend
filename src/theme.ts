@@ -214,4 +214,20 @@ declare module "@mui/material/Avatar" {
   }
 }
 
+declare module "@mui/material/IconButton" {
+  interface IconButtonPropsColorOverrides {
+    tertiary: true;
+    quaternary: true;
+    quinary: true;
+  }
+}
+
+declare module "@mui/material/FormControl" {
+  interface FormControlPropsColorOverrides {
+    tertiary: true;
+    quaternary: true;
+    quinary: true;
+  }
+}
+
 export default BuddyRentalTheme;

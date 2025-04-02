@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Box, TextField, IconButton, Tooltip } from "@mui/material";
+import { useState, useEffect } from "react";
+import { TextField, IconButton, Tooltip, Box } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 
 export function MessageInput({
@@ -10,6 +10,11 @@ export function MessageInput({
   disabled?: boolean;
 }) {
   const [message, setMessage] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSend = () => {
     if (message.trim() && !disabled) {
@@ -26,14 +31,7 @@ export function MessageInput({
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-        position: "relative",
-      }}
-    >
+    <Box sx={{ position: "relative", width: "100%" }}>
       <TextField
         fullWidth
         placeholder={disabled ? "Connecting..." : "Type a message..."}
@@ -44,34 +42,64 @@ export function MessageInput({
         disabled={disabled}
         multiline
         maxRows={3}
+        color="tertiary"
+        slotProps={{
+          input: {
+            endAdornment: isMounted && (
+              <Tooltip
+                title={disabled ? "Connecting..." : "Send message"}
+                placement="top"
+                arrow
+              >
+                <IconButton
+                  onClick={handleSend}
+                  disabled={!message.trim() || disabled}
+                  sx={{
+                    bgcolor: message.trim() ? "tertiary.main" : "transparent",
+                    color: message.trim() ? "white" : "text.secondary",
+                    "&:hover": {
+                      bgcolor: message.trim()
+                        ? "secondary.main"
+                        : "rgba(124, 96, 107, 0.08)",
+                    },
+                    borderRadius: 2.5,
+                  }}
+                >
+                  <SendIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            ),
+          },
+        }}
         sx={{
           "& .MuiOutlinedInput-root": {
             borderRadius: 3,
-            pr: 5,
+            color: "text.primary",
+            "&.Mui-focused": {
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "tertiary.main",
+                borderWidth: 1.5,
+              },
+              boxShadow: 3,
+            },
+            "&:hover": {
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "quaternary.light",
+              },
+            },
+          },
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: "rgba(124, 96, 107, 0.2)",
+          },
+          "& .MuiInputBase-input": {
+            "&::placeholder": {
+              color: "text.secondary",
+              opacity: 0.6,
+              fontStyle: "italic",
+            },
           },
         }}
       />
-      <Tooltip title={disabled ? "Connecting..." : "Send message"}>
-        <span>
-          <IconButton
-            onClick={handleSend}
-            disabled={!message.trim() || disabled}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: "50%",
-              transform: "translateY(-50%)",
-              bgcolor: message.trim() ? "#EB7BC0" : "transparent",
-              color: message.trim() ? "white" : "gray",
-              "&:hover": {
-                bgcolor: message.trim() ? "#D667A7" : "transparent",
-              },
-            }}
-          >
-            <SendIcon />
-          </IconButton>
-        </span>
-      </Tooltip>
     </Box>
   );
 }
