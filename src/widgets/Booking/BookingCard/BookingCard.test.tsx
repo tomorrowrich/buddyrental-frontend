@@ -15,7 +15,7 @@ const mockProps = {
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#000000",
+      main: "#da0",
     },
     secondary: {
       main: "#000000",

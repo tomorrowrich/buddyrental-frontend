@@ -30,7 +30,9 @@
     "react": "^19.0.0",
     "react-big-calendar": "^1.17.1",
     "react-dom": "^19.0.0",
-    "swiper": "^11.2.2"
+    "socket.io-client": "^4.8.1",
+    "swiper": "^11.2.2",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.7.1",
@@ -47,6 +49,7 @@
     "@types/react": "^19",
     "@types/react-big-calendar": "^1.16.1",
     "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "3.0.5",
     "conventional-changelog-atom": "^5.0.0",

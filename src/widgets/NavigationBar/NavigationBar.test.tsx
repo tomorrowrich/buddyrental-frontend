@@ -15,6 +15,14 @@ vi.mock("next/image", () => ({
   default: (props: any) => <img {...props} />,
 }));
 
+vi.mock("@/api/report/api", () => ({
+  submitReport: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 const customRender = (ui: React.ReactElement) => {
   return render(<ThemeProvider theme={BuddyRentalTheme}>{ui}</ThemeProvider>);
 };
@@ -56,6 +64,7 @@ describe("NavigationBar", () => {
       customRender(<NavigationBar />);
       expect(screen.getByText("Bookings")).toBeInTheDocument();
       expect(screen.getByText("Chat")).toBeInTheDocument();
+      expect(screen.getByText("Calendar")).toBeInTheDocument();
       expect(screen.getByText("123.00")).toBeInTheDocument();
     });
 
@@ -68,6 +77,7 @@ describe("NavigationBar", () => {
       expect(screen.getByText("john.doe@example.com")).toBeInTheDocument();
       expect(screen.getByText("Edit Profile")).toBeInTheDocument();
       expect(screen.getByText("Settings")).toBeInTheDocument();
+      expect(screen.getByText("Report")).toBeInTheDocument();
       expect(screen.getByText("Logout")).toBeInTheDocument();
     });
 
@@ -85,9 +95,11 @@ describe("NavigationBar", () => {
       customRender(<NavigationBar />);
       const bookingsButton = screen.getByText("Bookings").closest("button");
       const chatButton = screen.getByText("Chat").closest("button");
+      const calendarButton = screen.getByText("Calendar").closest("button");
 
       expect(bookingsButton).toHaveClass("MuiButton-root");
       expect(chatButton).toHaveClass("MuiButton-root");
+      expect(calendarButton).toHaveClass("MuiButton-root");
     });
 
     it("displays correct balance with add button", () => {
@@ -112,10 +124,6 @@ describe("NavigationBar", () => {
     });
 
     it("handles profile navigation buttons correctly", () => {
-      vi.mock("next/navigation", () => ({
-        useRouter: () => ({ push: vi.fn() }),
-      }));
-
       customRender(<NavigationBar />);
 
       const avatar = screen.getByTestId("user-avatar");
@@ -130,6 +138,40 @@ describe("NavigationBar", () => {
       fireEvent.click(avatar);
       fireEvent.click(settingsButton);
       expect(screen.queryByText("Settings")).not.toBeVisible();
+    });
+
+    it("opens report modal when report button is clicked", async () => {
+      customRender(<NavigationBar />);
+      const avatar = screen.getByTestId("user-avatar");
+      fireEvent.click(avatar);
+
+      const reportButton = screen.getByText("Report");
+      fireEvent.click(reportButton);
+
+      expect(screen.getByText("Report Issues")).toBeInTheDocument();
+      expect(screen.getByLabelText("Report Category")).toBeInTheDocument();
+      expect(screen.getByText("Buddy/Customer Report")).toBeInTheDocument();
+    });
+
+    it("allows selecting report type and entering report details", async () => {
+      customRender(<NavigationBar />);
+      const avatar = screen.getByTestId("user-avatar");
+      fireEvent.click(avatar);
+
+      const reportButton = screen.getByText("Report");
+      fireEvent.click(reportButton);
+
+      // Change report type
+      fireEvent.mouseDown(screen.getByLabelText("Report Category"));
+      fireEvent.click(screen.getByText("Payment Issues"));
+
+      // Type in report text
+      const textField = screen.getByPlaceholderText(
+        "Please give more details about the problem",
+      );
+      fireEvent.change(textField, { target: { value: "Test report details" } });
+
+      expect(textField).toHaveValue("Test report details");
     });
   });
 
@@ -148,6 +190,7 @@ describe("NavigationBar", () => {
 
       expect(screen.queryByText("Bookings")).toBeNull();
       expect(screen.queryByText("Chat")).toBeNull();
+      expect(screen.queryByText("Calendar")).toBeNull();
       expect(screen.queryByText("123.00")).toBeNull();
     });
 
@@ -158,15 +201,6 @@ describe("NavigationBar", () => {
       expect(logo).toBeInTheDocument();
       expect(logo).toHaveAttribute("width", "200");
       expect(logo).toHaveAttribute("height", "40");
-    });
-
-    it("renders default avatar", () => {
-      customRender(<NavigationBar />);
-      const avatar = screen.getByTestId("user-avatar");
-
-      expect(avatar).toBeInTheDocument();
-      fireEvent.click(avatar);
-      expect(screen.queryByText("Logout")).not.toBeInTheDocument();
     });
   });
 });

@@ -8,11 +8,12 @@ import {
   Avatar,
   Button,
   Menu,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
   Modal,
   TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 
 import {
@@ -20,8 +21,11 @@ import {
   MenuBook,
   Add,
   EventNote,
-  RequestQuote,
   Close as CloseIcon,
+  Edit,
+  Settings,
+  ReportProblem,
+  Logout,
 } from "@mui/icons-material";
 import Image from "next/image";
 import NotificationTray from "../NotificationTray/NotificationTray";
@@ -64,7 +68,6 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
     const categoryId = getCategoryId(reportType);
     const data = {
       userId: user?.userId,
-      buddyId: accountName || "123e4567-e89b-12d3-a456-426614174000",
       categoryId: categoryId,
       details: reportText,
     };
@@ -86,10 +89,12 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
       position="sticky"
       elevation={0}
       sx={{
-        backgroundColor: !isAdmin ? "white" : theme.palette.quinary.main,
-        color: "primary.main",
+        backgroundColor: !isAdmin
+          ? theme.palette.background.paper
+          : theme.palette.quinary.main,
+        color: theme.palette.primary.main,
         px: 2,
-        boxShadow: `0px 2px 4px ${!isAdmin ? "rgba(0, 0, 0, 0.05)" : "rgba(0, 0, 0, 0.1)"}`,
+        boxShadow: !isAdmin ? theme.shadows[1] : theme.shadows[2],
         borderRadius: 0,
       }}
     >
@@ -114,32 +119,23 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
         {/* Right Side - Navigation, Balance, Notifications, Avatar */}
         {user && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-            {user.buddy?.buddyId && (
-              <Button
-                startIcon={<RequestQuote />}
-                sx={{ color: "primary.main", textTransform: "none" }}
-                onClick={() => router.push("/app/booking/history/buddy")}
-              >
-                Requests
-              </Button>
-            )}
             <Button
               startIcon={<MenuBook />}
-              sx={{ color: "primary.main", textTransform: "none" }}
+              sx={{ color: theme.palette.primary.main, textTransform: "none" }}
               onClick={() => router.push("/app/booking/history")}
             >
               Bookings
             </Button>
             <Button
               startIcon={<EventNote />}
-              sx={{ color: "primary.main", textTransform: "none" }}
+              sx={{ color: theme.palette.primary.main, textTransform: "none" }}
               onClick={() => router.push("/app/booking/schedule")}
             >
               Calendar
             </Button>
             <Button
               startIcon={<ChatBubbleOutline />}
-              sx={{ color: "primary.main", textTransform: "none" }}
+              sx={{ color: theme.palette.primary.main, textTransform: "none" }}
               onClick={() => router.push("/app/chat")}
             >
               Chat
@@ -150,7 +146,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
               sx={{
                 display: "flex",
                 alignItems: "center",
-                backgroundColor: "quinary.main",
+                backgroundColor: theme.palette.quinary.main,
                 borderRadius: "20px",
                 padding: "5px 10px",
                 gap: 1,
@@ -159,7 +155,10 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
               <Typography color="secondary" fontWeight="bold">
                 123.00
               </Typography>
-              <IconButton size="small" sx={{ color: "tertiary.main" }}>
+              <IconButton
+                size="small"
+                sx={{ color: theme.palette.tertiary.main }}
+              >
                 <Add fontSize="small" />
               </IconButton>
             </Box>
@@ -179,12 +178,13 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                 <Box
                   sx={{
                     p: 4,
-                    backgroundColor: "white",
+                    backgroundColor: theme.palette.background.paper,
                     borderRadius: 2,
                     width: 550,
                     mx: "auto",
                     mt: 10,
                     position: "relative",
+                    boxShadow: theme.shadows[3],
                   }}
                 >
                   {/* Close button at the top-right corner */}
@@ -194,7 +194,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                       position: "absolute",
                       top: 8,
                       right: 8,
-                      color: "#C46BAE",
+                      color: theme.palette.secondary.main,
                     }}
                   >
                     <CloseIcon />
@@ -203,68 +203,44 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                   <Typography variant="h6" id="report-issues-title" mb={2}>
                     Report Issues
                   </Typography>
-                  <RadioGroup
-                    value={reportType}
-                    onChange={(e) => setReportType(e.target.value)}
-                    id="report-issues-description"
-                  >
-                    <Box
+
+                  <FormControl fullWidth sx={{ mb: 2 }} color="quaternary">
+                    <InputLabel
+                      id="report-category-label"
+                      sx={{ color: theme.palette.quaternary.main }}
+                    >
+                      Report Category
+                    </InputLabel>
+                    <Select
+                      labelId="report-category-label"
+                      id="report-issues-description"
+                      value={reportType}
+                      onChange={(e) => setReportType(e.target.value)}
+                      label="Report Category"
                       sx={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: 2,
+                        color: theme.palette.quaternary.main,
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: theme.palette.quaternary.main,
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: theme.palette.secondary.main,
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: theme.palette.quaternary.main,
+                        },
                       }}
                     >
-                      <FormControlLabel
-                        value="Payment Issues"
-                        control={
-                          <Radio
-                            sx={{
-                              color: "#EDA4BD",
-                              "&.Mui-checked": { color: "#EDA4BD" },
-                            }}
-                          />
-                        }
-                        label="Payment Issues"
-                      />
-                      <FormControlLabel
-                        value="Buddy/Customer Report"
-                        control={
-                          <Radio
-                            sx={{
-                              color: "#EDA4BD",
-                              "&.Mui-checked": { color: "#EDA4BD" },
-                            }}
-                          />
-                        }
-                        label="Buddy/Customer Report"
-                      />
-                      <FormControlLabel
-                        value="App/System Issues"
-                        control={
-                          <Radio
-                            sx={{
-                              color: "#EDA4BD",
-                              "&.Mui-checked": { color: "#EDA4BD" },
-                            }}
-                          />
-                        }
-                        label="App/System Issues"
-                      />
-                      <FormControlLabel
-                        value="Others"
-                        control={
-                          <Radio
-                            sx={{
-                              color: "#EDA4BD",
-                              "&.Mui-checked": { color: "#EDA4BD" },
-                            }}
-                          />
-                        }
-                        label="Others"
-                      />
-                    </Box>
-                  </RadioGroup>
+                      <MenuItem value="Payment Issues">Payment Issues</MenuItem>
+                      <MenuItem value="Buddy/Customer Report">
+                        Buddy/Customer Report
+                      </MenuItem>
+                      <MenuItem value="App/System Issues">
+                        App/System Issues
+                      </MenuItem>
+                      <MenuItem value="Others">Others</MenuItem>
+                    </Select>
+                  </FormControl>
+
                   {reportType === "Buddy/Customer Report" && (
                     <TextField
                       fullWidth
@@ -272,12 +248,19 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                       label="Account Name"
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value)}
+                      color="quaternary"
                       sx={{
-                        "& .MuiInputLabel-root": { color: "#EDA4BD" }, // สีของ label
+                        "& .MuiInputLabel-root": {
+                          color: theme.palette.quaternary.main,
+                        },
                         "& .MuiOutlinedInput-root": {
-                          "& fieldset": { borderColor: "#EDA4BD" }, // สีเส้นขอบปกติ
-                          "&:hover fieldset": { borderColor: "#D16BA5" }, // สีเส้นขอบเมื่อ hover
-                          "& input": { color: "#EDA4BD" }, // สีตัวอักษรในช่อง input
+                          "& fieldset": {
+                            borderColor: theme.palette.quaternary.main,
+                          },
+                          "&:hover fieldset": {
+                            borderColor: theme.palette.secondary.main,
+                          },
+                          "& input": { color: theme.palette.quaternary.main },
                         },
                       }}
                     />
@@ -290,12 +273,19 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     placeholder="Please give more details about the problem"
                     value={reportText}
                     onChange={(e) => setReportText(e.target.value)}
+                    color="quaternary"
                     sx={{
                       "& .MuiOutlinedInput-root": {
-                        "& fieldset": { borderColor: "#EDA4BD" },
-                        "&:hover fieldset": { borderColor: "#D16BA5" },
+                        "& fieldset": {
+                          borderColor: theme.palette.quaternary.main,
+                        },
+                        "&:hover fieldset": {
+                          borderColor: theme.palette.secondary.main,
+                        },
                       },
-                      "& .MuiInputBase-root": { color: "#EDA4BD" },
+                      "& .MuiInputBase-root": {
+                        color: theme.palette.quaternary.main,
+                      },
                     }}
                   />
                   {/* Submit button */}
@@ -304,15 +294,13 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                   >
                     <Button
                       variant="contained"
+                      color="tertiary"
                       sx={{
-                        backgroundColor: "#EB7BC0",
-                        color: "white",
-                        "&:hover": { backgroundColor: "#D16BA5" },
                         padding: "8px 16px",
                         fontSize: "14px",
                         width: "auto",
                       }}
-                      onClick={handleSubmit} // แก้ให้เมื่อกดปุ่มแล้วทำการ Report ด้วย
+                      onClick={handleSubmit}
                     >
                       Report
                     </Button>
@@ -324,7 +312,14 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                 src={user.profilePicture ? user.profilePicture : undefined}
                 alt="User"
                 data-testid="user-avatar"
-                sx={{ bgcolor: "secondary.main", cursor: "pointer" }}
+                color="secondary"
+                sx={{
+                  cursor: "pointer",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  "&:hover": {
+                    boxShadow: theme.shadows[2],
+                  },
+                }}
                 onClick={(event) => setAnchorEl(event.currentTarget)}
               >
                 {!user.profilePicture && `${user.firstName.at(0)}`}
@@ -333,8 +328,23 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={() => setAnchorEl(null)}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      border: `1px solid ${theme.palette.quaternary.main}`,
+                      borderRadius: 3,
+                      boxShadow: `0px 5px 30px ${theme.palette.quaternary.main}`,
+                      mt: 1,
+                    },
+                  },
+                }}
               >
-                <Box sx={{ p: 2, minWidth: 200 }}>
+                <Box
+                  sx={{
+                    p: 2,
+                    minWidth: 200,
+                  }}
+                >
                   <Box
                     sx={{
                       display: "flex",
@@ -348,6 +358,8 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                         user.profilePicture ? user.profilePicture : undefined
                       }
                       alt="User"
+                      color="secondary"
+                      data-testid="user-avatar"
                     >
                       {!user.profilePicture && `${user.firstName.at(0)}`}
                     </Avatar>
@@ -363,22 +375,26 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                   <Button
                     fullWidth
                     variant="text"
+                    color="primary"
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       setAnchorEl(null);
                       router.push("/app/profile");
                     }}
+                    startIcon={<Edit sx={{ width: 24, height: 24 }} />}
                   >
                     Edit Profile
                   </Button>
                   <Button
                     fullWidth
                     variant="text"
+                    color="primary"
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       setAnchorEl(null);
                       router.push("/settings");
                     }}
+                    startIcon={<Settings fontSize="small" />}
                   >
                     Settings
                   </Button>
@@ -386,11 +402,13 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                   <Button
                     fullWidth
                     variant="text"
+                    color="primary"
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       setAnchorEl(null);
                       setReportModalOpen(true);
                     }}
+                    startIcon={<ReportProblem fontSize="small" />}
                   >
                     Report
                   </Button>
@@ -399,23 +417,13 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     variant="outlined"
                     color="primary"
                     onClick={handleLogout}
+                    startIcon={<Logout fontSize="small" />}
                   >
                     Logout
                   </Button>
                 </Box>
               </Menu>
             </Box>
-          </Box>
-        )}
-
-        {!user && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-            {/* User Avatar */}
-            <Avatar
-              alt="User"
-              data-testid="user-avatar"
-              sx={{ bgcolor: "gray" }}
-            />
           </Box>
         )}
       </Toolbar>
