@@ -158,6 +158,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
               <IconButton
                 size="small"
                 sx={{ color: theme.palette.tertiary.main }}
+                onClick={() => router.push("/app/coin/package")}
               >
                 <Add fontSize="small" />
               </IconButton>
