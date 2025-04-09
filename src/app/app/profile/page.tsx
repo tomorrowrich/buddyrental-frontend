@@ -451,7 +451,7 @@ export default function PersonalProfile() {
               createBuddy({
                 priceMin: minPrice,
                 priceMax: maxPrice,
-                userId: user.userId,
+                description: description,
               });
             }}
           >

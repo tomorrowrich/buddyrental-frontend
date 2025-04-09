@@ -187,6 +187,7 @@ export const NavigationBar = memo(function NavigationBar({
               <IconButton
                 size="small"
                 sx={{ color: theme.palette.tertiary.main }}
+                onClick={() => router.push("/app/coin/package")}
               >
                 <Add fontSize="small" />
               </IconButton>
