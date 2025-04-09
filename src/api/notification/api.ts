@@ -71,7 +71,7 @@ export async function markAsRead(notificationId: string) {
       },
     )
     .then((res) => {
-      console.log(res);
+      return { success: true, message: res.data.message, error: null };
     })
     .catch((err) => {
       return {
