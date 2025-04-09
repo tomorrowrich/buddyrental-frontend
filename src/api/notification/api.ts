@@ -3,6 +3,7 @@ import axios from "axios";
 import { baseURL } from "@/api";
 import { cookies } from "next/headers";
 import { GetNotificationsParams, NotificationsResponse } from "./interface";
+import { redirect } from "next/navigation";
 
 async function getAuthToken() {
   const cookie = await cookies();
@@ -14,7 +15,7 @@ export async function fetchNotifications(
 ): Promise<NotificationsResponse> {
   const token = await getAuthToken();
   if (!token) {
-    return { success: false, notifications: null, error: "Token not found" };
+    redirect("/login");
   }
 
   return axios
@@ -22,14 +23,30 @@ export async function fetchNotifications(
       headers: { Authorization: `Bearer ${token}` },
       params,
     })
-    .then((res) => {
+    .then((res) => res.data)
+    .catch((err) => {
       return {
-        success: true,
-        notifications: res.data.notifications,
-        pagination: res.data.pagination,
-        error: null,
+        success: false,
+        notifications: null,
+        error: err.response?.data?.message || "Unknown error",
       };
+    });
+}
+
+export async function fetchUnreadNotifications(
+  params: GetNotificationsParams = {},
+): Promise<NotificationsResponse> {
+  const token = await getAuthToken();
+  if (!token) {
+    redirect("/login");
+  }
+
+  return axios
+    .get(`${baseURL}/notifications/unread`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params,
     })
+    .then((res) => res.data)
     .catch((err) => {
       return {
         success: false,
@@ -54,7 +71,7 @@ export async function markAsRead(notificationId: string) {
       },
     )
     .then((res) => {
-      return { success: true, message: res.data.message, error: null };
+      console.log(res);
     })
     .catch((err) => {
       return {
@@ -64,15 +81,15 @@ export async function markAsRead(notificationId: string) {
     });
 }
 
-export async function markAsUnread(notificationId: string) {
+export async function markAllAsRead() {
   const token = await getAuthToken();
   if (!token) {
     return { success: false, error: "Token not found" };
   }
 
   return axios
-    .put(
-      `${baseURL}/notifications/${notificationId}/unread`,
+    .post(
+      `${baseURL}/notifications/read-all`,
       {},
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -89,23 +106,14 @@ export async function markAsUnread(notificationId: string) {
     });
 }
 
-export async function deleteNotification(notificationId: string) {
+export async function subscribeToNotifications() {
   const token = await getAuthToken();
   if (!token) {
-    return { success: false, error: "Token not found" };
+    return null;
   }
 
-  return axios
-    .delete(`${baseURL}/notifications/${notificationId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    .then((res) => {
-      return { success: true, message: res.data.message, error: null };
-    })
-    .catch((err) => {
-      return {
-        success: false,
-        error: err.response?.data?.message || "Unknown error",
-      };
-    });
+  const eventSource = new EventSource(
+    `${baseURL}/notifications/stream?token=${token}`,
+  );
+  return eventSource;
 }
