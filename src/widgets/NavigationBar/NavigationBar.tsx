@@ -30,7 +30,7 @@ import {
 import Image from "next/image";
 import NotificationTray from "../NotificationTray/NotificationTray";
 import { useAuth } from "@/context/auth/auth";
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { useTheme } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { submitReport } from "@/api/report/api";
@@ -50,7 +50,9 @@ const getCategoryId = (categoryName: string): string => {
   return ReportCategoryMap[categoryName];
 };
 
-export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
+export const NavigationBar = memo(function NavigationBar({
+  isAdmin = false,
+}: NavigationBarProps) {
   const { logout, user } = useAuth();
   const theme = useTheme();
   const router = useRouter();
@@ -60,11 +62,11 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const [reportText, setReportText] = useState("");
   const [accountName, setAccountName] = useState("");
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
-  };
+  }, [logout]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     const categoryId = getCategoryId(reportType);
     const data = {
       userId: user?.userId,
@@ -82,7 +84,34 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
       setReportType("Payment Issues");
       setReportModalOpen(false);
     }
-  };
+  }, [reportType, reportText, user?.userId]);
+
+  const handleNavigate = useCallback(
+    (path: string) => {
+      router.push(path);
+    },
+    [router],
+  );
+
+  const handleAvatarClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      setAnchorEl(event.currentTarget);
+    },
+    [],
+  );
+
+  const handleCloseMenu = useCallback(() => {
+    setAnchorEl(null);
+  }, []);
+
+  const handleOpenReportModal = useCallback(() => {
+    setAnchorEl(null);
+    setReportModalOpen(true);
+  }, []);
+
+  const handleCloseReportModal = useCallback(() => {
+    setReportModalOpen(false);
+  }, []);
 
   return (
     <AppBar
@@ -122,21 +151,21 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
             <Button
               startIcon={<MenuBook />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => router.push("/app/booking/history")}
+              onClick={() => handleNavigate("/app/booking/history")}
             >
               Bookings
             </Button>
             <Button
               startIcon={<EventNote />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => router.push("/app/booking/schedule")}
+              onClick={() => handleNavigate("/app/booking/schedule")}
             >
               Calendar
             </Button>
             <Button
               startIcon={<ChatBubbleOutline />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => router.push("/app/chat")}
+              onClick={() => handleNavigate("/app/chat")}
             >
               Chat
             </Button>
@@ -172,7 +201,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
               {/* Report Issues Modal */}
               <Modal
                 open={reportModalOpen}
-                onClose={() => setReportModalOpen(false)}
+                onClose={handleCloseReportModal}
                 aria-labelledby="report-issues-title"
                 aria-describedby="report-issues-description"
               >
@@ -190,7 +219,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                 >
                   {/* Close button at the top-right corner */}
                   <IconButton
-                    onClick={() => setReportModalOpen(false)}
+                    onClick={handleCloseReportModal}
                     sx={{
                       position: "absolute",
                       top: 8,
@@ -321,14 +350,14 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     boxShadow: theme.shadows[2],
                   },
                 }}
-                onClick={(event) => setAnchorEl(event.currentTarget)}
+                onClick={handleAvatarClick}
               >
                 {!user.profilePicture && `${user.firstName.at(0)}`}
               </Avatar>
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
-                onClose={() => setAnchorEl(null)}
+                onClose={handleCloseMenu}
                 slotProps={{
                   paper: {
                     sx: {
@@ -379,8 +408,8 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     color="primary"
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
-                      setAnchorEl(null);
-                      router.push("/app/profile");
+                      handleCloseMenu();
+                      handleNavigate("/app/profile");
                     }}
                     startIcon={<Edit sx={{ width: 24, height: 24 }} />}
                   >
@@ -392,8 +421,8 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     color="primary"
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
-                      setAnchorEl(null);
-                      router.push("/settings");
+                      handleCloseMenu();
+                      handleNavigate("/settings");
                     }}
                     startIcon={<Settings fontSize="small" />}
                   >
@@ -405,10 +434,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     variant="text"
                     color="primary"
                     sx={{ justifyContent: "flex-start", mb: 1 }}
-                    onClick={() => {
-                      setAnchorEl(null);
-                      setReportModalOpen(true);
-                    }}
+                    onClick={handleOpenReportModal}
                     startIcon={<ReportProblem fontSize="small" />}
                   >
                     Report
@@ -430,4 +456,4 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
       </Toolbar>
     </AppBar>
   );
-}
+});

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Badge,
   Box,
@@ -11,99 +11,20 @@ import {
   ListItemText,
   Popover,
   Typography,
-  CircularProgress,
   Tooltip,
 } from "@mui/material";
 import { NotificationsNone, DoneAll } from "@mui/icons-material";
-import { markAsRead } from "@/api/notification/api";
-import { useRouter } from "next/navigation";
-import { Notification } from "@/api/notification/interface";
-import { baseURL } from "@/api";
-
-const mockFetchNotifications = async () => {
-  return new Promise<{ notifications: Notification[] }>((resolve) => {
-    setTimeout(() => {
-      resolve({
-        notifications: [
-          {
-            userId: "2",
-            notificationId: "1",
-            title: "Emily wat",
-            message: "Thanks for joining us.",
-            status: "unread",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            userId: "3",
-            notificationId: "2",
-            title: "Jane doe",
-            message: "Check out our latest update.",
-            status: "read",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            userId: "1",
-            notificationId: "3",
-            title: "Cooked",
-            message: "Don't forget about your upcoming event.",
-            status: "unread",
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      });
-    }, 1000);
-  });
-};
+import { markAllAsRead } from "@/api/notification/api";
+import { useAuth } from "@/context/auth/auth";
 
 interface NotificationTrayProps {
   userId: string;
 }
 
-const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+const NotificationTray: React.FC<NotificationTrayProps> = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const router = useRouter();
-
-  const loadNotifications = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await mockFetchNotifications();
-      //   const response = await fetchNotifications({
-      //     status: 'all',
-      //     page: 1,
-      //     limit: 10
-      //   });
-
-      if (response && response.notifications) {
-        setNotifications(response.notifications);
-
-        const unreadNotifications = response.notifications.filter(
-          (notification) => notification.status === "unread",
-        ).length;
-        setUnreadCount(unreadNotifications);
-      } else {
-        setNotifications([]);
-        setUnreadCount(0);
-      }
-    } catch (err) {
-      setError("Failed to load notifications");
-      console.error("Error loading notifications:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadNotifications();
-
-    const interval = setInterval(loadNotifications, 60000);
-
-    return () => clearInterval(interval);
-  }, [userId]);
+  const { notifications } = useAuth();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -113,50 +34,19 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
     setAnchorEl(null);
   };
 
-  const handleNotificationClick = async (notification: Notification) => {
-    if (notification.status === "unread") {
-      try {
-        await markAsRead(notification.notificationId);
-
-        setNotifications(
-          notifications.map((n) =>
-            n.notificationId === notification.notificationId
-              ? { ...n, status: "read" }
-              : n,
-          ),
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      } catch (err) {
-        console.error("Error marking notification as read:", err);
-      }
-    }
-
-    router.push(`${baseURL}/chat`);
-    handleClose();
-  };
-
   const handleMarkAllAsRead = async () => {
     try {
       // Mark all unread notifications as read
-      const unreadNotifications = notifications.filter(
-        (notification) => notification.status === "unread",
-      );
-
-      for (const notification of unreadNotifications) {
-        await markAsRead(notification.notificationId);
-      }
-
-      // Update local state
-      setNotifications(
-        notifications.map((n) =>
-          n.status === "unread" ? { ...n, status: "read" } : n,
-        ),
-      );
+      markAllAsRead();
       setUnreadCount(0);
     } catch (err) {
       console.error("Error marking all notifications as read:", err);
     }
   };
+
+  useEffect(() => {
+    setUnreadCount(notifications.filter((e) => !e.notification.read).length);
+  }, [notifications]);
 
   const formatTime = (dateString: string): string => {
     const date = new Date(dateString);
@@ -236,34 +126,36 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
           )}
         </Box>
 
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-            <CircularProgress size={24} color="tertiary" />
-          </Box>
-        ) : error ? (
-          <Typography color="error" sx={{ p: 2 }}>
-            {error}
-          </Typography>
-        ) : notifications.length === 0 ? (
+        {notifications.length === 0 ? (
           <Typography sx={{ p: 2 }}>No notifications found.</Typography>
         ) : (
           <List sx={{ width: "100%", p: 0, maxHeight: 400, overflow: "auto" }}>
-            {notifications.map((notification, index) => (
-              <span key={notification.notificationId}>
+            {notifications.map((e, index) => (
+              <span key={e.notification.id}>
                 <ListItem
                   alignItems="flex-start"
-                  onClick={() => handleNotificationClick(notification)}
+                  onClick={() => {
+                    e.markAsRead();
+                    if (e.notification.url) {
+                      window.open(e.notification.url);
+                    }
+                  }}
                   sx={{
                     cursor: "pointer",
-                    backgroundColor:
-                      notification.status === "unread"
-                        ? "rgba(124, 96, 107, 0.08)"
-                        : "inherit",
+                    backgroundColor: e.notification.read
+                      ? "transparent"
+                      : "rgba(237, 164, 189, 0.15)",
+                    transition: "background-color 0.3s ease",
                     "&:hover": {
-                      backgroundColor: "rgba(124, 96, 107, 0.04)",
+                      backgroundColor: e.notification.read
+                        ? "rgba(124, 96, 107, 0.08)"
+                        : "rgba(237, 164, 189, 0.25)",
                     },
+                    borderLeft: e.notification.read
+                      ? "none"
+                      : "3px solid rgba(237, 164, 189, 0.7)",
                     px: 2,
-                    py: 1,
+                    py: 1.2,
                   }}
                   component="span"
                 >
@@ -275,7 +167,7 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
                         component="span"
                         sx={{ fontWeight: 600 }}
                       >
-                        {notification.title}
+                        {e.notification.title}
                       </Typography>
                     }
                     secondary={
@@ -298,7 +190,7 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
                             component="span"
                             sx={{ flex: 1 }}
                           >
-                            {notification.message}
+                            {e.notification.body}
                           </Typography>
                           <Typography
                             variant="body2"
@@ -306,7 +198,7 @@ const NotificationTray: React.FC<NotificationTrayProps> = ({ userId }) => {
                             component="span"
                             sx={{ ml: 2, whiteSpace: "nowrap" }}
                           >
-                            {formatTime(notification.createdAt)}
+                            {formatTime(e.notification.createdAt.toString())}
                           </Typography>
                         </Box>
                       </Typography>
