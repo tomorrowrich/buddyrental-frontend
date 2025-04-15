@@ -15,6 +15,16 @@ export interface User {
   profilePicture?: string;
   description?: string;
   interests?: Interest[];
+  buddy?: Buddy;
+  Admin?: Admin;
+}
+
+export interface Buddy {
+  buddyId: string;
+}
+
+export interface Admin {
+  adminId: string;
 }
 
 export interface Interest {

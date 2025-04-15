@@ -1,47 +1,185 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Avatar, Box, Paper, Typography, Button } from "@mui/material";
 import { BookingDialog } from "./BookingDialog";
 import { MessageInput } from "./MessageInput";
 import { useRouter } from "next/navigation";
+import { Chat, ChatMessage, ChatMessageMetaType } from "@/api/chat/interface";
+import { getChatMessages } from "@/api/chat/api";
+import { useAuth } from "@/context/auth/auth";
+import { subscribeToMessages, sendMessage } from "@/api/chat/socket";
+import { v4 as uuidv4 } from "uuid";
+import { useSocket } from "@/context/socket/SocketProvider";
 
 export function ChatWindow({
   selectedChat,
 }: {
-  selectedChat: { name: string; avatar: string };
+  selectedChat: { role: "buddy" | "customer" | null; chat: Chat | null };
 }) {
   const [messages, setMessages] = useState<
-    { id: number; text: string; sender: "user" | "buddy" }[]
+    {
+      id: string;
+      text: string;
+      sender: "user" | "buddy";
+    }[]
   >([]);
   const [editDetails, setEditDetails] = useState<string | null>(null);
   const [editStartTime, setEditStartTime] = useState<string | null>(null);
   const [editEndTime, setEditEndTime] = useState<string | null>(null);
   const [editSelectedDate, setEditSelectedDate] = useState<string | null>(null);
-  const [openDialog, setOpenDialog] = useState(false); // State สำหรับเปิด/ปิด Dialog
+  const [openDialog, setOpenDialog] = useState(false);
   const router = useRouter();
+  const [socketConnected, setSocketConnected] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState<number | null>(null);
 
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        text,
-        sender: "user",
+  const { user } = useAuth();
+  const { socket } = useSocket();
+  const role = selectedChat.role;
+  const chat = selectedChat.chat;
+
+  // Format a message for display
+  function reformatMessage(
+    message: ChatMessage,
+    isFromUser: boolean,
+  ): {
+    id: string;
+    text: string;
+    sender: "user" | "buddy";
+  } {
+    return {
+      id: message.id,
+      text: message.content,
+      sender: isFromUser ? "user" : "buddy",
+    };
+  }
+
+  useEffect(() => {
+    setSocketConnected(socket?.connected || false);
+  }, [socket]);
+
+  // Set the container height on first render only
+  useEffect(() => {
+    if (containerRef.current && !containerHeight) {
+      const height = containerRef.current.clientHeight;
+      setContainerHeight(height);
+    }
+  }, []);
+
+  // Handle window resize to adjust container height
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.clientHeight;
+        setContainerHeight(height);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  // Fetch chat history when a chat is selected
+  useEffect(() => {
+    if (!chat || !user) return;
+
+    // Reset messages when changing chats
+    setMessages([]);
+
+    const fetchChatHistory = async () => {
+      try {
+        const { success, messages: rawMessages } = await getChatMessages(
+          chat.id,
+        );
+
+        if (success && rawMessages) {
+          const formattedMessages = rawMessages.map((msg: ChatMessage) => {
+            const isFromUser = msg.senderId === user.userId;
+            return reformatMessage(msg, isFromUser);
+          });
+
+          setMessages(formattedMessages.reverse());
+        }
+      } catch (error) {
+        console.error("Error fetching chat history:", error);
+      }
+    };
+
+    fetchChatHistory();
+  }, [chat, user]);
+
+  // Subscribe to messages for the selected chat
+  useEffect(() => {
+    if (!chat || !user) return;
+
+    const unsubscribe = subscribeToMessages((newMessage: ChatMessage) => {
+      const isFromUser = newMessage.senderId === user.userId;
+      setMessages((prev) => [...prev, reformatMessage(newMessage, isFromUser)]);
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [chat, user]);
+
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendMessage = (message: string) => {
+    if (!chat || !user) return;
+
+    // Add message to local state immediately (optimistic UI update)
+    const newMessage = {
+      id: uuidv4(),
+      text: message,
+      sender: "user" as const,
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+
+    // Send message to server
+    sendMessage({
+      trackId: uuidv4(),
+      chatId: chat.id,
+      senderId: user.userId,
+      content: message,
+      meta: {
+        metaId: uuidv4(),
+        timestamp: new Date(),
+        type: ChatMessageMetaType.TEXT,
       },
-    ]);
+    });
   };
 
   const handleEditBooking = (message: string) => {
-    // แยกข้อมูลจากข้อความที่ได้รับ
+    // Split the message to extract booking details
     const parts = message.split("\n");
-    const dateAndTime = parts[2].split(" Time: ")[1];
-    const [startTime, endTime] = dateAndTime.split(" - ");
-    setEditDetails(parts[1].split(": ")[1] || "");
-    setEditSelectedDate(parts[2].split(": ")[1] || "");
-    setEditStartTime(startTime || "10:00");
-    setEditEndTime(endTime || "15:00");
+    if (parts.length < 3) return;
 
-    // เปิด Dialog เมื่อคลิก "Edit Booking"
+    // Extract date and time information
+    const dateTimeString = parts[2].includes("Time:")
+      ? parts[2].split("Time: ")[1]
+      : "";
+
+    const [startTime, endTime] = dateTimeString.includes(" - ")
+      ? dateTimeString.split(" - ")
+      : ["10:00", "15:00"];
+
+    // Set the extracted details to state
+    setEditDetails(parts[1].includes(": ") ? parts[1].split(": ")[1] : "");
+    setEditSelectedDate(
+      parts[2].includes("Date: ")
+        ? parts[2].split("Date: ")[1].split(" Time")[0]
+        : "",
+    );
+    setEditStartTime(startTime);
+    setEditEndTime(endTime);
+
+    // Open the dialog
     setOpenDialog(true);
   };
 
@@ -49,42 +187,79 @@ export function ChatWindow({
     <Paper
       sx={{
         flex: 1,
-        p: 3,
-        borderRadius: 3,
+        p: 4,
+        borderRadius: 4,
         boxShadow: 3,
         position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "background.paper",
+        overflow: "hidden",
+        height: containerHeight ? `${containerHeight}px` : "auto",
       }}
+      ref={containerRef}
     >
+      {/* Chat header */}
       <Box
         display="flex"
         alignItems="center"
         justifyContent="space-between"
-        mb={2}
+        mb={3}
+        px={1}
       >
-        <Box display="flex" alignItems="center" gap={2}>
-          <Avatar src={selectedChat.avatar} sx={{ width: 50, height: 50 }} />
-          <Typography fontWeight="bold">{selectedChat.name}</Typography>
+        <Box display="flex" alignItems="center" gap={2.5}>
+          <Avatar
+            src={
+              role === "buddy"
+                ? chat?.customer.profilePicture
+                : chat?.buddy?.user?.profilePicture
+            }
+            sx={{
+              width: 56,
+              height: 56,
+              boxShadow: 2,
+            }}
+          />
+          <Typography variant="h6" fontWeight="600" color="text.primary">
+            {role === "buddy"
+              ? chat?.customer.displayName
+              : chat?.buddy?.user?.displayName}
+          </Typography>
         </Box>
 
         <Box display="flex" gap={2}>
           <Button
-            variant="outlined"
+            variant="contained"
+            color="quinary"
             onClick={() => router.push("/app/profile/buddy")}
             sx={{
-              bgcolor: "#EB7BC0",
-              color: "white",
-              "&:hover": { bgcolor: "#D667A7" },
+              px: 3,
+              py: 1.2,
+              fontWeight: 600,
+              boxShadow: 2,
+              transition: "transform 0.2s ease-in-out",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: 3,
+              },
             }}
           >
             Profile
           </Button>
           <Button
-            variant="outlined"
-            onClick={() => setOpenDialog(true)} // เปิด Dialog เมื่อคลิกปุ่ม Edit Booking
+            variant="contained"
+            color="tertiary"
+            onClick={() => setOpenDialog(true)}
             sx={{
-              bgcolor: "#EB7BC0",
-              color: "white",
-              "&:hover": { bgcolor: "#D667A7" },
+              px: 3,
+              py: 1.2,
+              fontWeight: 600,
+              boxShadow: 2,
+              transition: "transform 0.2s ease-in-out",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: 3,
+              },
             }}
           >
             Edit Booking
@@ -92,51 +267,117 @@ export function ChatWindow({
         </Box>
       </Box>
 
+      {/* Messages area */}
       <Box
         sx={{
-          height: "60vh",
+          flexGrow: 1,
           overflowY: "auto",
-          p: 2,
-          bgcolor: "rgba(235, 123, 192, 0.1)",
-          borderRadius: 2,
+          p: 3,
+          bgcolor: "rgba(238, 213, 194, 0.15)",
+          borderRadius: 3,
           display: "flex",
           flexDirection: "column",
-          alignItems: "flex-end",
+          mb: 3,
+          scrollbarWidth: "thin",
+          "&::-webkit-scrollbar": {
+            width: "8px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "rgba(124, 96, 107, 0.05)",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "rgba(124, 96, 107, 0.2)",
+            borderRadius: "10px",
+            "&:hover": {
+              background: "rgba(124, 96, 107, 0.3)",
+            },
+          },
         }}
       >
-        {messages.length === 0 ? (
-          <Typography color="text.secondary" textAlign="center">
-            No messages yet.
+        {!chat ? (
+          <Typography
+            variant="h6"
+            color="text.secondary"
+            textAlign="center"
+            sx={{
+              alignSelf: "center",
+              margin: "auto",
+              fontWeight: 500,
+              opacity: 0.8,
+            }}
+          >
+            Select a chat to start messaging
+          </Typography>
+        ) : messages.length === 0 ? (
+          <Typography
+            variant="h6"
+            color="text.secondary"
+            textAlign="center"
+            sx={{
+              alignSelf: "center",
+              margin: "auto",
+              fontWeight: 500,
+              opacity: 0.8,
+            }}
+          >
+            No messages yet. Start the conversation!
           </Typography>
         ) : (
           messages.map((msg) => (
             <Box
               key={msg.id}
               sx={{
-                p: 1,
+                p: 2.5,
                 maxWidth: "70%",
-                borderRadius: 2,
-                bgcolor: msg.sender === "user" ? "#EB7BC0" : "#EED5C2",
-                color: "white",
-                alignSelf: "flex-end",
-                mb: 1,
+                borderRadius:
+                  msg.sender === "user"
+                    ? "16px 16px 4px 16px"
+                    : "16px 16px 16px 4px",
+                bgcolor:
+                  msg.sender === "user" ? "tertiary.main" : "quinary.main",
+                color: msg.sender === "user" ? "white" : "text.primary",
+                alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
+                mb: 2.5,
+                boxShadow: 1,
+                position: "relative",
+                transition: "transform 0.1s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: 2,
+                },
               }}
             >
               <Typography
-                component="span"
-                sx={{ whiteSpace: "pre-wrap", color: "white" }}
+                sx={{
+                  whiteSpace: "pre-wrap",
+                  fontSize: "0.95rem",
+                  lineHeight: 1.5,
+                  fontWeight: 400,
+                }}
               >
                 {msg.text}
               </Typography>
 
               {msg.text.includes("Buddy Reservation Request") && (
-                <Box display="flex" justifyContent="center" mt={2}>
+                <Box display="flex" justifyContent="center" mt={3} gap={2}>
                   <Button
                     variant="contained"
-                    color="primary"
-                    sx={{ px: 4, mr: 1 }}
+                    color="error"
+                    size="small"
+                    sx={{
+                      borderRadius: "12px",
+                      px: 2,
+                      py: 1,
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      boxShadow: 1,
+                      "&:hover": {
+                        boxShadow: 2,
+                      },
+                    }}
                     onClick={() => {
-                      /* Handle Cancel Booking Action */
+                      handleSendMessage("I would like to cancel this booking.");
                     }}
                   >
                     Cancel Booking
@@ -144,8 +385,19 @@ export function ChatWindow({
                   <Button
                     variant="contained"
                     color="secondary"
-                    sx={{ px: 4, ml: 1 }}
-                    onClick={() => handleEditBooking(msg.text)} // เมื่อคลิก "Edit Booking"
+                    size="small"
+                    sx={{
+                      borderRadius: "12px",
+                      px: 2,
+                      py: 1,
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      boxShadow: 1,
+                      "&:hover": {
+                        boxShadow: 2,
+                      },
+                    }}
+                    onClick={() => handleEditBooking(msg.text)}
                   >
                     Edit Booking
                   </Button>
@@ -154,11 +406,12 @@ export function ChatWindow({
             </Box>
           ))
         )}
+        <div ref={messagesEndRef} />
       </Box>
 
-      {/* แสดง Dialog เมื่อ openDialog เป็น true */}
+      {/* Booking dialog */}
       <BookingDialog
-        onSendMessage={sendMessage}
+        onSendMessage={handleSendMessage}
         editDetails={editDetails}
         editStartTime={editStartTime}
         editEndTime={editEndTime}
@@ -167,10 +420,44 @@ export function ChatWindow({
         setEditStartTime={setEditStartTime}
         setEditEndTime={setEditEndTime}
         setEditSelectedDate={setEditSelectedDate}
-        open={openDialog} // ส่งค่า open ให้กับ Dialog
-        setOpen={setOpenDialog} // ฟังก์ชันสำหรับปิด Dialog
+        open={openDialog}
+        setOpen={setOpenDialog}
       />
-      <MessageInput onSendMessage={sendMessage} />
+
+      {/* Message input */}
+      <MessageInput
+        onSendMessage={handleSendMessage}
+        disabled={!chat || !socketConnected}
+      />
+
+      {/* Connection status indicator */}
+      {!socketConnected && (
+        <Typography
+          color="error"
+          variant="caption"
+          fontWeight={500}
+          sx={{
+            position: "absolute",
+            bottom: 4,
+            right: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+          }}
+        >
+          <span
+            style={{
+              display: "inline-block",
+              width: "8px",
+              height: "8px",
+              borderRadius: "50%",
+              backgroundColor: "#F44336",
+              marginRight: "6px",
+            }}
+          ></span>
+          Reconnecting to server...
+        </Typography>
+      )}
     </Paper>
   );
 }
