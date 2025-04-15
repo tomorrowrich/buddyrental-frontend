@@ -145,7 +145,8 @@ export function ChatWindow({
     sendMessage({
       trackId: uuidv4(),
       chatId: chat.id,
-      senderId: user.userId,
+      senderId:
+        role === "buddy" && user.buddy ? user.buddy?.buddyId : user.userId,
       content: message,
       meta: {
         metaId: uuidv4(),
