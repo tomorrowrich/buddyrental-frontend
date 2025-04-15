@@ -20,18 +20,21 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { cancelReservation, getReservationStatus } from "@/api/reservation/api";
+import { createReview } from "@/api/review/api";
 
 // Review Dialog Component
 const ReviewDialog = ({
   open,
   onClose,
+  onSubmit,
 }: {
   open: boolean;
   onClose: () => void;
+  onSubmit: (reviewText: string, rating: number) => void;
 }) => {
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState<number | null>(null);
-
+  const handleSubmitReview = () => {};
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
@@ -75,7 +78,9 @@ const ReviewDialog = ({
           variant="contained"
           color="secondary"
           sx={{ borderRadius: 3, mr: 4, m: 2 }}
-          onClick={onClose}
+          onClick={() => {
+            if (rating) onSubmit(reviewText, rating);
+          }}
           disabled={!rating}
         >
           Submit Review
@@ -151,6 +156,16 @@ export const ReviewCard = ({
       // Could add error notification here
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSubmitReview = async (reviewText: string, rating: number) => {
+    //handle submit review
+    try {
+      await createReview({ reservationId, comment: reviewText, rating });
+    } catch (error) {
+    } finally {
+      handleCloseReview();
     }
   };
 
@@ -330,7 +345,13 @@ export const ReviewCard = ({
       </Dialog>
 
       {/* Review Popup */}
-      <ReviewDialog open={openReview} onClose={handleCloseReview} />
+      <ReviewDialog
+        open={openReview}
+        onClose={handleCloseReview}
+        onSubmit={(reviewText: string, rating: number) =>
+          handleSubmitReview(reviewText, rating)
+        }
+      />
     </>
   );
 };
