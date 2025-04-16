@@ -47,7 +47,7 @@ export default function OnboardingPage() {
       setSelectedInterests(new Set(JSON.parse(storedInterests)));
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedInterests]));
-  }, [interests]);
+  }, [interests, selectedInterests]);
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -132,7 +132,7 @@ export default function OnboardingPage() {
                 variant="contained"
                 color="quinary"
                 disabled={submitting}
-                onClick={() => router.push("//verify")}
+                onClick={() => router.push("/verify")}
                 fullWidth
               >
                 Skip
