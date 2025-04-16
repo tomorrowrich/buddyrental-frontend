@@ -51,7 +51,7 @@ const UserCard = ({ buddy }: { buddy: Buddy }): JSX.Element => {
 
   // ฟังก์ชันที่ใช้ในการนำทางไปยังหน้า buddyId
   const handleDetailsClick = () => {
-    router.push(`/app/buddy/${buddy.buddyId}`); // นำทางไปยังหน้ารายละเอียดของ Buddy
+    router.push(`/buddy/${buddy.buddyId}`); // นำทางไปยังหน้ารายละเอียดของ Buddy
   };
 
   return (
@@ -64,7 +64,7 @@ const UserCard = ({ buddy }: { buddy: Buddy }): JSX.Element => {
     >
       <Box display="flex" alignItems="center" gap={2}>
         <Avatar
-          src={buddy.user.profilePicture || "/default-avatar.png"}
+          src={buddy.user.profilePicture || ""}
           sx={{ width: 100, height: 100 }}
         />
         <Box>

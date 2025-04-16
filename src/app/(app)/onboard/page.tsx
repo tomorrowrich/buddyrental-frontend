@@ -58,7 +58,7 @@ export default function OnboardingPage() {
 
     if (success) {
       localStorage.removeItem(STORAGE_KEY);
-      router.push("/app");
+      router.push("/");
     } else {
       console.error(error);
     }
@@ -132,7 +132,7 @@ export default function OnboardingPage() {
                 variant="contained"
                 color="quinary"
                 disabled={submitting}
-                onClick={() => router.push("/app/verify")}
+                onClick={() => router.push("//verify")}
                 fullWidth
               >
                 Skip

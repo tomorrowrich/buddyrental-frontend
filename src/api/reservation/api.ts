@@ -39,7 +39,7 @@ export async function getBuddyReservationHistory(
     })
     .catch((err) => {
       if (err.status === 403) {
-        redirect("/app/booking/history");
+        redirect("/booking/history");
       }
       return {
         success: false,

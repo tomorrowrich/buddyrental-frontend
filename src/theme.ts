@@ -4,7 +4,7 @@ import { createTheme } from "@mui/material/styles";
 let BuddyRentalTheme = createTheme({
   colorSchemes: {
     light: true,
-    dark: false,
+    dark: true,
   },
   typography: {
     fontSize: 12,

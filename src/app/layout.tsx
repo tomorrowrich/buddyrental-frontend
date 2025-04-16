@@ -2,7 +2,7 @@
 import "@/styles/globals.css";
 import BuddyRentalTheme from "@/theme";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import { ThemeProvider } from "@mui/material";
+import { Box, ThemeProvider } from "@mui/material";
 import { AuthProvider } from "@/context/auth/auth";
 import { BuddyRentalLoader } from "./loading";
 import { Suspense } from "react";
@@ -28,11 +28,17 @@ export default function BuddyRentalRootLayout({
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <AuthProvider>
                 <SocketProvider>
-                  <main className="flex flex-col min-h-screen">
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      minHeight: "100dvh",
+                    }}
+                  >
                     <Suspense fallback={<BuddyRentalLoader />}>
                       {children}
                     </Suspense>
-                  </main>
+                  </Box>
                 </SocketProvider>
               </AuthProvider>
             </LocalizationProvider>

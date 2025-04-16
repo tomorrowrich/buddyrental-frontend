@@ -5,7 +5,7 @@ import {
   Typography,
   Box,
   TextField,
-  Grid,
+  Grid2,
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
@@ -105,8 +105,8 @@ export function BookingDialog({
             </Typography>
           </Box>
 
-          <Grid container spacing={0} mt={0}>
-            <Grid item xs={12} md={6}>
+          <Grid2 container spacing={0} sx={{ mt: 0 }}>
+            <Grid2 size={{ xs: 12, md: 6 }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateCalendar
                   onChange={(date) => {
@@ -116,9 +116,9 @@ export function BookingDialog({
                   }}
                 />
               </LocalizationProvider>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs={12} md={6}>
+            <Grid2 size={{ xs: 12, md: 6 }}>
               <Box
                 display="flex"
                 flexDirection="column"
@@ -158,8 +158,8 @@ export function BookingDialog({
                   />
                 </Box>
               </Box>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
 
           <Box display="flex" justifyContent="center" mt={2}>
             <Button

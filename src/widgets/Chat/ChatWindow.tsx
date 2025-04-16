@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Avatar, Box, Paper, Typography, Button } from "@mui/material";
-import { BookingDialog } from "./BookingDialog";
+import { BookingDialog } from "../Booking/BookingDialog";
 import { MessageInput } from "./MessageInput";
 import { useRouter } from "next/navigation";
 import { Chat, ChatMessage, ChatMessageMetaType } from "@/api/chat/interface";
@@ -231,7 +231,7 @@ export function ChatWindow({
           <Button
             variant="contained"
             color="quinary"
-            onClick={() => router.push("/app/profile/buddy")}
+            onClick={() => router.push("/profile/buddy")}
             sx={{
               px: 3,
               py: 1.2,

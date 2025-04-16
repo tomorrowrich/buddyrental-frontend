@@ -151,21 +151,21 @@ export const NavigationBar = memo(function NavigationBar({
             <Button
               startIcon={<MenuBook />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => handleNavigate("/app/booking/history")}
+              onClick={() => handleNavigate("/booking/history")}
             >
               Bookings
             </Button>
             <Button
               startIcon={<EventNote />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => handleNavigate("/app/booking/schedule")}
+              onClick={() => handleNavigate("/booking/schedule")}
             >
               Calendar
             </Button>
             <Button
               startIcon={<ChatBubbleOutline />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => handleNavigate("/app/chat")}
+              onClick={() => handleNavigate("/chat")}
             >
               Chat
             </Button>
@@ -187,7 +187,7 @@ export const NavigationBar = memo(function NavigationBar({
               <IconButton
                 size="small"
                 sx={{ color: theme.palette.tertiary.main }}
-                onClick={() => router.push("/app/coin/package")}
+                onClick={() => router.push("/coin/package")}
               >
                 <Add fontSize="small" />
               </IconButton>
@@ -409,7 +409,7 @@ export const NavigationBar = memo(function NavigationBar({
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       handleCloseMenu();
-                      handleNavigate("/app/profile");
+                      handleNavigate("/profile");
                     }}
                     startIcon={<Edit sx={{ width: 24, height: 24 }} />}
                   >
