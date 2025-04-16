@@ -1,3 +1,4 @@
+import { createReservation } from "@/api/reservation/api";
 import {
   Button,
   Dialog,
@@ -6,60 +7,87 @@ import {
   Box,
   TextField,
   Grid2,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export function BookingDialog({
-  onSendMessage,
-  editDetails,
-  editStartTime,
-  editEndTime,
-  editSelectedDate,
-  setEditDetails,
-  setEditStartTime,
-  setEditEndTime,
-  setEditSelectedDate,
   open,
   setOpen,
+  buddyId,
+  buddyName,
+  onSendMessage,
 }: {
-  onSendMessage: (text: string) => void;
-  editDetails: string | null;
-  editStartTime: string | null;
-  editEndTime: string | null;
-  editSelectedDate: string | null;
-  setEditDetails: (value: string) => void;
-  setEditStartTime: (value: string) => void;
-  setEditEndTime: (value: string) => void;
-  setEditSelectedDate: (value: string) => void;
-  open: boolean; // รับ prop open จาก Parent
-  setOpen: (value: boolean) => void; // รับ prop setOpen จาก Parent
+  buddyId: string;
+  buddyName: string;
+  open: boolean;
+  setOpen: (value: boolean) => void;
+  onSendMessage?: (message: string) => void;
 }) {
-  const [details, setDetails] = useState(editDetails || "");
-  const [startTime, setStartTime] = useState(editStartTime || "10:00");
-  const [endTime, setEndTime] = useState(editEndTime || "15:00");
-  const [selectedDate, setSelectedDate] = useState<string>(
-    editSelectedDate || "",
-  );
+  const [detail, setDetails] = useState("");
+  const [price, setPrice] = useState<string>("0");
+  const [startTime, setStartTime] = useState("10:00");
+  const [endTime, setEndTime] = useState("15:00");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "success" | "error" | "info" | "warning"
+  >("success");
 
-  // เมื่อ props ที่ใช้สำหรับแก้ไขข้อมูลการจองเปลี่ยนแปลง, ให้ตั้งค่าใหม่ใน state
-  useEffect(() => {
-    setDetails(editDetails || "");
-    setStartTime(editStartTime || "10:00");
-    setEndTime(editEndTime || "15:00");
-    setSelectedDate(editSelectedDate || "");
-  }, [editDetails, editStartTime, editEndTime, editSelectedDate]);
+  const handleBook = async () => {
+    if (!selectedDate) {
+      setSnackbarMessage("Please select a date");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
 
-  const handleBook = () => {
-    if (!selectedDate) return; // ห้ามส่งถ้าไม่มีวันที่เลือก
+    setLoading(true);
 
-    // สร้างข้อความใหม่ที่แก้ไขแล้ว
-    const message = `**Buddy Reservation Request**\nDetails: ${details || "No details provided."}\nDate: ${selectedDate} Time: ${startTime} - ${endTime}`;
+    try {
+      // Make API call to save booking
+      await createReservation({
+        buddyId: buddyId,
+        detail: detail,
+        reservationStart: `${selectedDate}T${startTime}:00Z`,
+        reservationEnd: `${selectedDate}T${endTime}:00Z`,
+        price: price ? Number(price) : 0,
+      }).then(console.log);
 
-    onSendMessage(message); // ส่งข้อความใหม่ไปยัง Parent Component
-    setOpen(false); // ปิด Dialog หลังจากส่ง
+      // Create message to display in chat
+      const message = `**Buddy Reservation Request**\nDetails: ${detail || "No details provided."}\nPrice: $${price || "0"}\nDate: ${selectedDate} Time: ${startTime} - ${endTime}`;
+
+      // Send message to parent component
+      if (onSendMessage) {
+        onSendMessage(message);
+      }
+
+      // Show success message
+      setSnackbarMessage("Booking successful!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+
+      // Close dialog
+      setOpen(false);
+    } catch (error) {
+      console.error("Booking failed:", error);
+      setSnackbarMessage("Failed to create booking. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -78,7 +106,7 @@ export function BookingDialog({
           }}
         >
           <Typography variant="h6" fontWeight={600}>
-            Booking Alexa Rawles
+            Booking with {buddyName}
           </Typography>
 
           <Box mt={3}>
@@ -89,12 +117,32 @@ export function BookingDialog({
               fullWidth
               multiline
               rows={1}
-              value={details}
+              value={detail}
               onChange={(e) => {
                 setDetails(e.target.value);
-                setEditDetails(e.target.value); // อัพเดทค่าใน parent
               }}
               placeholder="Type your details here..."
+              sx={{ mt: 1 }}
+            />
+          </Box>
+
+          <Box mt={3}>
+            <Typography variant="subtitle1" fontWeight={500}>
+              Price
+            </Typography>
+            <TextField
+              fullWidth
+              type="number"
+              value={price}
+              onChange={(e) => {
+                setPrice(e.target.value);
+              }}
+              placeholder="Enter price"
+              slotProps={{
+                input: {
+                  startAdornment: <Typography>$</Typography>,
+                },
+              }}
               sx={{ mt: 1 }}
             />
           </Box>
@@ -112,7 +160,6 @@ export function BookingDialog({
                   onChange={(date) => {
                     const formattedDate = date?.format("YYYY-MM-DD") || "";
                     setSelectedDate(formattedDate);
-                    setEditSelectedDate(formattedDate); // อัพเดทค่าใน parent
                   }}
                 />
               </LocalizationProvider>
@@ -136,7 +183,6 @@ export function BookingDialog({
                     value={startTime}
                     onChange={(e) => {
                       setStartTime(e.target.value);
-                      setEditStartTime(e.target.value); // อัพเดทค่าใน parent
                     }}
                     sx={{ width: "200px" }}
                   />
@@ -152,7 +198,6 @@ export function BookingDialog({
                     value={endTime}
                     onChange={(e) => {
                       setEndTime(e.target.value);
-                      setEditEndTime(e.target.value); // อัพเดทค่าใน parent
                     }}
                     sx={{ width: "200px" }}
                   />
@@ -167,12 +212,24 @@ export function BookingDialog({
               color="primary"
               sx={{ px: 4 }}
               onClick={handleBook}
+              disabled={loading}
             >
-              Book
+              {loading ? <CircularProgress size={24} /> : "Book"}
             </Button>
           </Box>
         </Card>
       </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

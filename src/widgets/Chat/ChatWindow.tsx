@@ -22,10 +22,6 @@ export function ChatWindow({
       sender: "user" | "buddy";
     }[]
   >([]);
-  const [editDetails, setEditDetails] = useState<string | null>(null);
-  const [editStartTime, setEditStartTime] = useState<string | null>(null);
-  const [editEndTime, setEditEndTime] = useState<string | null>(null);
-  const [editSelectedDate, setEditSelectedDate] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const router = useRouter();
   const [socketConnected, setSocketConnected] = useState(false);
@@ -159,25 +155,6 @@ export function ChatWindow({
     // Split the message to extract booking details
     const parts = message.split("\n");
     if (parts.length < 3) return;
-
-    // Extract date and time information
-    const dateTimeString = parts[2].includes("Time:")
-      ? parts[2].split("Time: ")[1]
-      : "";
-
-    const [startTime, endTime] = dateTimeString.includes(" - ")
-      ? dateTimeString.split(" - ")
-      : ["10:00", "15:00"];
-
-    // Set the extracted details to state
-    setEditDetails(parts[1].includes(": ") ? parts[1].split(": ")[1] : "");
-    setEditSelectedDate(
-      parts[2].includes("Date: ")
-        ? parts[2].split("Date: ")[1].split(" Time")[0]
-        : "",
-    );
-    setEditStartTime(startTime);
-    setEditEndTime(endTime);
 
     // Open the dialog
     setOpenDialog(true);
@@ -410,19 +387,15 @@ export function ChatWindow({
       </Box>
 
       {/* Booking dialog */}
-      <BookingDialog
-        onSendMessage={handleSendMessage}
-        editDetails={editDetails}
-        editStartTime={editStartTime}
-        editEndTime={editEndTime}
-        editSelectedDate={editSelectedDate}
-        setEditDetails={setEditDetails}
-        setEditStartTime={setEditStartTime}
-        setEditEndTime={setEditEndTime}
-        setEditSelectedDate={setEditSelectedDate}
-        open={openDialog}
-        setOpen={setOpenDialog}
-      />
+      {role === "customer" && chat?.buddy && (
+        <BookingDialog
+          onSendMessage={handleSendMessage}
+          buddyId={chat.buddyId!}
+          buddyName={chat.buddy.user!.displayName}
+          open={openDialog}
+          setOpen={setOpenDialog}
+        />
+      )}
 
       {/* Message input */}
       <MessageInput
