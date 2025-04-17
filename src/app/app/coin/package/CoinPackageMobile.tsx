@@ -21,6 +21,7 @@ import CreditCardIcon from "@mui/icons-material/CreditCard";
 import QrCodeIcon from "@mui/icons-material/QrCode";
 import SmartphoneIcon from "@mui/icons-material/Smartphone";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useRouter } from "next/navigation";
 
 interface CoinPackage {
@@ -420,6 +421,50 @@ export default function CoinPackagePageMobile() {
               onClick={handleCancel}
             >
               Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* Success Modal */}
+      <Modal open={successOpen} onClose={handleCloseSuccess}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 350,
+            bgcolor: "background.paper",
+            borderRadius: 4,
+            boxShadow: 24,
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <CheckCircleIcon
+            sx={{ fontSize: 80, color: theme.palette.tertiary.main }}
+          />
+          <Typography variant="h6" mt={2}>
+            Transaction Successful
+          </Typography>
+          <Typography color="text.secondary" mt={1}>
+            Coins: {selectedPackage?.coins}
+          </Typography>
+          <Box sx={{ mt: 3 }}>
+            <Button
+              variant="contained"
+              color="tertiary"
+              sx={{
+                mt: 3,
+                alignSelf: "center",
+                padding: "12px 30px",
+              }}
+              onClick={handleCloseSuccess}
+            >
+              Continue
             </Button>
           </Box>
         </Box>
