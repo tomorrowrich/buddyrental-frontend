@@ -7,14 +7,9 @@ import { baseURL } from "@/api";
  * @returns Promise<{ success: boolean, data: Buddy[] | null, error: string | null }>
  */
 export async function fetchBuddiesClient() {
-  if (typeof window === "undefined") {
-    throw new Error("fetchBuddiesClient() should only be used in the browser.");
-  }
-
   const res = await fetch(`${baseURL}/buddies`);
   if (!res.ok) {
     throw new Error("Failed to fetch buddies");
   }
-
   return res.json();
 }
