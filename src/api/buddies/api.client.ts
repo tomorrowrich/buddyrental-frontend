@@ -1,15 +1,33 @@
-import { baseURL } from "@/api";
+// src/api/buddies/api.client.ts
+import axios from "axios";
+import { baseURL } from ".."; // ตั้งค่าตามที่คุณต้องการ
 
 /**
- * Fetch all buddies (client-side) by receiving token from caller.
+ * Fetch all buddies for the client.
  *
- * @param token - JWT token from client storage
- * @returns Promise<{ success: boolean, data: Buddy[] | null, error: string | null }>
+ * @returns {Promise<{success: boolean, data: Buddy[] | null, error: string | null}>}
  */
 export async function fetchBuddiesClient() {
-  const res = await fetch(`${baseURL}/buddies`);
-  if (!res.ok) {
-    throw new Error("Failed to fetch buddies");
+  try {
+    const res = await axios.get(`${baseURL}/buddies`);
+    return {
+      success: true,
+      data: res.data.buddies,
+      error: null,
+    };
+  } catch (err: unknown) {
+    if (typeof err === "object" && err !== null && "response" in err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || "Unknown error",
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: "Unknown error",
+    };
   }
-  return res.json();
 }
