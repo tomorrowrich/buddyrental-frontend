@@ -29,20 +29,16 @@ export default function Page() {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [reports, setReports] = useState<ReportData[]>([]);
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const data = await getReports();
-        setReports(data);
-      } catch (err) {
-        throw err;
-      }
-    };
+  const fetchReports = async () => {
+    const data = await getReports("PENDING");
+    setReports(data);
+  };
 
+  useEffect(() => {
     fetchReports();
   }, []);
 
-  console.log(reports);
+  console.log("report:", reports);
 
   const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -94,7 +90,7 @@ export default function Page() {
             <Button
               variant="contained"
               color="secondary"
-              onClick={() => router.push("/history")}
+              onClick={() => router.push("/admin/historyReport")}
             >
               History
             </Button>
@@ -136,7 +132,7 @@ export default function Page() {
           data-testid="booking-history-container"
           sx={{ width: "100%", padding: 2, flex: 1 }}
         >
-          <UnresolvedReport datas={reports} />
+          <UnresolvedReport datas={reports} onResolved={fetchReports} />
         </Box>
       </Box>
     </Container>

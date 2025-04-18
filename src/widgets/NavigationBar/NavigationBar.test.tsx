@@ -23,6 +23,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
+vi.mock("@/api", () => ({
+  baseURL: "http://localhost:55500/api",
+}));
+
 const customRender = (ui: React.ReactElement) => {
   return render(<ThemeProvider theme={BuddyRentalTheme}>{ui}</ThemeProvider>);
 };

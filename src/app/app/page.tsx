@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { useState, useRef, useEffect, JSX } from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import { fetchBuddies } from "@/api/buddies/api";
+import { fetchBuddiesClient } from "@/api/buddies/api.client";
 import { useRouter } from "next/navigation"; // นำเข้า useRouter
 
 interface Buddy {
@@ -130,7 +130,7 @@ export default function Feed(): JSX.Element {
 
   useEffect(() => {
     const loadBuddies = async () => {
-      const response = await fetchBuddies();
+      const response = await fetchBuddiesClient();
       if (response.success) {
         setBuddies(response.data || []);
       } else {

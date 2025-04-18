@@ -3,10 +3,10 @@
 import axios from "axios";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { baseURL } from "..";
+import { baseURL } from "@/api";
 
 /**
- * Fetch all buddies.
+ * Fetch all buddies from backend with auth token (server-side).
  *
  * @returns {Promise<{success: boolean, data: Buddy[] | null, error: string | null}>}
  */

@@ -35,7 +35,7 @@ export default function PersonalProfile() {
   const [acceptedTerms, setAcceptedTerms] = useState(false); //buddy flow state for ToC acceptance, resets on close
   const [description, setDescription] = useState("");
   const [minPrice, setMinPrice] = useState(500);
-  const [maxPrice, setMaxPrice] = useState(500);
+  const [maxPrice, setMaxPrice] = useState(1000);
 
   const [user, setUser] = useState<User>({
     profilePicture: "https://picsum.photos/200",

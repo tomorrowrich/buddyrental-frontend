@@ -27,7 +27,7 @@ export interface ReportData {
   id: string;
   reporterId: string;
   userId: string;
-  buddyId: string;
+  buddyId?: string;
   categoryId: string;
   details: string;
   status: string;

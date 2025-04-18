@@ -73,6 +73,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         redirect("/app");
       }
 
+      if (
+        success &&
+        user?.verified &&
+        user?.admin === null &&
+        (pathname === "/admin/verify" ||
+          pathname === "/admin/reports" ||
+          pathname === "/admin/historyReport" ||
+          pathname === "/admin/suspend")
+      ) {
+        redirect("/app");
+      }
+
       if (success && user?.verified && pathname === "/app/verify") {
         redirect("/app/onboard");
       }

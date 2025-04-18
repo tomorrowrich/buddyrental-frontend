@@ -26,14 +26,18 @@ import {
   Settings,
   ReportProblem,
   Logout,
+  HowToReg,
+  PersonOff,
 } from "@mui/icons-material";
 import Image from "next/image";
 import NotificationTray from "../NotificationTray/NotificationTray";
 import { useAuth } from "@/context/auth/auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { submitReport } from "@/api/report/api";
+import { fetchBuddiesClient } from "@/api/buddies/api.client";
+import { BuddyWithUser } from "@/model/buddy";
 
 export interface NavigationBarProps {
   isAdmin?: boolean;
@@ -41,9 +45,19 @@ export interface NavigationBarProps {
 
 const ReportCategoryMap: Record<string, string> = {
   "Payment Issues": "25d40017-05ad-498b-bfcf-88632cff85d9",
-  "Buddy/Customer Report": "123e4567-e89b-12d3-a456-426614174000",
+  "Buddy Host Complaints": "28b62f4e-82b1-4ad1-b337-ac00e792a214",
+  "Search/Filter Problems": "2a210419-bedc-4f61-86ca-53c6459e20b8",
+  "Account Issues": "4430c74b-f39c-4190-8332-326e1edda5f7",
+  "Feedback & Suggestions": "4bdc2786-38bf-4d48-8e38-f57658da5ec3",
+  "Rental Experience": "4fcad569-38a9-43f9-b629-b3bce0ef526f",
+  "UI/UX Issues": "6a2439f1-33a5-4a62-82fc-6468ed2237b3",
+  Other: "6fb1dfaf-d12e-4ce7-a392-f5d83d91a46e",
+  "Safety Concerns": "85cd6225-8333-4b0d-9ea7-0b7d9c0454cf",
+  "Verification Problems": "a902287f-d65a-439d-ac10-eb981c57412d",
+  "Feature Requests": "b474cc8e-9a6d-402f-a56c-1659c149aa19",
+  "Notification Issues": "cc27c907-80d3-4813-8a71-fa4e3141768a",
   "App/System Issues": "cebae3c6-4ba6-4747-b351-325eb000243c",
-  Others: "6fb1dfaf-d12e-4ce7-a392-f5d83d91a46e",
+  "Booking Process Errors": "e19abe05-3691-4e79-af60-a3d9e76c959d",
 };
 
 const getCategoryId = (categoryName: string): string => {
@@ -59,17 +73,47 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const [reportType, setReportType] = useState("Buddy/Customer Report");
   const [reportText, setReportText] = useState("");
   const [accountName, setAccountName] = useState("");
+  const [buddyList, setBuddyList] = useState<BuddyWithUser[]>([]);
+
+  useEffect(() => {
+    const getBuddies = async () => {
+      const result = await fetchBuddiesClient();
+      if (result.success && result.data) {
+        setBuddyList(result.data);
+      } else {
+        console.error("Error fetching buddies:", result.error);
+      }
+    };
+
+    getBuddies();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
   };
 
   const handleSubmit = async () => {
-    const categoryId = getCategoryId(reportType);
+    let categoryId;
+    let buddy;
+    console.log("reportType: ", reportType);
+    if (reportType === "Buddy/Customer Report") {
+      categoryId = getCategoryId("Buddy Host Complaints");
+      console.log("categoryId: ", categoryId);
+      buddy = buddyList.find((b) => b.user?.displayName === accountName);
+      // console.log("buddy: ", buddy);
+      if (buddy?.buddyId === undefined) {
+        alert("Buddy not found with the provided account name.");
+        // alert(categoryId);
+        return;
+      }
+    } else {
+      categoryId = getCategoryId(reportType);
+    }
     const data = {
       userId: user?.userId,
       categoryId: categoryId,
       details: reportText,
+      buddyId: buddy?.buddyId,
     };
     try {
       const response = await submitReport(data);
@@ -107,7 +151,10 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
         }}
       >
         {/* Left Side - Logo */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          onClick={() => router.push("/app")}
+        >
           <Image
             src="/logo-full.svg"
             alt="BuddyRental Logo"
@@ -119,20 +166,64 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
         {/* Right Side - Navigation, Balance, Notifications, Avatar */}
         {user && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-            <Button
-              startIcon={<MenuBook />}
-              sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => router.push("/app/booking/history")}
-            >
-              Bookings
-            </Button>
-            <Button
-              startIcon={<EventNote />}
-              sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => router.push("/app/booking/schedule")}
-            >
-              Calendar
-            </Button>
+            {isAdmin && (
+              <>
+                <Button
+                  startIcon={<HowToReg />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/admin/verify")}
+                >
+                  Admin Verify
+                </Button>
+                <Button
+                  startIcon={<ReportProblem />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/admin/reports")}
+                >
+                  Reports
+                </Button>
+                <Button
+                  startIcon={<PersonOff />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/admin/suspend")}
+                >
+                  Suspend Users
+                </Button>
+              </>
+            )}
+            {!isAdmin && (
+              <>
+                <Button
+                  startIcon={<MenuBook />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/app/booking/history")}
+                >
+                  Bookings
+                </Button>
+                <Button
+                  startIcon={<EventNote />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/app/booking/schedule")}
+                >
+                  Calendar
+                </Button>
+              </>
+            )}
             <Button
               startIcon={<ChatBubbleOutline />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}
@@ -429,4 +520,11 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
       </Toolbar>
     </AppBar>
   );
+}
+function setSnackbarMessage(arg0: string) {
+  throw new Error("Function not implemented.");
+}
+
+function setOpenSnackbar(arg0: boolean) {
+  throw new Error("Function not implemented.");
 }
