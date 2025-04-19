@@ -7,22 +7,15 @@ import {
   useTheme,
   Button,
   Modal,
-  TextField,
   IconButton,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import CloseIcon from "@mui/icons-material/Close";
 import PaidIcon from "@mui/icons-material/Paid";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
-import QrCodeIcon from "@mui/icons-material/QrCode";
-import SmartphoneIcon from "@mui/icons-material/Smartphone";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { useRouter } from "next/navigation";
+import { purchaseCoins } from "@/api/payment/api";
 
 interface CoinPackage {
   price: number;
@@ -32,18 +25,26 @@ interface CoinPackage {
 export default function CoinPackagePage() {
   const theme = useTheme();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<CoinPackage | null>(
     null,
   );
-  const [paymentMethod, setPaymentMethod] = useState("credit");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardOwner, setCardOwner] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams) {
+      const success = searchParams.get("success");
+      if (success === "true") {
+        setSuccessOpen(true);
+      } else if (success === "false") {
+        setPaymentError("Payment was cancelled or failed. Please try again.");
+      }
+    }
+  }, [searchParams]);
 
   const coinPackages: CoinPackage[] = [
     { price: 100, coins: 100 },
@@ -75,24 +76,34 @@ export default function CoinPackagePage() {
     setOpen(false);
     setConfirmationOpen(false);
     setSelectedPackage(null);
-    setPaymentMethod("credit");
-  };
-
-  const handlePaymentSuccess = () => {
-    setOpen(false);
-    setSuccessOpen(true);
   };
 
   const handleCloseSuccess = () => {
     setSuccessOpen(false);
   };
 
-  const isCardInfoValid =
-    cardNumber.trim() !== "" &&
-    cardOwner.trim() !== "" &&
-    selectedMonth !== "" &&
-    selectedYear !== "" &&
-    cvv.trim() !== "";
+  const StripeCheckout = async () => {
+    if (!selectedPackage) return;
+
+    setIsProcessing(true);
+    setPaymentError(null);
+
+    try {
+      const redirectUrl = `${window.location.origin}${window.location.pathname}`;
+
+      const result = await purchaseCoins(selectedPackage.coins, redirectUrl);
+
+      if (result.success && result.url) {
+        window.location.href = result.url;
+      } else {
+        setPaymentError(result.error);
+      }
+    } catch (err) {
+      setPaymentError("Error occured while checking out");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <Container sx={{ flex: 1, paddingTop: 5, borderRadius: 4 }}>
@@ -112,7 +123,6 @@ export default function CoinPackagePage() {
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
             background: `linear-gradient(90deg, ${theme.palette.tertiary.main}, ${theme.palette.quinary.main})`,
             p: 2,
@@ -120,26 +130,44 @@ export default function CoinPackagePage() {
             borderTopRightRadius: 8,
           }}
         >
-          <Typography variant="h6" fontWeight={700} color="white">
-            Coin History
-          </Typography>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => router.push("/app/coin/package")}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography variant="h6" fontWeight={700} color="white">
+              Coin Packages
+            </Typography>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => router.push("/app/coin/history")}
+              sx={{
+                borderRadius: "20px",
+                fontWeight: 600,
+                backgroundColor: "white",
+                color: theme.palette.secondary.main,
+                "&:hover": {
+                  backgroundColor: "#f0f0f0",
+                },
+              }}
+            >
+              History
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Display Error */}
+        {paymentError && (
+          <Box
             sx={{
-              borderRadius: "20px",
-              fontWeight: 600,
-              backgroundColor: "white",
-              color: theme.palette.secondary.main,
-              "&:hover": {
-                backgroundColor: "#f0f0f0",
-              },
+              bgcolor: "#fee2e2",
+              color: "#b91c1c",
+              p: 2,
+              mx: 3,
+              mt: 2,
+              borderRadius: 2,
             }}
           >
-            History
-          </Button>
-        </Box>
+            <Typography>{paymentError}</Typography>
+          </Box>
+        )}
 
         {/* Package List */}
         <Box sx={{ padding: 3 }}>
@@ -223,146 +251,12 @@ export default function CoinPackagePage() {
           </IconButton>
 
           <Typography variant="h6" mb={2}>
-            Payment Method
+            Purchase {selectedPackage?.coins} Coins
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              mb: 3,
-              width: "100%",
-            }}
-          >
-            {[
-              {
-                method: "credit",
-                icon: <CreditCardIcon />,
-                label: "Credit/Debit Card",
-              },
-              { method: "promptpay", icon: <QrCodeIcon />, label: "PromptPay" },
-              {
-                method: "mobile",
-                icon: <SmartphoneIcon />,
-                label: "Mobile Banking",
-              },
-            ].map(({ method, icon, label }) => (
-              <Button
-                key={method}
-                variant="outlined"
-                onClick={() => setPaymentMethod(method)}
-                sx={{
-                  flex: 1,
-                  margin: "0 5px",
-                  backgroundColor:
-                    paymentMethod === method
-                      ? theme.palette.secondary.main
-                      : "white",
-                  color:
-                    paymentMethod === method
-                      ? "white"
-                      : theme.palette.text.primary,
-                  "&:hover": {
-                    backgroundColor:
-                      paymentMethod === method
-                        ? theme.palette.secondary.dark
-                        : "rgba(0, 0, 0, 0.04)",
-                  },
-                }}
-                startIcon={icon}
-              >
-                {label}
-              </Button>
-            ))}
-          </Box>
-          {paymentMethod === "credit" && (
-            <Box>
-              <Typography variant="h6" mb={2}>
-                Card Information
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Card Number"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                />
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Owner"
-                  value={cardOwner}
-                  onChange={(e) => setCardOwner(e.target.value)}
-                />
-              </Box>
-              <Box sx={{ display: "flex", gap: 2 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Month</InputLabel>
-                  <Select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                    label="Month"
-                  >
-                    {Array.from({ length: 12 }, (_, i) => (
-                      <MenuItem
-                        key={i}
-                        value={(i + 1).toString().padStart(2, "0")}
-                      >
-                        {(i + 1).toString().padStart(2, "0")}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth>
-                  <InputLabel>Year</InputLabel>
-                  <Select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                    label="Year"
-                  >
-                    {Array.from({ length: 10 }, (_, i) => (
-                      <MenuItem
-                        key={i}
-                        value={(new Date().getFullYear() + i)
-                          .toString()
-                          .slice(-2)}
-                      >
-                        {(new Date().getFullYear() + i).toString().slice(-2)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <TextField
-                  label="CVV/CVC"
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value)}
-                  sx={{ width: "50%" }}
-                />
-              </Box>
-            </Box>
-          )}
 
-          {paymentMethod === "promptpay" && (
-            <Box>
-              <Typography variant="h6" mb={2}>
-                QR Payment
-              </Typography>
-              <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-                <QrCodeIcon
-                  sx={{ fontSize: 200, color: theme.palette.tertiary.main }}
-                />
-              </Box>
-            </Box>
-          )}
-
-          {paymentMethod === "mobile" && (
-            <Box>
-              <Typography variant="h6" mb={2}>
-                Mobile Banking
-              </Typography>
-              <Typography mb={2}>ฺBanks ต่างๆ</Typography>
-            </Box>
-          )}
+          <Typography variant="body1" mb={3}>
+            Amount: {selectedPackage?.price} THB
+          </Typography>
 
           <Button
             variant="contained"
@@ -372,10 +266,10 @@ export default function CoinPackagePage() {
               alignSelf: "center",
               padding: "12px 30px",
             }}
-            onClick={handlePaymentSuccess}
-            disabled={paymentMethod === "credit" && !isCardInfoValid} // Disable if credit card information is not valid
+            onClick={StripeCheckout}
+            disabled={isProcessing}
           >
-            Make Payment
+            {isProcessing ? "Processing..." : "Proceed to Payment"}
           </Button>
         </Box>
       </Modal>
@@ -461,7 +355,7 @@ export default function CoinPackagePage() {
             Transaction Successful
           </Typography>
           <Typography color="text.secondary" mt={1}>
-            Coins: {selectedPackage?.coins}
+            Your coins have been added to your account.
           </Typography>
           <Box sx={{ mt: 3 }}>
             <Button

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -11,31 +12,53 @@ import {
   TableCell,
   TableBody,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { getTransactionHistory } from "@/api/payment/api";
+import { TransactionResponse } from "@/api/payment/interface";
 
 export default function CoinHistoryPage() {
   const theme = useTheme();
   const router = useRouter();
+  const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const transactions = [
-    {
-      id: "12341234",
-      date: "12/05/23 12:40",
-      package: "1000 Coins",
-      method: "Promptpay",
-      amount: "1000 Baht",
-      status: "Success",
-    },
-    {
-      id: "12341234",
-      date: "12/05/23 12:40",
-      package: "1000 Coins",
-      method: "Promptpay",
-      amount: "1000 Baht",
-      status: "Fail",
-    },
-  ];
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        setLoading(true);
+        const result = await getTransactionHistory();
+        setTransactions(result.data);
+        setError(null);
+      } catch (err) {
+        setError("Failed to load transactions");
+        console.error("Error fetching transactions:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const pad = (n: number) => (n < 10 ? "0" + n : n);
+
+    const day = pad(date.getDate());
+    const month = pad(date.getMonth() + 1);
+    const year = String(date.getFullYear()).slice(-2);
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  };
+
+  const formatAmount = (amount: number, currency: string = "Baht") => {
+    return `${amount} ${currency}`;
+  };
 
   return (
     <Container sx={{ flex: 1, paddingTop: 5, borderRadius: 4 }}>
@@ -88,36 +111,54 @@ export default function CoinHistoryPage() {
 
         {/* Table */}
         <Box sx={{ p: 4, backgroundColor: "white" }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                {[
-                  "Transaction ID",
-                  "Date",
-                  "Package",
-                  "Payment Method",
-                  "Amount",
-                  "Status",
-                ].map((head) => (
-                  <TableCell key={head} sx={{ fontWeight: 700 }}>
-                    {head}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {transactions.map((txn, index) => (
-                <TableRow key={index}>
-                  <TableCell>{txn.id}</TableCell>
-                  <TableCell>{txn.date}</TableCell>
-                  <TableCell>{txn.package}</TableCell>
-                  <TableCell>{txn.method}</TableCell>
-                  <TableCell>{txn.amount}</TableCell>
-                  <TableCell>{txn.status}</TableCell>
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : error ? (
+            <Typography color="error" sx={{ textAlign: "center", py: 2 }}>
+              {error}
+            </Typography>
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  {[
+                    "Transaction ID",
+                    "Date",
+                    "Package",
+                    "Transaction Type",
+                    "Amount",
+                    "Status",
+                  ].map((head) => (
+                    <TableCell key={head} sx={{ fontWeight: 700 }}>
+                      {head}
+                    </TableCell>
+                  ))}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {transactions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} sx={{ textAlign: "center" }}>
+                      No transactions found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  transactions.map((txn) => (
+                    <TableRow key={txn.id}>
+                      <TableCell>{txn.id}</TableCell>
+                      <TableCell>{formatDate(txn.createdAt)}</TableCell>
+                      <TableCell>{txn.amount} Coins</TableCell>
+                      <TableCell>{txn.type}</TableCell>
+                      <TableCell>{formatAmount(txn.amount)}</TableCell>
+                      <TableCell>{txn.status}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </Box>
       </Box>
     </Container>
