@@ -35,12 +35,11 @@ export default function PersonalProfile() {
   const [acceptedTerms, setAcceptedTerms] = useState(false); //buddy flow state for ToC acceptance, resets on close
   const [description, setDescription] = useState("");
   const [minPrice, setMinPrice] = useState(500);
-  const [maxPrice, setMaxPrice] = useState(500);
+  const [maxPrice, setMaxPrice] = useState(1000);
 
   const [user, setUser] = useState<User>({
     profilePicture: "https://picsum.photos/200",
   } as User);
-
   useEffect(() => {
     if (authUser) {
       setUser({ ...authUser, displayName: authUser.displayName || "" });
@@ -149,7 +148,7 @@ export default function PersonalProfile() {
             <Typography color="text.secondary">{user.email}</Typography>
             <Box display="flex" alignItems="center" gap={1} mt={1}>
               <Chip
-                label="Customer"
+                label={user.admin ? "Admin" : user.buddy ? "Buddy" : "Customer"}
                 size="small"
                 sx={{
                   bgcolor: "#EDA4BD",
@@ -397,12 +396,10 @@ export default function PersonalProfile() {
               </Typography>
               <Select
                 fullWidth
-                defaultValue={0}
                 value={minPrice}
-                onChange={() =>
-                  (event: React.ChangeEvent<HTMLInputElement>) => {
-                    setMinPrice(Number(event.target.value));
-                  }}
+                onChange={(event) => {
+                  setMinPrice(Number(event.target.value));
+                }}
               >
                 {[500, 1000, 1500, 2000].map((price) => (
                   <MenuItem key={price} value={price}>
@@ -418,12 +415,10 @@ export default function PersonalProfile() {
               </Typography>
               <Select
                 fullWidth
-                defaultValue={0}
                 value={maxPrice}
-                onChange={() =>
-                  (event: React.ChangeEvent<HTMLInputElement>) => {
-                    setMaxPrice(Number(event.target.value));
-                  }}
+                onChange={(event) => {
+                  setMaxPrice(Number(event.target.value));
+                }}
               >
                 {[1000, 1500, 2000, 2500].map((price) => (
                   <MenuItem key={price} value={price}>
@@ -449,8 +444,8 @@ export default function PersonalProfile() {
             onClick={() => {
               setRegisterBuddyStep(3);
               createBuddy({
-                priceMin: minPrice,
-                priceMax: maxPrice,
+                minPrice: minPrice,
+                maxPrice: maxPrice,
                 description: description,
               });
             }}
