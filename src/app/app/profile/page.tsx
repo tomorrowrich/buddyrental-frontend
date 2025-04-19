@@ -13,8 +13,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Select,
-  MenuItem,
   useTheme,
   FormGroup,
   FormControlLabel,
@@ -34,8 +32,8 @@ export default function PersonalProfile() {
   const [registerBuddyStep, setRegisterBuddyStep] = useState(0); //State to control register buddy flow
   const [acceptedTerms, setAcceptedTerms] = useState(false); //buddy flow state for ToC acceptance, resets on close
   const [description, setDescription] = useState("");
-  const [minPrice, setMinPrice] = useState(500);
-  const [maxPrice, setMaxPrice] = useState(1000);
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState<string>("");
 
   const [user, setUser] = useState<User>({
     profilePicture: "https://picsum.photos/200",
@@ -155,7 +153,7 @@ export default function PersonalProfile() {
                   color: "white",
                 }}
               />
-              {!isEditing && (
+              {!isEditing && user.buddy === null && (
                 <Typography
                   variant="body1"
                   fontSize="12px"
@@ -389,44 +387,18 @@ export default function PersonalProfile() {
             }}
           />
 
-          <Box display="flex" gap={2} mt={3}>
-            <Box flex={1}>
-              <Typography fontSize={14} fontWeight="bold">
-                Minimum Price / Day
-              </Typography>
-              <Select
-                fullWidth
-                value={minPrice}
-                onChange={(event) => {
-                  setMinPrice(Number(event.target.value));
-                }}
-              >
-                {[500, 1000, 1500, 2000].map((price) => (
-                  <MenuItem key={price} value={price}>
-                    {price}
-                  </MenuItem>
-                ))}
-              </Select>
-            </Box>
-
-            <Box flex={1}>
-              <Typography fontSize={14} fontWeight="bold">
-                Maximum Price / Day
-              </Typography>
-              <Select
-                fullWidth
-                value={maxPrice}
-                onChange={(event) => {
-                  setMaxPrice(Number(event.target.value));
-                }}
-              >
-                {[1000, 1500, 2000, 2500].map((price) => (
-                  <MenuItem key={price} value={price}>
-                    {price}
-                  </MenuItem>
-                ))}
-              </Select>
-            </Box>
+          <Box mt={3}>
+            <Typography fontSize={14} fontWeight="bold">
+              Price / Hour (฿)
+            </Typography>
+            <TextField
+              fullWidth
+              type="number"
+              value={maxPrice}
+              onChange={(event) => setMaxPrice(event.target.value)}
+              InputProps={{ inputProps: { min: 0 } }}
+              placeholder="Enter price per hour"
+            />
           </Box>
         </DialogContent>
         <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
@@ -445,7 +417,7 @@ export default function PersonalProfile() {
               setRegisterBuddyStep(3);
               createBuddy({
                 minPrice: minPrice,
-                maxPrice: maxPrice,
+                maxPrice: Number(maxPrice),
                 description: description,
               });
             }}
