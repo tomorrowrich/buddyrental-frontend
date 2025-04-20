@@ -5,13 +5,7 @@ import { User } from "@/model/user";
 import { Box, Container, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
-interface SuspendedPageProps {
-  searchParams?: {
-    until?: string;
-  };
-}
-
-export default function SuspendedPage({ searchParams }: SuspendedPageProps) {
+export default function SuspendedPage() {
   const { user: authUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const suspendedUntil = user?.suspendedUntil;
