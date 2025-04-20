@@ -48,6 +48,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     getProfile().then(({ success, user }) => {
       setIsAuthenticated(success);
       setUser(user);
+
       if (
         !success &&
         pathname !== "/login" &&
@@ -61,6 +62,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         redirect("/login");
       }
 
+      if (
+        success &&
+        ((user?.suspendedUntil &&
+          new Date(user.suspendedUntil).getTime() > Date.now()) ||
+          user?.isBanned)
+      ) {
+        redirect("/suspended");
+      }
+
       if (success && !user?.verified && pathname !== "/app/verify") {
         redirect("/app/verify");
       }
@@ -68,7 +78,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (
         success &&
         user?.verified &&
-        (pathname === "/login" || pathname === "/register")
+        (pathname === "/login" ||
+          pathname === "/register" ||
+          pathname === "/suspended")
       ) {
         redirect("/app");
       }
