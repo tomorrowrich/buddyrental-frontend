@@ -24,7 +24,9 @@ export enum TransactionType {
   REFUND = "REFUND",
 }
 
-// export interface WithdrawCoinsResponse {
-//   success: boolean;
-//   transaction: TransactionResponse;
-// }
+export interface WithdrawCoinsResponse {
+  success: boolean;
+  data: {
+    transaction: TransactionResponse;
+  };
+}

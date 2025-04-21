@@ -8,6 +8,7 @@ import {
   Button,
   Modal,
   IconButton,
+  TextField,
 } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -15,12 +16,13 @@ import CloseIcon from "@mui/icons-material/Close";
 import PaidIcon from "@mui/icons-material/Paid";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
-import { purchaseCoins } from "@/api/payment/api";
+import { purchaseCoins, withdrawCoins } from "@/api/payment/api";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -44,6 +46,12 @@ export default function CoinPackagePageMobile() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
+  const [isWithdrawProcessing, setIsWithdrawProcessing] = useState(false);
 
   useEffect(() => {
     if (searchParams) {
@@ -130,6 +138,58 @@ export default function CoinPackagePageMobile() {
     }
   }, [open, selectedPackage, clientSecret, isProcessing, StripeCheckout]);
 
+  const handleWithdrawOpen = () => {
+    setWithdrawOpen(true);
+    setWithdrawAmount("");
+    setWithdrawError(null);
+  };
+
+  const handleWithdrawClose = () => {
+    setWithdrawOpen(false);
+    setWithdrawAmount("");
+    setWithdrawError(null);
+  };
+
+  const handleWithdrawAmountChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setWithdrawAmount(value);
+  };
+
+  const handleWithdrawSubmit = async () => {
+    if (!withdrawAmount || parseInt(withdrawAmount) <= 0) {
+      setWithdrawError("Please enter a valid amount of coins to withdraw");
+      return;
+    }
+
+    setIsWithdrawProcessing(true);
+    setWithdrawError(null);
+
+    try {
+      const amount = parseInt(withdrawAmount);
+      const result = await withdrawCoins(amount);
+
+      if (result.success) {
+        setWithdrawSuccess(true);
+        setWithdrawOpen(false);
+      } else {
+        setWithdrawError(
+          result.error || "Failed to withdraw coins. Please try again.",
+        );
+      }
+    } catch (err) {
+      setWithdrawError("An error occurred. Please try again.");
+    } finally {
+      setIsWithdrawProcessing(false);
+    }
+  };
+
+  const handleWithdrawSuccessClose = () => {
+    setWithdrawSuccess(false);
+    router.push("/app/coin/package");
+  };
+
   const options = { clientSecret };
 
   return (
@@ -161,22 +221,49 @@ export default function CoinPackagePageMobile() {
           <Typography variant="h6" fontWeight={700} color="white">
             Coin Package
           </Typography>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => router.push("/app/coin/history")}
-            sx={{
-              borderRadius: "20px",
-              fontWeight: 600,
-              backgroundColor: "white",
-              color: theme.palette.secondary.main,
-              "&:hover": {
-                backgroundColor: "#f0f0f0",
-              },
-            }}
-          >
-            History
-          </Button>
+
+          <Box sx={{ display: "flex", gap: 1 }}>
+            {/* History Button */}
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => router.push("/app/coin/history")}
+              sx={{
+                borderRadius: "20px",
+                fontWeight: 600,
+                backgroundColor: "white",
+                color: theme.palette.secondary.main,
+                "&:hover": {
+                  backgroundColor: "#f0f0f0",
+                },
+                fontSize: { xs: "0.7rem", sm: "0.8rem" },
+                px: { xs: 1, sm: 2 },
+              }}
+            >
+              History
+            </Button>
+
+            {/* Withdraw Button */}
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AccountBalanceWalletIcon />}
+              onClick={handleWithdrawOpen}
+              sx={{
+                borderRadius: "20px",
+                fontWeight: 600,
+                backgroundColor: "white",
+                color: theme.palette.secondary.main,
+                "&:hover": {
+                  backgroundColor: "#f0f0f0",
+                },
+                fontSize: { xs: "0.7rem", sm: "0.8rem" },
+                px: { xs: 1, sm: 2 },
+              }}
+            >
+              Withdraw
+            </Button>
+          </Box>
         </Box>
 
         {/* Display Error */}
@@ -321,6 +408,86 @@ export default function CoinPackagePageMobile() {
         </Box>
       </Modal>
 
+      {/* Withdraw Modal */}
+      <Modal open={withdrawOpen} onClose={handleWithdrawClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "90%",
+            maxWidth: 350,
+            bgcolor: "background.paper",
+            borderRadius: 3,
+            boxShadow: 24,
+            p: 3,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <IconButton
+            onClick={handleWithdrawClose}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: theme.palette.secondary.main,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          <Typography variant="h6" mb={3} align="center">
+            Withdraw Coins
+          </Typography>
+
+          {withdrawError && (
+            <Box
+              sx={{
+                bgcolor: "#fee2e2",
+                color: "#b91c1c",
+                p: 2,
+                mb: 3,
+                borderRadius: 2,
+              }}
+            >
+              <Typography variant="body2">{withdrawError}</Typography>
+            </Box>
+          )}
+
+          <TextField
+            label="Coins to withdraw"
+            variant="outlined"
+            fullWidth
+            value={withdrawAmount}
+            onChange={handleWithdrawAmountChange}
+            type="text"
+            InputProps={{
+              startAdornment: (
+                <PaidIcon sx={{ color: theme.palette.tertiary.main, mr: 1 }} />
+              ),
+            }}
+            sx={{ mb: 3 }}
+            size="small"
+          />
+
+          <Button
+            variant="contained"
+            color="tertiary"
+            onClick={handleWithdrawSubmit}
+            disabled={isWithdrawProcessing}
+            sx={{
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: 600,
+            }}
+          >
+            {isWithdrawProcessing ? "Processing..." : "Withdraw"}
+          </Button>
+        </Box>
+      </Modal>
+
       {/* Confirmation Modal */}
       <Modal open={confirmationOpen} onClose={handleCancel}>
         <Box
@@ -412,6 +579,56 @@ export default function CoinPackagePageMobile() {
                 padding: "12px 30px",
               }}
               onClick={handleCloseSuccess}
+            >
+              Continue
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* Withdraw Success Modal */}
+      <Modal open={withdrawSuccess} onClose={handleWithdrawSuccessClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 350,
+            bgcolor: "background.paper",
+            borderRadius: 4,
+            boxShadow: 24,
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <CheckCircleIcon
+            sx={{ fontSize: 80, color: theme.palette.tertiary.main }}
+          />
+          <Typography variant="h6" mt={2}>
+            Withdrawal Successful
+          </Typography>
+          <Typography
+            color="text.secondary"
+            sx={{
+              mt: 1,
+              textAlign: "center",
+            }}
+          >
+            coins have been withdrawn from your account.
+          </Typography>
+          <Box>
+            <Button
+              variant="contained"
+              color="tertiary"
+              sx={{
+                mt: 3,
+                alignSelf: "center",
+                padding: "12px 30px",
+              }}
+              onClick={handleWithdrawSuccessClose}
             >
               Continue
             </Button>

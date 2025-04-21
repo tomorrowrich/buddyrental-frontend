@@ -2,7 +2,11 @@
 import axios from "axios";
 import { baseURL } from "@/api";
 import { cookies } from "next/headers";
-import { PurchaseResponse, TransactionType } from "./interface";
+import {
+  PurchaseResponse,
+  TransactionType,
+  WithdrawCoinsResponse,
+} from "./interface";
 import { redirect } from "next/navigation";
 
 export async function purchaseCoins(amount: number, redirectUrl: string) {
@@ -86,35 +90,32 @@ export async function getTransactionHistory(
     });
 }
 
-// export async function withdrawCoins(amount: number) {
-//   const cookie = await cookies();
-//   const token = cookie.get("token")?.value;
+export async function withdrawCoins(amount: number) {
+  const cookie = await cookies();
+  const token = cookie.get("token")?.value;
 
-//   if (!token) {
-//     redirect("/login");
-//   }
+  if (!token) {
+    redirect("/login");
+  }
 
-//   return await axios
-//     .post<WithdrawCoinsResponse>(
-//       `${baseURL}/payment/withdrwn/${amount}`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     )
-//     .then((res) => {
-//       return {
-//         success: true,
-//         transaction: res.data.transaction,
-//         error: null
-//       };
-//     })
-//     .catch((err) => {
-//       return {
-//         success: false,
-//         transaction: null,
-//         error: err.response?.data?.message,
-//       };
-//     });
-// }
+  return await axios
+    .post<WithdrawCoinsResponse>(`${baseURL}/payment/withdraw/${amount}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => {
+      return {
+        success: true,
+        transaction: res.data.data.transaction,
+        error: null,
+      };
+    })
+    .catch((err) => {
+      return {
+        success: false,
+        transaction: null,
+        error: err.response?.data?.message,
+      };
+    });
+}

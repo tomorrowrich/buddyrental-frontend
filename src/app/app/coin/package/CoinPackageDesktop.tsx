@@ -8,6 +8,7 @@ import {
   Button,
   Modal,
   IconButton,
+  TextField,
 } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -15,12 +16,13 @@ import CloseIcon from "@mui/icons-material/Close";
 import PaidIcon from "@mui/icons-material/Paid";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
-import { purchaseCoins } from "@/api/payment/api";
+import { purchaseCoins, withdrawCoins } from "@/api/payment/api";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -44,6 +46,12 @@ export default function CoinPackagePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
+  const [isWithdrawProcessing, setIsWithdrawProcessing] = useState(false);
 
   useEffect(() => {
     if (searchParams) {
@@ -130,6 +138,56 @@ export default function CoinPackagePage() {
     }
   }, [open, selectedPackage, clientSecret, isProcessing, StripeCheckout]);
 
+  const handleWithdrawOpen = () => {
+    setWithdrawOpen(true);
+    setWithdrawAmount("");
+    setWithdrawError(null);
+  };
+
+  const handleWithdrawClose = () => {
+    setWithdrawOpen(false);
+    setWithdrawAmount("");
+    setWithdrawError(null);
+  };
+
+  const handleWithdrawAmountChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setWithdrawAmount(value);
+  };
+
+  const handleWithdrawSubmit = async () => {
+    if (!withdrawAmount || parseInt(withdrawAmount) <= 0) {
+      setWithdrawError("Please enter a valid amount of coins to withdraw");
+      return;
+    }
+
+    setIsWithdrawProcessing(true);
+    setWithdrawError(null);
+
+    try {
+      const amount = parseInt(withdrawAmount);
+      const result = await withdrawCoins(amount);
+
+      if (result.success) {
+        setWithdrawSuccess(true);
+        setWithdrawOpen(false);
+      } else {
+        setWithdrawError(result.error);
+      }
+    } catch (err) {
+      setWithdrawError("An error occurred. Please try again.");
+    } finally {
+      setIsWithdrawProcessing(false);
+    }
+  };
+
+  const handleWithdrawSuccessClose = () => {
+    setWithdrawSuccess(false);
+    router.push("/app/coin/package");
+  };
+
   const options = { clientSecret };
 
   return (
@@ -151,6 +209,7 @@ export default function CoinPackagePage() {
           sx={{
             display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
             background: `linear-gradient(90deg, ${theme.palette.tertiary.main}, ${theme.palette.quinary.main})`,
             p: 2,
             borderTopLeftRadius: 8,
@@ -178,6 +237,25 @@ export default function CoinPackagePage() {
               History
             </Button>
           </Box>
+
+          {/* Withdraw Button */}
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AccountBalanceWalletIcon />}
+            onClick={handleWithdrawOpen}
+            sx={{
+              borderRadius: "20px",
+              fontWeight: 600,
+              backgroundColor: "white",
+              color: theme.palette.secondary.main,
+              "&:hover": {
+                backgroundColor: "#f0f0f0",
+              },
+            }}
+          >
+            Withdraw Coins
+          </Button>
         </Box>
 
         {/* Display Error */}
@@ -317,6 +395,84 @@ export default function CoinPackagePage() {
         </Box>
       </Modal>
 
+      {/* Withdraw Modal */}
+      <Modal open={withdrawOpen} onClose={handleWithdrawClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            borderRadius: 4,
+            boxShadow: 24,
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <IconButton
+            onClick={handleWithdrawClose}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: theme.palette.secondary.main,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          <Typography variant="h6" mb={3} align="center">
+            Withdraw Coins
+          </Typography>
+
+          {withdrawError && (
+            <Box
+              sx={{
+                bgcolor: "#fee2e2",
+                color: "#b91c1c",
+                p: 2,
+                mb: 3,
+                borderRadius: 2,
+              }}
+            >
+              <Typography>{withdrawError}</Typography>
+            </Box>
+          )}
+
+          <TextField
+            label="Amount of coins to withdraw"
+            variant="outlined"
+            fullWidth
+            value={withdrawAmount}
+            onChange={handleWithdrawAmountChange}
+            type="text"
+            InputProps={{
+              startAdornment: (
+                <PaidIcon sx={{ color: theme.palette.tertiary.main, mr: 1 }} />
+              ),
+            }}
+            sx={{ mb: 3 }}
+          />
+
+          <Button
+            variant="contained"
+            color="tertiary"
+            onClick={handleWithdrawSubmit}
+            disabled={isWithdrawProcessing}
+            sx={{
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: 600,
+            }}
+          >
+            {isWithdrawProcessing ? "Processing..." : "Withdraw"}
+          </Button>
+        </Box>
+      </Modal>
+
       {/* Confirmation Modal */}
       <Modal open={confirmationOpen} onClose={handleCancel}>
         <Box
@@ -410,6 +566,50 @@ export default function CoinPackagePage() {
                 padding: "12px 30px",
               }}
               onClick={handleCloseSuccess}
+            >
+              Continue
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* Withdraw Success Modal */}
+      <Modal open={withdrawSuccess} onClose={handleWithdrawSuccessClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            borderRadius: 4,
+            boxShadow: 24,
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <CheckCircleIcon
+            sx={{ fontSize: 100, color: theme.palette.tertiary.main }}
+          />
+          <Typography variant="h6" mt={2}>
+            Withdrawal Successful
+          </Typography>
+          <Typography color="text.secondary" mt={1}>
+            Coins have been withdrawn from your account.
+          </Typography>
+          <Box sx={{ mt: 3 }}>
+            <Button
+              variant="contained"
+              color="tertiary"
+              sx={{
+                mt: 3,
+                alignSelf: "center",
+                padding: "12px 30px",
+              }}
+              onClick={handleWithdrawSuccessClose}
             >
               Continue
             </Button>
