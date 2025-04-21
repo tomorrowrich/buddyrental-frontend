@@ -19,5 +19,5 @@ export enum NotificationType {
 
 export interface NotificationContextElement {
   notification: Notification;
-  markAsRead: () => void;
+  markAsRead: () => Promise<void>;
 }

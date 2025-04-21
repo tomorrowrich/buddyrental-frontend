@@ -201,7 +201,7 @@ export default function Schedule() {
               dayjs(year.toString()).isAfter(dayjs().add(6, "month"))
             }
             maxDate={dayjs().add(6, "month")}
-            value={dayjs()} // Always show today as selected
+            value={selectedDate}
             onChange={(newDate) => {
               if (newDate) {
                 setSelectedDate(newDate);
@@ -238,6 +238,10 @@ export default function Schedule() {
                   width: "50px",
                   fontSize: "1rem",
                 },
+                "& .Mui-selected": {
+                  border: "2px solid",
+                  borderColor: "primary.main",
+                },
               },
               "& .MuiPickersCalendarHeader-root": {
                 marginTop: 2,
@@ -250,23 +254,6 @@ export default function Schedule() {
                   transition: "0.3s",
                   "&:hover": {
                     color: "primary.main",
-                  },
-                },
-                "& .MuiPickersArrowSwitcher-root": {
-                  "& .MuiButtonBase-root": {
-                    color: "primary.main",
-                    backgroundColor: "rgba(235, 123, 192, 0.1)",
-                    borderRadius: "50%",
-                    padding: 1,
-                    transition: "all 0.2s ease-in-out",
-                    "&:hover": {
-                      backgroundColor: "rgba(235, 123, 192, 0.2)",
-                      transform: "scale(1.1)",
-                    },
-                  },
-                  "& .Mui-disabled": {
-                    color: "rgba(0, 0, 0, 0.26)",
-                    backgroundColor: "transparent",
                   },
                 },
               },

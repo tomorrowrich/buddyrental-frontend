@@ -149,7 +149,7 @@ export async function getReservationStatus(reservationId: string) {
     .catch((err) => {
       return {
         success: false,
-        data: null,
+        data: err.response?.data?.message || "Unknown error",
         error: err.response?.data?.message || "Unknown error",
       };
     });

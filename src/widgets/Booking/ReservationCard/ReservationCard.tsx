@@ -19,6 +19,8 @@ import {
   DialogTitle,
   Grid2,
   IconButton,
+  Snackbar,
+  Alert,
   Stack,
   Typography,
 } from "@mui/material";
@@ -53,18 +55,31 @@ export const ReservationCard = ({
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "error" | "success" | "info" | "warning";
+  }>({
+    open: false,
+    message: "",
+    severity: "error",
+  });
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const fetchReservationStatus = useCallback(async () => {
-    try {
-      const response = await getReservationStatus(reservationId);
-      if (response.success) {
-        setStatus(response.data.status);
-      }
-      if (response.error) {
-        console.error(response.error);
-      }
-    } catch (error) {
-      console.error(error);
+    const response = await getReservationStatus(reservationId);
+    if (response.success) {
+      setStatus(response.data.status);
+    }
+    if (response.error) {
+      setSnackbar({
+        open: true,
+        message: response.error,
+        severity: "error",
+      });
     }
   }, [reservationId]);
 
@@ -75,61 +90,85 @@ export const ReservationCard = ({
   const handleReject = async () => {
     if (isLoading) return;
 
-    try {
-      setIsLoading(true);
-      await rejectReservation(reservationId);
+    setIsLoading(true);
+    const response = await rejectReservation(reservationId);
+
+    if (response.success) {
       setStatus("REJECTED");
-    } catch (error) {
-      console.error("Failed to reject reservation:", error);
-    } finally {
-      setIsLoading(false);
-      setOpen(false);
     }
+    if (response.error) {
+      setSnackbar({
+        open: true,
+        message: response.error,
+        severity: "error",
+      });
+    }
+
+    setIsLoading(false);
+    setOpen(false);
   };
 
   const handleConfirm = async () => {
     if (isLoading) return;
 
-    try {
-      setIsLoading(true);
-      await confirmReservation(reservationId);
+    setIsLoading(true);
+    const response = await confirmReservation(reservationId);
+
+    if (response.success) {
       setStatus("ACCEPTED");
-    } catch (error) {
-      console.error("Failed to confirm reservation:", error);
-    } finally {
-      setIsLoading(false);
-      setOpen(false);
     }
+    if (response.error) {
+      setSnackbar({
+        open: true,
+        message: response.error,
+        severity: "error",
+      });
+    }
+
+    setIsLoading(false);
+    setOpen(false);
   };
 
   const handleCancel = async () => {
     if (isLoading) return;
 
-    try {
-      setIsLoading(true);
-      await cancelReservation(reservationId);
+    setIsLoading(true);
+    const response = await cancelReservation(reservationId);
+
+    if (response.success) {
       setStatus("CANCELLED");
-    } catch (error) {
-      console.error("Failed to cancel reservation:", error);
-    } finally {
-      setIsLoading(false);
-      setOpen(false);
     }
+    if (response.error) {
+      setSnackbar({
+        open: true,
+        message: response.error,
+        severity: "error",
+      });
+    }
+
+    setIsLoading(false);
+    setOpen(false);
   };
 
   const handleComplete = async () => {
     if (isLoading) return;
 
-    try {
-      setIsLoading(true);
-      await completeReservation(reservationId);
+    setIsLoading(true);
+    const response = await completeReservation(reservationId);
+
+    if (response.success) {
       setStatus("COMPLETED");
-    } catch (error) {
-      console.error("Failed to complete reservation:", error);
-    } finally {
-      setIsLoading(false);
-      setOpen(false);
     }
+    if (response.error) {
+      setSnackbar({
+        open: true,
+        message: response.error,
+        severity: "error",
+      });
+    }
+
+    setIsLoading(false);
+    setOpen(false);
   };
 
   return (
@@ -354,6 +393,21 @@ export const ReservationCard = ({
           </Container>
         </DialogContent>
       </Dialog>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

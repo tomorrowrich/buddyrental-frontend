@@ -125,6 +125,23 @@ BuddyRentalTheme = createTheme(BuddyRentalTheme, {
         },
       },
     },
+    MuiSnackbar: {
+      defaultProps: {
+        anchorOrigin: {
+          vertical: "top",
+          horizontal: "center",
+        },
+      },
+      styleOverrides: {
+        root: {
+          "& .MuiPaper-root": {
+            border: "1px solid rgba(237, 164, 189, 0.8)",
+            borderRadius: 8,
+            boxShadow: "0px 5px 30px rgba(237, 164, 189, 0.8)",
+          },
+        },
+      },
+    },
   },
 });
 
