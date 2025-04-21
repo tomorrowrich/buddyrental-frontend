@@ -26,6 +26,7 @@ import {
   Settings,
   ReportProblem,
   Logout,
+  RequestQuote,
 } from "@mui/icons-material";
 import Image from "next/image";
 import NotificationTray from "../NotificationTray/NotificationTray";
@@ -137,17 +138,31 @@ export const NavigationBar = memo(function NavigationBar({
       >
         {/* Left Side - Logo */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Image
-            src="/logo-full.svg"
-            alt="BuddyRental Logo"
-            width={200}
-            height={40}
-          />
+          <Box onClick={() => handleNavigate("/")} sx={{ cursor: "pointer" }}>
+            <Image
+              src="/logo-full.svg"
+              alt="BuddyRental Logo"
+              width={200}
+              height={40}
+            />
+          </Box>
         </Box>
 
         {/* Right Side - Navigation, Balance, Notifications, Avatar */}
         {user && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+            {user?.buddy && (
+              <Button
+                startIcon={<RequestQuote />}
+                sx={{
+                  color: theme.palette.primary.main,
+                  textTransform: "none",
+                }}
+                onClick={() => handleNavigate("/booking/history/buddy")}
+              >
+                Requests
+              </Button>
+            )}
             <Button
               startIcon={<MenuBook />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}

@@ -336,7 +336,7 @@ export const ReservationCard = ({
                 </Button>
                 <Button
                   variant="contained"
-                  color="secondary"
+                  color="quinary"
                   endIcon={<Check />}
                   onClick={handleComplete}
                   disabled={isLoading}
