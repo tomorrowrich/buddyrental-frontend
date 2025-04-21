@@ -12,7 +12,9 @@ import {
   Button,
   Stack,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
+import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { getTransactionHistory } from "@/api/payment/api";
 import { TransactionResponse } from "@/api/payment/interface";
@@ -24,11 +26,15 @@ export default function CoinHistoryMobile() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [page, setPage] = useState(1);
+  const itemCount = 10;
+
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         setLoading(true);
-        const result = await getTransactionHistory();
+        const skip = (page - 1) * itemCount;
+        const result = await getTransactionHistory(undefined, itemCount, skip);
         setTransactions(result.data);
         setError(null);
       } catch (err) {
@@ -40,7 +46,7 @@ export default function CoinHistoryMobile() {
     };
 
     fetchTransactions();
-  }, []);
+  }, [page, itemCount]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -128,7 +134,6 @@ export default function CoinHistoryMobile() {
             <Typography color="error">{error}</Typography>
           </Box>
         ) : (
-          /* Transactions */
           <Box
             sx={{
               p: 2,
@@ -143,65 +148,98 @@ export default function CoinHistoryMobile() {
                 <Typography>No transactions found</Typography>
               </Box>
             ) : (
-              transactions.map((txn) => (
-                <Card key={txn.id} sx={{ p: 2, boxShadow: 3, borderRadius: 3 }}>
-                  <CardContent sx={{ padding: "8px !important" }}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      fontWeight={600}
-                      gutterBottom
-                    >
-                      Transaction ID
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      fontFamily="monospace"
-                      sx={{ mb: 1 }}
-                    >
-                      {txn.id}
-                    </Typography>
-
-                    <Divider sx={{ my: 1 }} />
-
-                    <Stack spacing={0.5}>
-                      <Typography variant="body2">
-                        <strong>Date:</strong>{" "}
-                        <Typography component="span" color="text.secondary">
-                          {formatDate(txn.createdAt)}
-                        </Typography>
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Package:</strong>{" "}
-                        <Typography component="span" color="text.secondary">
-                          {txn.amount} Coins
-                        </Typography>
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Transaction Type:</strong>{" "}
-                        <Typography component="span" color="text.secondary">
-                          {txn.type}
-                        </Typography>
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Amount:</strong>{" "}
-                        <Typography component="span" color="text.secondary">
-                          {formatAmount(txn.amount)}
-                        </Typography>
+              <>
+                {transactions.map((txn) => (
+                  <Card
+                    key={txn.id}
+                    sx={{ p: 2, boxShadow: 3, borderRadius: 3 }}
+                  >
+                    <CardContent sx={{ padding: "8px !important" }}>
+                      <Typography
+                        variant="subtitle2"
+                        color="text.secondary"
+                        fontWeight={600}
+                        gutterBottom
+                      >
+                        Transaction ID
                       </Typography>
                       <Typography
                         variant="body2"
-                        fontWeight={600}
-                        sx={{
-                          color: txn.status === "PENDING" ? "orange" : "green",
-                        }}
+                        fontFamily="monospace"
+                        sx={{ mb: 1 }}
                       >
-                        <strong>Status:</strong> {txn.status}
+                        {txn.id}
                       </Typography>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              ))
+
+                      <Divider sx={{ my: 1 }} />
+
+                      <Stack spacing={0.5}>
+                        <Typography variant="body2">
+                          <strong>Date:</strong>{" "}
+                          <Typography component="span" color="text.secondary">
+                            {formatDate(txn.createdAt)}
+                          </Typography>
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Package:</strong>{" "}
+                          <Typography component="span" color="text.secondary">
+                            {txn.amount} Coins
+                          </Typography>
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Transaction Type:</strong>{" "}
+                          <Typography component="span" color="text.secondary">
+                            {txn.type}
+                          </Typography>
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Amount:</strong>{" "}
+                          <Typography component="span" color="text.secondary">
+                            {formatAmount(txn.amount)}
+                          </Typography>
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight={600}
+                          sx={{
+                            color:
+                              txn.status === "PENDING" ? "orange" : "green",
+                          }}
+                        >
+                          <strong>Status:</strong> {txn.status}
+                        </Typography>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {/* Pagination */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 2,
+                    mt: 2,
+                  }}
+                >
+                  <IconButton
+                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={page === 1}
+                  >
+                    <ArrowBack />
+                  </IconButton>
+
+                  <Typography variant="body2">Page {page}</Typography>
+
+                  <IconButton
+                    onClick={() => setPage((prev) => prev + 1)}
+                    disabled={transactions.length < itemCount}
+                  >
+                    <ArrowForward />
+                  </IconButton>
+                </Box>
+              </>
             )}
           </Box>
         )}

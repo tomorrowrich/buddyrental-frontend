@@ -1,7 +1,7 @@
 export interface TransactionResponse {
   id: string;
   userId: string;
-  type: string;
+  type: TransactionType;
   amount: number;
   paymentId: string;
   status: string;
@@ -15,6 +15,13 @@ export interface PurchaseResponse {
     clientSecret: string;
     transaction: TransactionResponse;
   };
+}
+
+export enum TransactionType {
+  DEPOSIT = "DEPOSIT",
+  WITHDRAWAL = "WITHDRAWAL",
+  TRANSFER = "TRANSFER",
+  REFUND = "REFUND",
 }
 
 // export interface WithdrawCoinsResponse {

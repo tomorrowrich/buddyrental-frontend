@@ -2,7 +2,7 @@
 import axios from "axios";
 import { baseURL } from "@/api";
 import { cookies } from "next/headers";
-import { PurchaseResponse } from "./interface";
+import { PurchaseResponse, TransactionType } from "./interface";
 import { redirect } from "next/navigation";
 
 export async function purchaseCoins(amount: number, redirectUrl: string) {
@@ -46,7 +46,7 @@ export async function purchaseCoins(amount: number, redirectUrl: string) {
 }
 
 export async function getTransactionHistory(
-  type?: string,
+  type?: TransactionType,
   take: number = 10,
   skip: number = 0,
 ) {
@@ -58,7 +58,7 @@ export async function getTransactionHistory(
   }
 
   let url = `${baseURL}/payment/history?take=${take}&skip=${skip}`;
-  if (type) {
+  if (type || type == "") {
     url += `&type=${type}`;
   }
 

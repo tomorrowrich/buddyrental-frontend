@@ -13,7 +13,9 @@ import {
   TableBody,
   useTheme,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
+import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { getTransactionHistory } from "@/api/payment/api";
 import { TransactionResponse } from "@/api/payment/interface";
@@ -25,11 +27,15 @@ export default function CoinHistoryPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [page, setPage] = useState(1);
+  const itemCount = 10;
+
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         setLoading(true);
-        const result = await getTransactionHistory();
+        const skip = (page - 1) * itemCount;
+        const result = await getTransactionHistory(undefined, itemCount, skip);
         setTransactions(result.data);
         setError(null);
       } catch (err) {
@@ -41,7 +47,7 @@ export default function CoinHistoryPage() {
     };
 
     fetchTransactions();
-  }, []);
+  }, [page, itemCount]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -110,7 +116,7 @@ export default function CoinHistoryPage() {
         </Box>
 
         {/* Table */}
-        <Box sx={{ p: 4, backgroundColor: "white" }}>
+        <Box sx={{ backgroundColor: "white" }}>
           {loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
               <CircularProgress />
@@ -120,44 +126,73 @@ export default function CoinHistoryPage() {
               {error}
             </Typography>
           ) : (
-            <Table>
-              <TableHead>
-                <TableRow>
-                  {[
-                    "Transaction ID",
-                    "Date",
-                    "Package",
-                    "Transaction Type",
-                    "Amount",
-                    "Status",
-                  ].map((head) => (
-                    <TableCell key={head} sx={{ fontWeight: 700 }}>
-                      {head}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {transactions.length === 0 ? (
+            <>
+              <Table>
+                <TableHead>
                   <TableRow>
-                    <TableCell colSpan={6} sx={{ textAlign: "center" }}>
-                      No transactions found
-                    </TableCell>
+                    {[
+                      "Transaction ID",
+                      "Date",
+                      "Package",
+                      "Transaction Type",
+                      "Amount",
+                      "Status",
+                    ].map((head) => (
+                      <TableCell key={head} sx={{ fontWeight: 700 }}>
+                        {head}
+                      </TableCell>
+                    ))}
                   </TableRow>
-                ) : (
-                  transactions.map((txn) => (
-                    <TableRow key={txn.id}>
-                      <TableCell>{txn.id}</TableCell>
-                      <TableCell>{formatDate(txn.createdAt)}</TableCell>
-                      <TableCell>{txn.amount} Coins</TableCell>
-                      <TableCell>{txn.type}</TableCell>
-                      <TableCell>{formatAmount(txn.amount)}</TableCell>
-                      <TableCell>{txn.status}</TableCell>
+                </TableHead>
+                <TableBody>
+                  {transactions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} sx={{ textAlign: "center" }}>
+                        No transactions found
+                      </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    transactions.map((txn) => (
+                      <TableRow key={txn.id}>
+                        <TableCell>{txn.id}</TableCell>
+                        <TableCell>{formatDate(txn.createdAt)}</TableCell>
+                        <TableCell>{txn.amount} Coins</TableCell>
+                        <TableCell>{txn.type}</TableCell>
+                        <TableCell>{formatAmount(txn.amount)}</TableCell>
+                        <TableCell>{txn.status}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+
+              {/* Pagination Controls */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 2,
+                  p: 2,
+                }}
+              >
+                <IconButton
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={page === 1}
+                >
+                  <ArrowBack />
+                </IconButton>
+
+                <Typography variant="body1">Page {page}</Typography>
+
+                <IconButton
+                  onClick={() => setPage((prev) => prev + 1)}
+                  disabled={transactions.length < itemCount}
+                >
+                  <ArrowForward />
+                </IconButton>
+              </Box>
+            </>
           )}
         </Box>
       </Box>
