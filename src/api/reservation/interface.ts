@@ -1,6 +1,7 @@
 export interface CreateReservationDto {
   buddyId: string;
-  dateTime: string;
-  message?: string;
-  location?: string;
+  price: number;
+  detail: string;
+  reservationStart: string;
+  reservationEnd: string;
 }
