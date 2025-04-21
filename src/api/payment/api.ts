@@ -30,7 +30,7 @@ export async function purchaseCoins(amount: number, redirectUrl: string) {
     .then((res) => {
       return {
         success: true,
-        url: res.data.data.url,
+        clientSecret: res.data.data.clientSecret,
         transaction: res.data.data.transaction,
         error: null,
       };
@@ -38,7 +38,7 @@ export async function purchaseCoins(amount: number, redirectUrl: string) {
     .catch((err) => {
       return {
         success: false,
-        url: null,
+        clientSecret: null,
         transaction: null,
         error: err.response?.data?.message || "Unknown error",
       };

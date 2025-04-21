@@ -12,7 +12,7 @@ export interface TransactionResponse {
 export interface PurchaseResponse {
   success: boolean;
   data: {
-    url: string;
+    clientSecret: string;
     transaction: TransactionResponse;
   };
 }

@@ -9,13 +9,22 @@ import {
   Modal,
   IconButton,
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CloseIcon from "@mui/icons-material/Close";
 import PaidIcon from "@mui/icons-material/Paid";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout,
+} from "@stripe/react-stripe-js";
 import { purchaseCoins } from "@/api/payment/api";
+
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
+);
 
 interface CoinPackage {
   price: number;
@@ -34,6 +43,7 @@ export default function CoinPackagePage() {
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams) {
@@ -62,10 +72,16 @@ export default function CoinPackagePage() {
   const handleOpen = (pkg: CoinPackage) => {
     setSelectedPackage(pkg);
     setOpen(true);
+    setClientSecret(null);
+    setPaymentError(null);
   };
 
   const handleCloseAttempt = () => {
-    setConfirmationOpen(true);
+    if (clientSecret) {
+      setConfirmationOpen(true);
+    } else {
+      handleConfirmCancel();
+    }
   };
 
   const handleCancel = () => {
@@ -76,13 +92,14 @@ export default function CoinPackagePage() {
     setOpen(false);
     setConfirmationOpen(false);
     setSelectedPackage(null);
+    setClientSecret(null);
   };
 
   const handleCloseSuccess = () => {
     setSuccessOpen(false);
   };
 
-  const StripeCheckout = async () => {
+  const StripeCheckout = useCallback(async () => {
     if (!selectedPackage) return;
 
     setIsProcessing(true);
@@ -93,17 +110,25 @@ export default function CoinPackagePage() {
 
       const result = await purchaseCoins(selectedPackage.coins, redirectUrl);
 
-      if (result.success && result.url) {
-        window.location.href = result.url;
+      if (result.success && result.clientSecret) {
+        setClientSecret(result.clientSecret);
       } else {
         setPaymentError(result.error);
       }
     } catch (err) {
-      setPaymentError("Error occured while checking out");
+      setPaymentError("An error occurred. Please try again.");
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [selectedPackage]);
+
+  useEffect(() => {
+    if (open && selectedPackage && !clientSecret && !isProcessing) {
+      StripeCheckout();
+    }
+  }, [open, selectedPackage, clientSecret, isProcessing, StripeCheckout]);
+
+  const options = { clientSecret };
 
   return (
     <Container sx={{ flex: 1, paddingTop: 5, borderRadius: 4 }}>
@@ -232,9 +257,11 @@ export default function CoinPackagePage() {
             bgcolor: "background.paper",
             borderRadius: 4,
             boxShadow: 24,
-            p: 4,
+            py: 4,
             display: "flex",
             flexDirection: "column",
+            maxHeight: "90vh",
+            overflow: "auto",
           }}
         >
           <IconButton
@@ -250,27 +277,41 @@ export default function CoinPackagePage() {
             <CloseIcon />
           </IconButton>
 
-          <Typography variant="h6" mb={2}>
+          <Typography variant="h6" mb={2} px={4}>
             Purchase {selectedPackage?.coins} Coins
           </Typography>
 
-          <Typography variant="body1" mb={3}>
-            Amount: {selectedPackage?.price} THB
-          </Typography>
+          {isProcessing && (
+            <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
+              <Typography>Loading payment form...</Typography>
+            </Box>
+          )}
 
-          <Button
-            variant="contained"
-            color="tertiary"
-            sx={{
-              mt: 3,
-              alignSelf: "center",
-              padding: "12px 30px",
-            }}
-            onClick={StripeCheckout}
-            disabled={isProcessing}
-          >
-            {isProcessing ? "Processing..." : "Proceed to Payment"}
-          </Button>
+          {clientSecret && !isProcessing && (
+            <Box sx={{ height: 400, my: 2 }}>
+              <EmbeddedCheckoutProvider
+                stripe={stripePromise}
+                options={options}
+              >
+                <EmbeddedCheckout />
+              </EmbeddedCheckoutProvider>
+            </Box>
+          )}
+
+          {!clientSecret && !isProcessing && paymentError && (
+            <Button
+              variant="contained"
+              color="tertiary"
+              sx={{
+                mt: 3,
+                alignSelf: "center",
+                padding: "12px 30px",
+              }}
+              onClick={StripeCheckout}
+            >
+              Try Again
+            </Button>
+          )}
         </Box>
       </Modal>
 
