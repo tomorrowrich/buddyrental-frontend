@@ -87,6 +87,7 @@ export async function createBuddy(data: CreateBuddyRequest): Promise<Buddy> {
   if (!authToken) {
     throw new Error("Authentication required");
   }
+  console.log("Creating buddy with data:", data);
 
   try {
     const response = await axios.post(`${baseURL}/buddy`, data, {
