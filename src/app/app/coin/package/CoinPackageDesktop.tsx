@@ -52,6 +52,7 @@ export default function CoinPackagePage() {
         setSuccessOpen(true);
       } else if (success === "false") {
         setPaymentError("Payment was cancelled or failed. Please try again.");
+        router.push("/app/coin/package");
       }
     }
   }, [searchParams]);
@@ -97,6 +98,7 @@ export default function CoinPackagePage() {
 
   const handleCloseSuccess = () => {
     setSuccessOpen(false);
+    router.push("/app/coin/package");
   };
 
   const StripeCheckout = useCallback(async () => {
