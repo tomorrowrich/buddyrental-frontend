@@ -17,6 +17,7 @@ export interface User {
   interests?: Interest[];
   buddy?: Buddy;
   Admin?: Admin;
+  balance: number;
 }
 
 export interface Buddy {
