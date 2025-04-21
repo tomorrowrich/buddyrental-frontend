@@ -84,6 +84,10 @@ function BuddyError({
 // Server component to fetch buddy data
 async function BuddyData({ buddyId }: { buddyId: string }) {
   try {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1); // Set to the first day of the month
+    const endOfMonth = new Date(startOfMonth);
+    endOfMonth.setMonth(startOfMonth.getMonth() + 1); // Set to the first day of the next month
     const buddy = await getBuddy({ buddyId });
 
     if (!buddy) {

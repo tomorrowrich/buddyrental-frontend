@@ -16,7 +16,7 @@ import {
   Button,
 } from "@mui/material";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BookingDialog } from "./Booking/BookingDialog";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import ChatIcon from "@mui/icons-material/Chat";
@@ -24,14 +24,100 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import { BuddyWithUser } from "@/model/buddy";
+import { PickersDay, PickersDayProps } from "@mui/x-date-pickers/PickersDay";
+import dayjs, { Dayjs } from "dayjs";
+import { getBuddySchedule } from "@/api/schedule/api";
+
+type BuddyScheduleData = {
+  busy: number[];
+  unconfirmed: number[];
+};
 
 export function BuddyProfile({ buddy }: { buddy: BuddyWithUser }) {
   const [open, setOpen] = useState(false);
+  const [schedules, setSchedules] = useState<BuddyScheduleData | undefined>(
+    undefined,
+  );
+  const [currentMonth, setCurrentMonth] = useState<Dayjs>(dayjs());
 
   const fullName =
     buddy.user?.firstName && buddy.user?.lastName
       ? `${buddy.user.firstName} ${buddy.user.lastName}`
       : "Buddy Profile";
+
+  useEffect(() => {
+    const fetchScheduleData = async () => {
+      const startOfMonth = currentMonth.startOf("month").toDate();
+      const endOfMonth = currentMonth.endOf("month").toDate();
+
+      try {
+        const scheduleData = await getBuddySchedule(buddy.buddyId, {
+          start: startOfMonth,
+          end: endOfMonth,
+        });
+
+        setSchedules(scheduleData.data);
+      } catch (error) {
+        console.error("Failed to fetch buddy schedule:", error);
+      }
+    };
+
+    fetchScheduleData();
+  }, [buddy.buddyId, currentMonth]);
+
+  // Custom day renderer for the calendar
+  const ServerDay = (
+    props: PickersDayProps<Dayjs> & {
+      busyDays?: number[];
+      unconfirmedDays?: number[];
+    },
+  ) => {
+    const { busyDays = [], unconfirmedDays = [], day, ...other } = props;
+    const dayOfMonth = day.date();
+
+    // Check if the day is busy
+    const isBusy = busyDays.includes(dayOfMonth);
+
+    // Check if the day is unconfirmed
+    const isUnconfirmed = unconfirmedDays.includes(dayOfMonth);
+
+    // Apply styles based on day status
+    return (
+      <PickersDay
+        {...other}
+        day={day}
+        sx={{
+          ...(isBusy && {
+            backgroundColor: "#f0f0f0",
+            color: "#999",
+            "&:hover": {
+              backgroundColor: "#e0e0e0",
+            },
+          }),
+          ...(isUnconfirmed && {
+            border: "1px dashed #EB7BC0",
+            backgroundColor: "transparent",
+            "&:hover": {
+              backgroundColor: "rgba(235, 123, 192, 0.1)",
+            },
+          }),
+          ...(dayjs().date() === dayOfMonth &&
+            dayjs().month() === day.month() && {
+              backgroundColor: "primary.main",
+              color: "white",
+              "&:hover": {
+                backgroundColor: "primary.dark",
+              },
+            }),
+        }}
+      />
+    );
+  };
+
+  // Handle month change in calendar
+  const handleMonthChange = (date: Dayjs) => {
+    setCurrentMonth(date);
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -267,12 +353,42 @@ export function BuddyProfile({ buddy }: { buddy: BuddyWithUser }) {
                   Check {buddy.user?.firstName || "Buddy"}&apos;s Availability
                 </Typography>
 
+                <Box sx={{ mb: 1 }}>
+                  <Chip
+                    label="Busy"
+                    size="small"
+                    sx={{ mr: 1, bgcolor: "#f0f0f0", color: "#999" }}
+                  />
+                  <Chip
+                    label="Pending Confirmation"
+                    size="small"
+                    variant="outlined"
+                    sx={{ border: "1px dashed #EB7BC0" }}
+                  />
+                </Box>
+
                 <DateCalendar
-                  disabled
+                  disablePast={true}
+                  shouldDisableYear={(year) =>
+                    dayjs(year.toString()).isAfter(dayjs().add(6, "month"))
+                  }
+                  maxDate={dayjs().add(6, "month")}
+                  readOnly={true}
+                  onMonthChange={handleMonthChange}
+                  slots={{
+                    day: (props) => (
+                      <ServerDay
+                        {...props}
+                        busyDays={schedules?.busy || []}
+                        unconfirmedDays={schedules?.unconfirmed || []}
+                      />
+                    ),
+                  }}
                   sx={{
                     mx: "auto",
                     "& .MuiPickersDay-root": {
                       borderRadius: "50%",
+                      pointerEvents: "none",
                     },
                   }}
                 />
