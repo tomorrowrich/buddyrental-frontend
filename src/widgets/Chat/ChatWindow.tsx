@@ -26,6 +26,11 @@ export function ChatWindow({
     }[]
   >([]);
   const [openDialog, setOpenDialog] = useState(false);
+  const [bookingPrice, setBookingPrice] = useState<number>(0);
+  const [editDetails, setEditDetails] = useState<string>("");
+  const [editSelectedDate, setEditSelectedDate] = useState<string>("");
+  const [editStartTime, setEditStartTime] = useState<string>("");
+  const [editEndTime, setEditEndTime] = useState<string>("");
   const router = useRouter();
   const [socketConnected, setSocketConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -67,7 +72,7 @@ export function ChatWindow({
       const height = containerRef.current.clientHeight;
       setContainerHeight(height);
     }
-  }, []);
+  }, [containerHeight]);
 
   // Handle window resize to adjust container height
   useEffect(() => {
@@ -161,7 +166,7 @@ export function ChatWindow({
     });
   };
 
-  const handleSendBookingMessage = async () => {
+  const _handleSendBookingMessage = async () => {
     if (!chat || !user) return;
 
     setOpenDialog(false);
