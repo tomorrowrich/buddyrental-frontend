@@ -7,22 +7,26 @@ import {
   useTheme,
   Button,
   Modal,
-  TextField,
   IconButton,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
+  TextField,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import CloseIcon from "@mui/icons-material/Close";
 import PaidIcon from "@mui/icons-material/Paid";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
-import QrCodeIcon from "@mui/icons-material/QrCode";
-import SmartphoneIcon from "@mui/icons-material/Smartphone";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { useRouter } from "next/navigation";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout,
+} from "@stripe/react-stripe-js";
+import { purchaseCoins, withdrawCoins } from "@/api/payment/api";
+
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
+);
 
 interface CoinPackage {
   price: number;
@@ -32,18 +36,34 @@ interface CoinPackage {
 export default function CoinPackagePage() {
   const theme = useTheme();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<CoinPackage | null>(
     null,
   );
-  const [paymentMethod, setPaymentMethod] = useState("credit");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardOwner, setCardOwner] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
+  const [isWithdrawProcessing, setIsWithdrawProcessing] = useState(false);
+
+  useEffect(() => {
+    if (searchParams) {
+      const success = searchParams.get("success");
+      if (success === "true") {
+        setSuccessOpen(true);
+      } else if (success === "false") {
+        setPaymentError("Payment was cancelled or failed. Please try again.");
+        router.push("/app/coin/package");
+      }
+    }
+  }, [searchParams]);
 
   const coinPackages: CoinPackage[] = [
     { price: 100, coins: 100 },
@@ -61,10 +81,16 @@ export default function CoinPackagePage() {
   const handleOpen = (pkg: CoinPackage) => {
     setSelectedPackage(pkg);
     setOpen(true);
+    setClientSecret(null);
+    setPaymentError(null);
   };
 
   const handleCloseAttempt = () => {
-    setConfirmationOpen(true);
+    if (clientSecret) {
+      setConfirmationOpen(true);
+    } else {
+      handleConfirmCancel();
+    }
   };
 
   const handleCancel = () => {
@@ -75,24 +101,94 @@ export default function CoinPackagePage() {
     setOpen(false);
     setConfirmationOpen(false);
     setSelectedPackage(null);
-    setPaymentMethod("credit");
-  };
-
-  const handlePaymentSuccess = () => {
-    setOpen(false);
-    setSuccessOpen(true);
+    setClientSecret(null);
   };
 
   const handleCloseSuccess = () => {
     setSuccessOpen(false);
+    router.push("/app/coin/package");
   };
 
-  const isCardInfoValid =
-    cardNumber.trim() !== "" &&
-    cardOwner.trim() !== "" &&
-    selectedMonth !== "" &&
-    selectedYear !== "" &&
-    cvv.trim() !== "";
+  const StripeCheckout = useCallback(async () => {
+    if (!selectedPackage) return;
+
+    setIsProcessing(true);
+    setPaymentError(null);
+
+    try {
+      const redirectUrl = `${window.location.origin}${window.location.pathname}`;
+
+      const result = await purchaseCoins(selectedPackage.coins, redirectUrl);
+
+      if (result.success && result.clientSecret) {
+        setClientSecret(result.clientSecret);
+      } else {
+        setPaymentError(result.error);
+      }
+    } catch (err) {
+      setPaymentError("An error occurred. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [selectedPackage]);
+
+  useEffect(() => {
+    if (open && selectedPackage && !clientSecret && !isProcessing) {
+      StripeCheckout();
+    }
+  }, [open, selectedPackage, clientSecret, isProcessing, StripeCheckout]);
+
+  const handleWithdrawOpen = () => {
+    setWithdrawOpen(true);
+    setWithdrawAmount("");
+    setWithdrawError(null);
+  };
+
+  const handleWithdrawClose = () => {
+    setWithdrawOpen(false);
+    setWithdrawAmount("");
+    setWithdrawError(null);
+  };
+
+  const handleWithdrawAmountChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setWithdrawAmount(value);
+  };
+
+  const handleWithdrawSubmit = async () => {
+    if (!withdrawAmount || parseInt(withdrawAmount) <= 0) {
+      setWithdrawError("Please enter a valid amount of coins to withdraw");
+      return;
+    }
+
+    setIsWithdrawProcessing(true);
+    setWithdrawError(null);
+
+    try {
+      const amount = parseInt(withdrawAmount);
+      const result = await withdrawCoins(amount);
+
+      if (result.success) {
+        setWithdrawSuccess(true);
+        setWithdrawOpen(false);
+      } else {
+        setWithdrawError(result.error);
+      }
+    } catch (err) {
+      setWithdrawError("An error occurred. Please try again.");
+    } finally {
+      setIsWithdrawProcessing(false);
+    }
+  };
+
+  const handleWithdrawSuccessClose = () => {
+    setWithdrawSuccess(false);
+    router.push("/app/coin/package");
+  };
+
+  const options = { clientSecret };
 
   return (
     <Container sx={{ flex: 1, paddingTop: 5, borderRadius: 4 }}>
@@ -112,21 +208,42 @@ export default function CoinPackagePage() {
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
+            justifyContent: "space-between",
             background: `linear-gradient(90deg, ${theme.palette.tertiary.main}, ${theme.palette.quinary.main})`,
             p: 2,
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
           }}
         >
-          <Typography variant="h6" fontWeight={700} color="white">
-            Coin History
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography variant="h6" fontWeight={700} color="white">
+              Coin Packages
+            </Typography>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => router.push("/app/coin/history")}
+              sx={{
+                borderRadius: "20px",
+                fontWeight: 600,
+                backgroundColor: "white",
+                color: theme.palette.secondary.main,
+                "&:hover": {
+                  backgroundColor: "#f0f0f0",
+                },
+              }}
+            >
+              History
+            </Button>
+          </Box>
+
+          {/* Withdraw Button */}
           <Button
             variant="contained"
             size="small"
-            onClick={() => router.push("/app/coin/package")}
+            startIcon={<AccountBalanceWalletIcon />}
+            onClick={handleWithdrawOpen}
             sx={{
               borderRadius: "20px",
               fontWeight: 600,
@@ -137,9 +254,25 @@ export default function CoinPackagePage() {
               },
             }}
           >
-            History
+            Withdraw Coins
           </Button>
         </Box>
+
+        {/* Display Error */}
+        {paymentError && (
+          <Box
+            sx={{
+              bgcolor: "#fee2e2",
+              color: "#b91c1c",
+              p: 2,
+              mx: 3,
+              mt: 2,
+              borderRadius: 2,
+            }}
+          >
+            <Typography>{paymentError}</Typography>
+          </Box>
+        )}
 
         {/* Package List */}
         <Box sx={{ padding: 3 }}>
@@ -204,9 +337,11 @@ export default function CoinPackagePage() {
             bgcolor: "background.paper",
             borderRadius: 4,
             boxShadow: 24,
-            p: 4,
+            py: 4,
             display: "flex",
             flexDirection: "column",
+            maxHeight: "90vh",
+            overflow: "auto",
           }}
         >
           <IconButton
@@ -222,160 +357,118 @@ export default function CoinPackagePage() {
             <CloseIcon />
           </IconButton>
 
-          <Typography variant="h6" mb={2}>
-            Payment Method
+          <Typography variant="h6" mb={2} px={4}>
+            Purchase {selectedPackage?.coins} Coins
           </Typography>
-          <Box
+
+          {isProcessing && (
+            <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
+              <Typography>Loading payment form...</Typography>
+            </Box>
+          )}
+
+          {clientSecret && !isProcessing && (
+            <Box sx={{ height: 400, my: 2 }}>
+              <EmbeddedCheckoutProvider
+                stripe={stripePromise}
+                options={options}
+              >
+                <EmbeddedCheckout />
+              </EmbeddedCheckoutProvider>
+            </Box>
+          )}
+
+          {!clientSecret && !isProcessing && paymentError && (
+            <Button
+              variant="contained"
+              color="tertiary"
+              sx={{
+                mt: 3,
+                alignSelf: "center",
+                padding: "12px 30px",
+              }}
+              onClick={StripeCheckout}
+            >
+              Try Again
+            </Button>
+          )}
+        </Box>
+      </Modal>
+
+      {/* Withdraw Modal */}
+      <Modal open={withdrawOpen} onClose={handleWithdrawClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            borderRadius: 4,
+            boxShadow: 24,
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <IconButton
+            onClick={handleWithdrawClose}
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              mb: 3,
-              width: "100%",
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: theme.palette.secondary.main,
             }}
           >
-            {[
-              {
-                method: "credit",
-                icon: <CreditCardIcon />,
-                label: "Credit/Debit Card",
-              },
-              { method: "promptpay", icon: <QrCodeIcon />, label: "PromptPay" },
-              {
-                method: "mobile",
-                icon: <SmartphoneIcon />,
-                label: "Mobile Banking",
-              },
-            ].map(({ method, icon, label }) => (
-              <Button
-                key={method}
-                variant="outlined"
-                onClick={() => setPaymentMethod(method)}
-                sx={{
-                  flex: 1,
-                  margin: "0 5px",
-                  backgroundColor:
-                    paymentMethod === method
-                      ? theme.palette.secondary.main
-                      : "white",
-                  color:
-                    paymentMethod === method
-                      ? "white"
-                      : theme.palette.text.primary,
-                  "&:hover": {
-                    backgroundColor:
-                      paymentMethod === method
-                        ? theme.palette.secondary.dark
-                        : "rgba(0, 0, 0, 0.04)",
-                  },
-                }}
-                startIcon={icon}
-              >
-                {label}
-              </Button>
-            ))}
-          </Box>
-          {paymentMethod === "credit" && (
-            <Box>
-              <Typography variant="h6" mb={2}>
-                Card Information
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Card Number"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                />
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Owner"
-                  value={cardOwner}
-                  onChange={(e) => setCardOwner(e.target.value)}
-                />
-              </Box>
-              <Box sx={{ display: "flex", gap: 2 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Month</InputLabel>
-                  <Select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                    label="Month"
-                  >
-                    {Array.from({ length: 12 }, (_, i) => (
-                      <MenuItem
-                        key={i}
-                        value={(i + 1).toString().padStart(2, "0")}
-                      >
-                        {(i + 1).toString().padStart(2, "0")}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth>
-                  <InputLabel>Year</InputLabel>
-                  <Select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                    label="Year"
-                  >
-                    {Array.from({ length: 10 }, (_, i) => (
-                      <MenuItem
-                        key={i}
-                        value={(new Date().getFullYear() + i)
-                          .toString()
-                          .slice(-2)}
-                      >
-                        {(new Date().getFullYear() + i).toString().slice(-2)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <TextField
-                  label="CVV/CVC"
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value)}
-                  sx={{ width: "50%" }}
-                />
-              </Box>
+            <CloseIcon />
+          </IconButton>
+
+          <Typography variant="h6" mb={3} align="center">
+            Withdraw Coins
+          </Typography>
+
+          {withdrawError && (
+            <Box
+              sx={{
+                bgcolor: "#fee2e2",
+                color: "#b91c1c",
+                p: 2,
+                mb: 3,
+                borderRadius: 2,
+              }}
+            >
+              <Typography>{withdrawError}</Typography>
             </Box>
           )}
 
-          {paymentMethod === "promptpay" && (
-            <Box>
-              <Typography variant="h6" mb={2}>
-                QR Payment
-              </Typography>
-              <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-                <QrCodeIcon
-                  sx={{ fontSize: 200, color: theme.palette.tertiary.main }}
-                />
-              </Box>
-            </Box>
-          )}
-
-          {paymentMethod === "mobile" && (
-            <Box>
-              <Typography variant="h6" mb={2}>
-                Mobile Banking
-              </Typography>
-              <Typography mb={2}>ฺBanks ต่างๆ</Typography>
-            </Box>
-          )}
+          <TextField
+            label="Amount of coins to withdraw"
+            variant="outlined"
+            fullWidth
+            value={withdrawAmount}
+            onChange={handleWithdrawAmountChange}
+            type="text"
+            InputProps={{
+              startAdornment: (
+                <PaidIcon sx={{ color: theme.palette.tertiary.main, mr: 1 }} />
+              ),
+            }}
+            sx={{ mb: 3 }}
+          />
 
           <Button
             variant="contained"
             color="tertiary"
+            onClick={handleWithdrawSubmit}
+            disabled={isWithdrawProcessing}
             sx={{
-              mt: 3,
-              alignSelf: "center",
-              padding: "12px 30px",
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: 600,
             }}
-            onClick={handlePaymentSuccess}
-            disabled={paymentMethod === "credit" && !isCardInfoValid} // Disable if credit card information is not valid
           >
-            Make Payment
+            {isWithdrawProcessing ? "Processing..." : "Withdraw"}
           </Button>
         </Box>
       </Modal>
@@ -461,7 +554,7 @@ export default function CoinPackagePage() {
             Transaction Successful
           </Typography>
           <Typography color="text.secondary" mt={1}>
-            Coins: {selectedPackage?.coins}
+            Your coins have been added to your account.
           </Typography>
           <Box sx={{ mt: 3 }}>
             <Button
@@ -473,6 +566,50 @@ export default function CoinPackagePage() {
                 padding: "12px 30px",
               }}
               onClick={handleCloseSuccess}
+            >
+              Continue
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* Withdraw Success Modal */}
+      <Modal open={withdrawSuccess} onClose={handleWithdrawSuccessClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            borderRadius: 4,
+            boxShadow: 24,
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <CheckCircleIcon
+            sx={{ fontSize: 100, color: theme.palette.tertiary.main }}
+          />
+          <Typography variant="h6" mt={2}>
+            Withdrawal Successful
+          </Typography>
+          <Typography color="text.secondary" mt={1}>
+            Coins have been withdrawn from your account.
+          </Typography>
+          <Box sx={{ mt: 3 }}>
+            <Button
+              variant="contained"
+              color="tertiary"
+              sx={{
+                mt: 3,
+                alignSelf: "center",
+                padding: "12px 30px",
+              }}
+              onClick={handleWithdrawSuccessClose}
             >
               Continue
             </Button>
