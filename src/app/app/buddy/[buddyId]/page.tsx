@@ -1,4 +1,5 @@
 import { getBuddy } from "@/api/buddy/api";
+import { getUser } from "@/api/users/api";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import ChatIcon from "@mui/icons-material/Chat";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
@@ -112,6 +113,13 @@ async function BuddyData({ buddyId }: { buddyId: string }) {
       buddy.user?.firstName && buddy.user?.lastName
         ? `${buddy.user.firstName} ${buddy.user.lastName}`
         : "Buddy Profile";
+
+    const reviewsWithUsers = await Promise.all(
+      buddy.reviews.map(async (review) => {
+        const user = await getUser(review.commenterId);
+        return { ...review, user };
+      }),
+    );
 
     return (
       <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -377,8 +385,9 @@ async function BuddyData({ buddyId }: { buddyId: string }) {
                     Customer Reviews
                   </Typography>
 
-                  {buddy.reviews && buddy.reviews.length > 0 ? (
-                    buddy.reviews.map((review, index) => (
+                  {reviewsWithUsers && reviewsWithUsers.length > 0 ? (
+                    //map each review to a widget...?
+                    reviewsWithUsers.map((review, index) => (
                       <Paper
                         key={index}
                         elevation={1}
@@ -394,7 +403,7 @@ async function BuddyData({ buddyId }: { buddyId: string }) {
                       >
                         <Box display="flex" alignItems="flex-start" gap={2}>
                           <Avatar
-                            src={buddy.user!.profilePicture}
+                            src={review.user?.profilePicture ?? ""}
                             sx={{
                               width: 40,
                               height: 40,
@@ -403,10 +412,11 @@ async function BuddyData({ buddyId }: { buddyId: string }) {
                           />
                           <Box sx={{ flexGrow: 1 }}>
                             <Typography variant="subtitle1" fontWeight={600}>
-                              {"Reviewer name"}
+                              {review.user?.displayName ??
+                                review.user?.firstName}
                             </Typography>
                             <Rating
-                              value={buddy.ratingAvg}
+                              value={review.rating}
                               readOnly
                               size="small"
                               icon={
@@ -424,14 +434,15 @@ async function BuddyData({ buddyId }: { buddyId: string }) {
                               sx={{ my: 0.5 }}
                             />
                             <Typography variant="body2" sx={{ mt: 0.5 }}>
-                              {"SOME comment"}
+                              {review.comment}
                             </Typography>
                             <Typography
                               variant="caption"
                               color="text.secondary"
                               sx={{ display: "block" }}
                             >
-                              Posted on {new Date().toLocaleDateString()}
+                              Posted on{" "}
+                              {new Date(review.createdAt).toLocaleDateString()}
                             </Typography>
                           </Box>
                         </Box>
