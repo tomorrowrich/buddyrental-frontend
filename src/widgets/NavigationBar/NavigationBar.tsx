@@ -197,7 +197,7 @@ export const NavigationBar = memo(function NavigationBar({
               }}
             >
               <Typography color="secondary" fontWeight="bold">
-                123.00
+                {user.balance}
               </Typography>
               <IconButton
                 size="small"

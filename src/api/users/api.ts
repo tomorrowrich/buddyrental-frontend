@@ -71,7 +71,7 @@ export async function updateInterests(interests: string[]) {
     });
 }
 
-export async function getUser(userId: string) {
+export async function getUser(userId: string): Promise<User> {
   const cookieStore = await cookies();
   const authToken = cookieStore.get("token")?.value;
 

@@ -167,7 +167,7 @@ export function MobileNavigationBar({
               }}
             >
               <Typography color="secondary" fontWeight="bold">
-                123.00
+                {user.balance}
               </Typography>
               <IconButton
                 size="small"
