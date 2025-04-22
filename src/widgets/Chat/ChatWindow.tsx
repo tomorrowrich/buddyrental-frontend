@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Avatar, Box, Paper, Typography, Button } from "@mui/material";
-import { BookingDialog } from "./BookingDialog";
+import { BookingDialog } from "../Booking/BookingDialog";
 import { MessageInput } from "./MessageInput";
 import { useRouter } from "next/navigation";
 import { Chat, ChatMessage, ChatMessageMetaType } from "@/api/chat/interface";
@@ -25,12 +25,12 @@ export function ChatWindow({
       metaContent: string | undefined;
     }[]
   >([]);
+  const [openDialog, setOpenDialog] = useState(false);
   const [bookingPrice, setBookingPrice] = useState<number>(0);
   const [editDetails, setEditDetails] = useState<string>("");
-  const [editStartTime, setEditStartTime] = useState<string>("10:00");
-  const [editEndTime, setEditEndTime] = useState<string>("15:00");
-  const [editSelectedDate, setEditSelectedDate] = useState<string | null>(null);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [editSelectedDate, setEditSelectedDate] = useState<string>("");
+  const [editStartTime, setEditStartTime] = useState<string>("");
+  const [editEndTime, setEditEndTime] = useState<string>("");
   const router = useRouter();
   const [socketConnected, setSocketConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -72,7 +72,7 @@ export function ChatWindow({
       const height = containerRef.current.clientHeight;
       setContainerHeight(height);
     }
-  }, []);
+  }, [containerHeight]);
 
   // Handle window resize to adjust container height
   useEffect(() => {
@@ -166,7 +166,7 @@ export function ChatWindow({
     });
   };
 
-  const handleSendBookingMessage = async () => {
+  const _handleSendBookingMessage = async () => {
     if (!chat || !user) return;
 
     setOpenDialog(false);
@@ -225,25 +225,6 @@ Time: ${editStartTime} - ${editEndTime}`,
     const parts = message.split("\n");
     if (parts.length < 3) return;
 
-    // Extract date and time information
-    const dateTimeString = parts[2].includes("Time:")
-      ? parts[2].split("Time: ")[1]
-      : "";
-
-    const [startTime, endTime] = dateTimeString.includes(" - ")
-      ? dateTimeString.split(" - ")
-      : ["10:00", "15:00"];
-
-    // Set the extracted details to state
-    setEditDetails(parts[1].includes(": ") ? parts[1].split(": ")[1] : "");
-    setEditSelectedDate(
-      parts[2].includes("Date: ")
-        ? parts[2].split("Date: ")[1].split(" Time")[0]
-        : "",
-    );
-    setEditStartTime(startTime);
-    setEditEndTime(endTime);
-
     // Open the dialog
     setOpenDialog(true);
   };
@@ -296,7 +277,7 @@ Time: ${editStartTime} - ${editEndTime}`,
           <Button
             variant="contained"
             color="quinary"
-            onClick={() => router.push("/app/profile/buddy")}
+            onClick={() => router.push("/profile/buddy")}
             sx={{
               px: 3,
               py: 1.2,
@@ -483,19 +464,15 @@ Time: ${editStartTime} - ${editEndTime}`,
       </Box>
 
       {/* Booking dialog */}
-      <BookingDialog
-        onSendMessage={handleSendBookingMessage}
-        editDetails={editDetails}
-        editStartTime={editStartTime}
-        editEndTime={editEndTime}
-        editSelectedDate={editSelectedDate}
-        setEditDetails={setEditDetails}
-        setEditStartTime={setEditStartTime}
-        setEditEndTime={setEditEndTime}
-        setEditSelectedDate={setEditSelectedDate}
-        open={openDialog}
-        setOpen={setOpenDialog}
-      />
+      {role === "customer" && chat?.buddy && (
+        <BookingDialog
+          onSendMessage={handleSendMessage}
+          buddyId={chat.buddyId!}
+          buddyName={chat.buddy.user!.displayName}
+          open={openDialog}
+          setOpen={setOpenDialog}
+        />
+      )}
 
       {/* Message input */}
       <MessageInput

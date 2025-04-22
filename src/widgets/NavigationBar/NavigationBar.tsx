@@ -26,6 +26,7 @@ import {
   Settings,
   ReportProblem,
   Logout,
+  RequestQuote,
 } from "@mui/icons-material";
 import Image from "next/image";
 import NotificationTray from "../NotificationTray/NotificationTray";
@@ -137,35 +138,49 @@ export const NavigationBar = memo(function NavigationBar({
       >
         {/* Left Side - Logo */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Image
-            src="/logo-full.svg"
-            alt="BuddyRental Logo"
-            width={200}
-            height={40}
-          />
+          <Box onClick={() => handleNavigate("/")} sx={{ cursor: "pointer" }}>
+            <Image
+              src="/logo-full.svg"
+              alt="BuddyRental Logo"
+              width={200}
+              height={40}
+            />
+          </Box>
         </Box>
 
         {/* Right Side - Navigation, Balance, Notifications, Avatar */}
         {user && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+            {user?.buddy && (
+              <Button
+                startIcon={<RequestQuote />}
+                sx={{
+                  color: theme.palette.primary.main,
+                  textTransform: "none",
+                }}
+                onClick={() => handleNavigate("/booking/history/buddy")}
+              >
+                Requests
+              </Button>
+            )}
             <Button
               startIcon={<MenuBook />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => handleNavigate("/app/booking/history")}
+              onClick={() => handleNavigate("/booking/history")}
             >
               Bookings
             </Button>
             <Button
               startIcon={<EventNote />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => handleNavigate("/app/booking/schedule")}
+              onClick={() => handleNavigate("/booking/schedule")}
             >
               Calendar
             </Button>
             <Button
               startIcon={<ChatBubbleOutline />}
               sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => handleNavigate("/app/chat")}
+              onClick={() => handleNavigate("/chat")}
             >
               Chat
             </Button>
@@ -187,7 +202,7 @@ export const NavigationBar = memo(function NavigationBar({
               <IconButton
                 size="small"
                 sx={{ color: theme.palette.tertiary.main }}
-                onClick={() => router.push("/app/coin/package")}
+                onClick={() => router.push("/coin/package")}
               >
                 <Add fontSize="small" />
               </IconButton>
@@ -409,7 +424,7 @@ export const NavigationBar = memo(function NavigationBar({
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       handleCloseMenu();
-                      handleNavigate("/app/profile");
+                      handleNavigate("/profile");
                     }}
                     startIcon={<Edit sx={{ width: 24, height: 24 }} />}
                   >

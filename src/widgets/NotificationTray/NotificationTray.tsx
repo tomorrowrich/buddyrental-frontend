@@ -134,10 +134,10 @@ const NotificationTray: React.FC<NotificationTrayProps> = () => {
               <span key={e.notification.id}>
                 <ListItem
                   alignItems="flex-start"
-                  onClick={() => {
-                    e.markAsRead();
+                  onClick={async () => {
+                    await e.markAsRead();
                     if (e.notification.url) {
-                      window.open(e.notification.url);
+                      window.location.assign(e.notification.url);
                     }
                   }}
                   sx={{

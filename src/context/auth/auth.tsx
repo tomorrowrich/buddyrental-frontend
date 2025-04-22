@@ -52,7 +52,7 @@ const publicPaths = [
   "/register/complete",
   "/register/verify",
   "/reset",
-  "/app/onboard",
+  "/onboard",
 ];
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -96,8 +96,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         redirect("/login");
       }
 
-      if (success && !profileUser?.verified && pathname !== "/app/verify") {
-        redirect("/app/verify");
+      if (success && !profileUser?.verified && pathname !== "/verify") {
+        redirect("/verify");
       }
 
       if (
@@ -105,11 +105,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         profileUser?.verified &&
         (pathname === "/login" || pathname === "/register")
       ) {
-        redirect("/app");
+        redirect("/");
       }
 
-      if (success && profileUser?.verified && pathname === "/app/verify") {
-        redirect("/app/onboard");
+      if (success && profileUser?.verified && pathname === "/verify") {
+        redirect("/onboard");
       }
     });
   }, [pathname, isAuthenticated, user]);
@@ -258,7 +258,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const { success, error } = await requestLogin(email, password);
 
       if (success && options.redirectOnSuccess) {
-        redirect("/app");
+        redirect("/");
       }
       return { success, error };
     },

@@ -94,7 +94,7 @@ export default function CompleteProfile() {
           password: completeData.password,
         },
         { redirectOnSuccess: false },
-      ).then(redirect("/app/verify"));
+      ).then(redirect("/verify"));
     } else {
       console.error(error);
     }

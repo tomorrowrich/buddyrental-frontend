@@ -353,7 +353,7 @@ export function MobileNavigationBar({
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       setAnchorEl(null);
-                      router.push("/app/profile");
+                      router.push("/profile");
                     }}
                   >
                     Edit Profile
