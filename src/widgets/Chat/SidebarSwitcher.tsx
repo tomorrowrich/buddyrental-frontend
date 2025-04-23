@@ -27,10 +27,7 @@ export default function SidebarSwitcher({
             mb: 2,
           }}
         >
-          <MobileChatSidebar
-            onSelectChat={onSelectChat}
-            selectedChatId={selectedChat.chat?.id}
-          />
+          <MobileChatSidebar onSelectChat={onSelectChat} />
         </Box>
       )}
 
