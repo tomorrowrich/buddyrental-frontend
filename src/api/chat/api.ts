@@ -45,8 +45,11 @@ export async function createChat(buddyId: string) {
       },
     })
     .then((res) => {
-      //FIXME
-      return { success: true, chatId: res.data.chatId, error: null };
+      return {
+        success: res.data.success,
+        chatId: res.data.data.chatId,
+        error: null,
+      };
     })
     .catch((err) => {
       return {

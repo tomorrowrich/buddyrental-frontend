@@ -6,9 +6,11 @@ import { useAuth } from "@/context/auth/auth";
 import { Chat } from "@/api/chat/interface";
 
 export function ChatSidebar({
+  selectChat,
   onSelectChat,
   selectedChatId,
 }: {
+  selectChat: string | null;
   onSelectChat: (role: "buddy" | "customer", chat: Chat) => void;
   selectedChatId?: string;
 }) {
@@ -40,10 +42,33 @@ export function ChatSidebar({
           }
         });
         setChatList(chatLists);
+
+        if (selectChat) {
+          const selectedChat = chatLists.find(
+            (chat: {
+              name: string;
+              avatar: string;
+              role: "buddy" | "customer";
+              chat: Chat;
+            }) => chat.chat.id === selectChat,
+          );
+          if (selectedChat) {
+            onSelectChat(selectedChat.role, selectedChat.chat);
+          }
+        }
       }
     };
     fetchChatList();
   }, [user]);
+
+  useEffect(() => {
+    if (selectChat) {
+      const selectedChat = chatList.find((chat) => chat.chat.id === selectChat);
+      if (selectedChat) {
+        onSelectChat(selectedChat.role, selectedChat.chat);
+      }
+    }
+  }, [selectChat, chatList]);
 
   return (
     <Paper sx={{ width: 320, p: 2, boxShadow: 2 }}>

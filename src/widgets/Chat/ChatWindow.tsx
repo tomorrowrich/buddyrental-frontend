@@ -9,8 +9,8 @@ import { useAuth } from "@/context/auth/auth";
 import { subscribeToMessages, sendMessage } from "@/api/chat/socket";
 import { v4 as uuidv4 } from "uuid";
 import { useSocket } from "@/context/socket/SocketProvider";
-import { cancelReservation } from "@/api/reservation/api";
 import { Reservation } from "@/model/reservation";
+import { cancelReservation } from "@/api/reservation/api";
 
 export function ChatWindow({
   selectedChat,
@@ -27,11 +27,6 @@ export function ChatWindow({
     }[]
   >([]);
   const [openDialog, setOpenDialog] = useState(false);
-  const [bookingPrice, setBookingPrice] = useState<number>(0);
-  const [editDetails, setEditDetails] = useState<string>("");
-  const [editSelectedDate, setEditSelectedDate] = useState<string>("");
-  const [editStartTime, setEditStartTime] = useState<string>("10:00");
-  const [editEndTime, setEditEndTime] = useState<string>("15:00");
   const router = useRouter();
   const [socketConnected, setSocketConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
