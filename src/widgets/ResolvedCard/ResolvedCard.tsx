@@ -47,12 +47,13 @@ export const ResolvedCard = ({
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const res: CategoriesResponse[] = await getCategories({
+      const res = await getCategories({
         take: 100,
         skip: 0,
       });
 
-      const ReportCategoryMap: Record<string, string> = res.data.data.reduce(
+      const categories: CategoriesResponse[] = res.data.data;
+      const ReportCategoryMap: Record<string, string> = categories.reduce(
         (map, category) => {
           map[category.id] = category.name;
           return map;
@@ -68,10 +69,6 @@ export const ResolvedCard = ({
   const [ReportCategoryMap, setReportCategoryMap] = useState<
     Record<string, string>
   >({});
-
-  const getCategoryId = (categoryName: string): string => {
-    return reportCategoryMap[categoryName];
-  };
 
   useEffect(() => {
     const fetchData = async () => {

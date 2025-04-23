@@ -23,6 +23,16 @@ export interface CategoriesResponse {
   name: string;
 }
 
+export interface CategoriesApiResponse {
+  success: boolean;
+  data: {
+    data: CategoriesResponse[];
+    take: number;
+    skip: number;
+    totalCount: number;
+  };
+}
+
 export interface ReportData {
   id: string;
   reporterId: string;

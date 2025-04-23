@@ -25,12 +25,15 @@ export const HistoryReportCard = ({ data }: { data: ReportData }) => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const res: CategoriesResponse[] = await getCategories({
+      const res = await getCategories({
         take: 100,
         skip: 0,
       });
 
-      const ReportCategoryMap: Record<string, string> = res.data.data.reduce(
+      console.log("Categories: ", res);
+      const categories: CategoriesResponse[] = res.data.data;
+
+      const ReportCategoryMap: Record<string, string> = categories.reduce(
         (map, category) => {
           map[category.id] = category.name;
           return map;
@@ -46,10 +49,6 @@ export const HistoryReportCard = ({ data }: { data: ReportData }) => {
   const [ReportCategoryMap, setReportCategoryMap] = useState<
     Record<string, string>
   >({});
-
-  const getCategoryId = (categoryName: string): string => {
-    return reportCategoryMap[categoryName];
-  };
 
   return (
     <Box

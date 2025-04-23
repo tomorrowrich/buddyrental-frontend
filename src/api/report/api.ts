@@ -5,8 +5,8 @@ import { baseURL } from "@/api";
 
 import axios from "axios";
 import {
+  CategoriesApiResponse,
   CategoriesProps,
-  CategoriesResponse,
   ReportData,
   ReportPayload,
   ReportResponse,
@@ -36,7 +36,7 @@ export async function submitReport(
 
 export async function getCategories(
   data: CategoriesProps,
-): Promise<CategoriesResponse[]> {
+): Promise<CategoriesApiResponse> {
   const cookieStore = await cookies();
   const authToken = cookieStore.get("token")?.value;
 
