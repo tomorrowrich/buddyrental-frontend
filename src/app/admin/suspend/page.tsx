@@ -11,82 +11,62 @@ import {
   Avatar,
   Stack,
 } from "@mui/material";
+import {
+  getReports,
+  getSuspendUser,
+  setBan,
+  setSuspendTime,
+} from "@/api/report/api";
+import { User } from "@/model/user";
+import { getBuddy } from "@/api/buddy/api";
 
 const SuspendData = ({
   data,
+  onResolved,
 }: {
-  data: {
-    id: number;
-    name: string;
-    email: string;
-    avatar: string;
-    mockTime: number;
-  }[];
+  data: User[];
+  onResolved?: () => void;
 }) => {
   const theme = useTheme();
 
-  // Track suspended status and countdown
-  const [suspendedUsers, setSuspendedUsers] = useState<
-    { id: number; timer: number }[]
-  >([]);
-
-  const handleButtonClick = (id: number) => {
-    setSuspendedUsers((prev) => {
-      const isSuspended = prev.some((user) => user.id === id);
-      if (isSuspended) {
-        // Undo suspension
-        return prev.filter((user) => user.id !== id);
-      } else {
-        // Suspend user with mock time
-        const user = data.find((u) => u.id === id);
-        return [...prev, { id, timer: user?.mockTime || 0 }];
-      }
-    });
-  };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSuspendedUsers((prev) => {
-        const updatedUsers = prev
-          .map((user) => {
-            if (user.timer > 0) {
-              return { ...user, timer: user.timer - 1 };
-            }
-            return user;
-          })
-          .filter((user) => user.timer > 0); // Remove users with expired timers
-        return updatedUsers;
-      });
-    }, 1000); // Update every second
-
-    return () => clearInterval(interval); // Cleanup on component unmount
-  }, []);
-
-  const formatTime = (seconds: number) => {
-    if (seconds <= 0) return "ban";
-
-    const days = Math.floor(seconds / (24 * 60 * 60));
-    const months = Math.floor(days / 30);
-    const remainingDays = days % 30;
-
-    if (months > 0 && remainingDays > 0) {
-      return `${months} month${months > 1 ? "s" : ""} ${remainingDays} day${remainingDays > 1 ? "s" : ""} left`;
-    } else if (months > 0) {
-      return `${months} month${months > 1 ? "s" : ""} left`;
-    } else {
-      return `${days} day${days > 1 ? "s" : ""} left`;
+  const handleUnban = async (id: string) => {
+    try {
+      await setBan(id, false);
+      await setSuspendTime(id, 0);
+      alert("User unbanned successfully!");
+    } catch (error) {
+      console.error("Error unbanning user:", error);
     }
+    onResolved?.();
   };
+
+  const handleUnsuspend = async (id: string) => {
+    try {
+      await setSuspendTime(id, 0);
+      alert("User unsuspended successfully!");
+    } catch (error) {
+      console.error("Error unsuspending user:", error);
+    }
+    onResolved?.();
+  };
+
+  if (data.length === 0) {
+    return <Typography>No suspended or banned users found.</Typography>; // กรณีไม่มีผู้ใช้
+  }
+
+  // console.log("data", data);
 
   return (
-    <Box mt={2}>
+    <Box>
       {data.map((account) => {
-        const user = suspendedUsers.find((user) => user.id === account.id);
-        const isSuspended = !!user;
-        const timerText = isSuspended ? formatTime(user?.timer || 0) : "";
-
+        const isSuspended =
+          account.suspendedUntil &&
+          new Date(account.suspendedUntil).getTime() > Date.now();
+        const isBanned = account.isBanned;
         return (
-          <Box key={account.id}>
+          <Box key={account.userId}>
+            {" "}
+            {/* ใส่ key ให้กับ Box แม่ */}
             <Box
               sx={{
                 display: "flex",
@@ -95,11 +75,19 @@ const SuspendData = ({
                 padding: 2,
               }}
             >
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar src={account.avatar} alt={account.name} />
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                key={account.userId} // เพิ่ม key ที่นี่ด้วย
+              >
+                <Avatar
+                  src={account.profilePicture}
+                  alt={account.displayName}
+                />
                 <Box>
                   <Typography variant="body1" fontWeight={600} color="primary">
-                    {account.name}
+                    {account.displayName}
                   </Typography>
                   <Typography variant="body2" color="secondary">
                     {account.email}
@@ -108,30 +96,28 @@ const SuspendData = ({
               </Stack>
 
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Typography
-                  variant="body2"
-                  sx={{ marginRight: 2, color: "red" }}
-                >
-                  {timerText}
-                </Typography>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  sx={{
-                    borderRadius: 3,
-                    backgroundColor: isSuspended ? "white" : undefined,
-                    color: isSuspended ? "red" : undefined,
-                    border: isSuspended ? "2px solid red" : undefined,
-                  }}
-                  onClick={() => handleButtonClick(account.id)} // Handle button click
-                  disabled={user?.timer === 0} // Disable button if the user is banned
-                >
-                  {isSuspended ? "Undo suspend" : "Suspend"}{" "}
-                  {/* Toggle button text */}
-                </Button>
+                {isSuspended && !isBanned && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ borderRadius: 3 }}
+                    onClick={() => handleUnsuspend(account.userId)}
+                  >
+                    Unsuspend
+                  </Button>
+                )}
+                {isBanned && (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{ borderRadius: 3 }}
+                    onClick={() => handleUnban(account.userId)}
+                  >
+                    Unban
+                  </Button>
+                )}
               </Box>
             </Box>
-
             <Divider
               sx={{ background: theme.palette.quinary.main }}
               variant="middle"
@@ -143,153 +129,60 @@ const SuspendData = ({
   );
 };
 
-// Main Page Component
 export default function SuspendAccount() {
   const theme = useTheme();
+  const [users, setUsers] = useState<User[]>([]); // State สำหรับเก็บข้อมูลผู้ใช้
 
-  // Complete suspended data with mockTime in seconds (mock times)
-  const suspendData = [
-    {
-      id: 1,
-      name: "Alexa Rawles",
-      email: "alexarawles@gmail.com",
-      avatar: "https://picsum.photos/200?random=1",
-      mockTime: 5 * 24 * 60 * 60,
-    }, // 5 days
-    {
-      id: 2,
-      name: "John Smith",
-      email: "johnsmith@gmail.com",
-      avatar: "https://picsum.photos/200?random=2",
-      mockTime: 10 * 24 * 60 * 60,
-    }, // 10 days
-    {
-      id: 3,
-      name: "Emma Wilson",
-      email: "emmaw@gmail.com",
-      avatar: "https://picsum.photos/200?random=3",
-      mockTime: 2 * 30 * 24 * 60 * 60,
-    }, // 2 months
-    {
-      id: 4,
-      name: "Michael Chen",
-      email: "mchen@gmail.com",
-      avatar: "https://picsum.photos/200?random=4",
-      mockTime: 0,
-    }, // Ban immediately
-    {
-      id: 5,
-      name: "Sarah Johnson",
-      email: "sarahj@gmail.com",
-      avatar: "https://picsum.photos/200?random=5",
-      mockTime: 15 * 24 * 60 * 60,
-    }, // 15 days
-    {
-      id: 6,
-      name: "David Brown",
-      email: "dbrown@gmail.com",
-      avatar: "https://picsum.photos/200?random=6",
-      mockTime: 0,
-    }, // Ban immediately
-    {
-      id: 7,
-      name: "Lisa Anderson",
-      email: "landerson@gmail.com",
-      avatar: "https://picsum.photos/200?random=7",
-      mockTime: 7 * 24 * 60 * 60,
-    }, // 7 days
-    {
-      id: 8,
-      name: "James Wilson",
-      email: "jwilson@gmail.com",
-      avatar: "https://picsum.photos/200?random=8",
-      mockTime: 3 * 30 * 24 * 60 * 60,
-    }, // 3 months
-    {
-      id: 9,
-      name: "Maria Garcia",
-      email: "mgarcia@gmail.com",
-      avatar: "https://picsum.photos/200?random=9",
-      mockTime: 1 * 30 * 24 * 60 * 60,
-    }, // 1 month
-    {
-      id: 10,
-      name: "Robert Taylor",
-      email: "rtaylor@gmail.com",
-      avatar: "https://picsum.photos/200?random=10",
-      mockTime: 2 * 24 * 60 * 60,
-    }, // 2 days
-    {
-      id: 11,
-      name: "Patricia Lee",
-      email: "plee@gmail.com",
-      avatar: "https://picsum.photos/200?random=11",
-      mockTime: 3 * 24 * 60 * 60,
-    }, // 3 days
-    {
-      id: 12,
-      name: "Thomas Martin",
-      email: "tmartin@gmail.com",
-      avatar: "https://picsum.photos/200?random=12",
-      mockTime: 0,
-    }, // Ban immediately
-    {
-      id: 13,
-      name: "Sandra White",
-      email: "swhite@gmail.com",
-      avatar: "https://picsum.photos/200?random=13",
-      mockTime: 10 * 24 * 60 * 60,
-    }, // 10 days
-    {
-      id: 14,
-      name: "Kevin Moore",
-      email: "kmoore@gmail.com",
-      avatar: "https://picsum.photos/200?random=14",
-      mockTime: 1 * 30 * 24 * 60 * 60,
-    }, // 1 month
-    {
-      id: 15,
-      name: "Nancy Davis",
-      email: "ndavis@gmail.com",
-      avatar: "https://picsum.photos/200?random=15",
-      mockTime: 8 * 24 * 60 * 60,
-    }, // 8 days
-    {
-      id: 16,
-      name: "Daniel Miller",
-      email: "dmiller@gmail.com",
-      avatar: "https://picsum.photos/200?random=16",
-      mockTime: 20 * 24 * 60 * 60,
-    }, // 20 days
-    {
-      id: 17,
-      name: "Elizabeth Clark",
-      email: "eclark@gmail.com",
-      avatar: "https://picsum.photos/200?random=17",
-      mockTime: 0,
-    }, // Ban immediately
-    {
-      id: 18,
-      name: "Richard Hall",
-      email: "rhall@gmail.com",
-      avatar: "https://picsum.photos/200?random=18",
-      mockTime: 6 * 24 * 60 * 60,
-    }, // 6 days
-    {
-      id: 19,
-      name: "Jennifer Young",
-      email: "jyoung@gmail.com",
-      avatar: "https://picsum.photos/200?random=19",
-      mockTime: 4 * 30 * 24 * 60 * 60,
-    }, // 4 months
-    {
-      id: 20,
-      name: "William King",
-      email: "wking@gmail.com",
-      avatar: "https://picsum.photos/200?random=20",
-      mockTime: 9 * 24 * 60 * 60,
-    }, // 9 days
-  ];
+  const fetchData = async () => {
+    try {
+      const reports = await getReports("RESOLVED");
+      const filteredReports = reports.filter(
+        (report) =>
+          report.categoryId === "28b62f4e-82b1-4ad1-b337-ac00e792a214",
+      );
+
+      const suspendedUsersResults = await Promise.all(
+        filteredReports.map(async (report) => {
+          let a = report;
+          if (a.buddyId !== undefined) {
+            const buddyRes = await getBuddy({ buddyId: a.buddyId });
+            a = { ...report, buddyId: buddyRes.userId || undefined };
+          }
+          console.log("buddyId", a.buddyId);
+          const user = await getSuspendUser(a);
+          return user;
+        }),
+      );
+      console.log("susoend user", suspendedUsersResults);
+      // console.log("suspend", suspendedUsersResults);
+      // console.log("date", Date.now());
+      // Filter หลังจาก resolve แล้ว
+      const validUsers = suspendedUsersResults.filter(
+        (user) =>
+          user.isBanned === true ||
+          new Date(user.suspendedUntil).getTime() > Date.now(),
+      );
+      // console.log("validUsers",  validUsers);
+
+      if (validUsers.length === 0) {
+        setUsers([]);
+        return;
+      }
+
+      // ลบผู้ใช้ที่ซ้ำกันโดยใช้ id
+      const uniqueUsers = Array.from(
+        new Map(validUsers.map((user) => [user.id, user])).values(),
+      );
+
+      setUsers(uniqueUsers);
+    } catch (error) {
+      console.error("Error fetching suspended or banned users:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <Container sx={{ flex: 1, paddingTop: 5, borderRadius: 4 }}>
@@ -317,13 +210,13 @@ export default function SuspendAccount() {
             borderTopRightRadius: 2,
           }}
         >
-          Suspended Account
+          Suspended & Banned Accounts
         </Typography>
         <Box
           data-testid="booking-history-container"
           sx={{ width: "100%", padding: 2, flex: 1 }}
         >
-          <SuspendData data={suspendData} />
+          <SuspendData data={users} onResolved={fetchData} />
         </Box>
       </Box>
     </Container>

@@ -26,34 +26,25 @@ import {
   Settings,
   ReportProblem,
   Logout,
-  RequestQuote,
+  HowToReg,
+  PersonOff,
 } from "@mui/icons-material";
 import Image from "next/image";
 import NotificationTray from "../NotificationTray/NotificationTray";
 import { useAuth } from "@/context/auth/auth";
-import { useState, useCallback, memo } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { submitReport } from "@/api/report/api";
+import { getCategories, submitReport } from "@/api/report/api";
+import { fetchBuddies } from "@/api/buddies/actions";
+import { BuddyWithUser } from "@/model/buddy";
+import { CategoriesResponse } from "@/api/report/interface";
 
 export interface NavigationBarProps {
   isAdmin?: boolean;
 }
 
-const ReportCategoryMap: Record<string, string> = {
-  "Payment Issues": "25d40017-05ad-498b-bfcf-88632cff85d9",
-  "Buddy/Customer Report": "123e4567-e89b-12d3-a456-426614174000",
-  "App/System Issues": "cebae3c6-4ba6-4747-b351-325eb000243c",
-  Others: "6fb1dfaf-d12e-4ce7-a392-f5d83d91a46e",
-};
-
-const getCategoryId = (categoryName: string): string => {
-  return ReportCategoryMap[categoryName];
-};
-
-export const NavigationBar = memo(function NavigationBar({
-  isAdmin = false,
-}: NavigationBarProps) {
+export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const { logout, user } = useAuth();
   const theme = useTheme();
   const router = useRouter();
@@ -62,18 +53,78 @@ export const NavigationBar = memo(function NavigationBar({
   const [reportType, setReportType] = useState("Buddy/Customer Report");
   const [reportText, setReportText] = useState("");
   const [accountName, setAccountName] = useState("");
+  const [buddyList, setBuddyList] = useState<BuddyWithUser[]>([]);
 
-  const handleLogout = useCallback(async () => {
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const res = await getCategories({
+        take: 100,
+        skip: 0,
+      });
+
+      const categories: CategoriesResponse[] = res.data.data;
+      const ReportCategoryMap: Record<string, string> = categories.reduce(
+        (map, category) => {
+          map[category.name] = category.id;
+          return map;
+        },
+        {} as Record<string, string>,
+      );
+      setReportCategoryMap(ReportCategoryMap);
+    };
+
+    fetchCategories();
+  }, []);
+
+  const [reportCategoryMap, setReportCategoryMap] = useState<
+    Record<string, string>
+  >({});
+
+  const getCategoryId = (categoryName: string): string => {
+    return reportCategoryMap[categoryName];
+  };
+
+  useEffect(() => {
+    const getBuddies = async () => {
+      const result = await fetchBuddies();
+      if (result.success && result.data) {
+        setBuddyList(result.data);
+      } else {
+        console.error("Error fetching buddies:", result.error);
+      }
+    };
+
+    getBuddies();
+  }, []);
+
+  const handleLogout = async () => {
     await logout();
-  }, [logout]);
+  };
 
-  const handleSubmit = useCallback(async () => {
-    const categoryId = getCategoryId(reportType);
+  const handleSubmit = async () => {
+    let categoryId;
+    let buddy;
+    console.log("reportType: ", reportType);
+    if (reportType === "Buddy/Customer Report") {
+      categoryId = getCategoryId("Buddy Host Complaints");
+      console.log("categoryId: ", categoryId);
+      buddy = buddyList.find((b) => b.user?.displayName === accountName);
+      // console.log("buddy: ", buddy);
+      if (buddy?.buddyId === undefined) {
+        alert("Buddy not found with the provided account name.");
+        // alert(categoryId);
+        return;
+      }
+    } else {
+      categoryId = getCategoryId(reportType);
+    }
     const data = {
       userId: user?.userId,
       categoryId: categoryId,
       details: reportText,
+      buddyId: buddy?.buddyId,
     };
+    console.log("data: ", data);
     try {
       const response = await submitReport(data);
       console.log(response);
@@ -85,34 +136,7 @@ export const NavigationBar = memo(function NavigationBar({
       setReportType("Payment Issues");
       setReportModalOpen(false);
     }
-  }, [reportType, reportText, user?.userId]);
-
-  const handleNavigate = useCallback(
-    (path: string) => {
-      router.push(path);
-    },
-    [router],
-  );
-
-  const handleAvatarClick = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      setAnchorEl(event.currentTarget);
-    },
-    [],
-  );
-
-  const handleCloseMenu = useCallback(() => {
-    setAnchorEl(null);
-  }, []);
-
-  const handleOpenReportModal = useCallback(() => {
-    setAnchorEl(null);
-    setReportModalOpen(true);
-  }, []);
-
-  const handleCloseReportModal = useCallback(() => {
-    setReportModalOpen(false);
-  }, []);
+  };
 
   return (
     <AppBar
@@ -137,53 +161,89 @@ export const NavigationBar = memo(function NavigationBar({
         }}
       >
         {/* Left Side - Logo */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Box onClick={() => handleNavigate("/")} sx={{ cursor: "pointer" }}>
-            <Image
-              src="/logo-full.svg"
-              alt="BuddyRental Logo"
-              width={200}
-              height={40}
-            />
-          </Box>
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          onClick={() => router.push("/")}
+        >
+          <Image
+            src="/logo-full.svg"
+            alt="BuddyRental Logo"
+            width={200}
+            height={40}
+          />
         </Box>
 
         {/* Right Side - Navigation, Balance, Notifications, Avatar */}
         {user && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-            {user?.buddy && (
-              <Button
-                startIcon={<RequestQuote />}
-                sx={{
-                  color: theme.palette.primary.main,
-                  textTransform: "none",
-                }}
-                onClick={() => handleNavigate("/booking/history/buddy")}
-              >
-                Requests
-              </Button>
+            {isAdmin && (
+              <>
+                <Button
+                  startIcon={<HowToReg />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/admin/verify")}
+                >
+                  Admin Verify
+                </Button>
+                <Button
+                  startIcon={<ReportProblem />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/admin/reports")}
+                >
+                  Reports
+                </Button>
+                <Button
+                  startIcon={<PersonOff />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/admin/suspend")}
+                >
+                  Suspend Users
+                </Button>
+              </>
             )}
-            <Button
-              startIcon={<MenuBook />}
-              sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => handleNavigate("/booking/history")}
-            >
-              Bookings
-            </Button>
-            <Button
-              startIcon={<EventNote />}
-              sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => handleNavigate("/booking/schedule")}
-            >
-              Calendar
-            </Button>
-            <Button
-              startIcon={<ChatBubbleOutline />}
-              sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => handleNavigate("/chat")}
-            >
-              Chat
-            </Button>
+            {!isAdmin && (
+              <>
+                <Button
+                  startIcon={<MenuBook />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/booking/history")}
+                >
+                  Bookings
+                </Button>
+                <Button
+                  startIcon={<EventNote />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/booking/schedule")}
+                >
+                  Calendar
+                </Button>
+                <Button
+                  startIcon={<ChatBubbleOutline />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/chat")}
+                >
+                  Chat
+                </Button>
+              </>
+            )}
 
             {/* Balance */}
             <Box
@@ -216,7 +276,7 @@ export const NavigationBar = memo(function NavigationBar({
               {/* Report Issues Modal */}
               <Modal
                 open={reportModalOpen}
-                onClose={handleCloseReportModal}
+                onClose={() => setReportModalOpen(false)}
                 aria-labelledby="report-issues-title"
                 aria-describedby="report-issues-description"
               >
@@ -234,7 +294,7 @@ export const NavigationBar = memo(function NavigationBar({
                 >
                   {/* Close button at the top-right corner */}
                   <IconButton
-                    onClick={handleCloseReportModal}
+                    onClick={() => setReportModalOpen(false)}
                     sx={{
                       position: "absolute",
                       top: 8,
@@ -365,14 +425,14 @@ export const NavigationBar = memo(function NavigationBar({
                     boxShadow: theme.shadows[2],
                   },
                 }}
-                onClick={handleAvatarClick}
+                onClick={(event) => setAnchorEl(event.currentTarget)}
               >
                 {!user.profilePicture && `${user.firstName.at(0)}`}
               </Avatar>
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
-                onClose={handleCloseMenu}
+                onClose={() => setAnchorEl(null)}
                 slotProps={{
                   paper: {
                     sx: {
@@ -423,8 +483,8 @@ export const NavigationBar = memo(function NavigationBar({
                     color="primary"
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
-                      handleCloseMenu();
-                      handleNavigate("/profile");
+                      setAnchorEl(null);
+                      router.push("/profile");
                     }}
                     startIcon={<Edit sx={{ width: 24, height: 24 }} />}
                   >
@@ -436,8 +496,8 @@ export const NavigationBar = memo(function NavigationBar({
                     color="primary"
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
-                      handleCloseMenu();
-                      handleNavigate("/settings");
+                      setAnchorEl(null);
+                      router.push("/settings");
                     }}
                     startIcon={<Settings fontSize="small" />}
                   >
@@ -449,7 +509,10 @@ export const NavigationBar = memo(function NavigationBar({
                     variant="text"
                     color="primary"
                     sx={{ justifyContent: "flex-start", mb: 1 }}
-                    onClick={handleOpenReportModal}
+                    onClick={() => {
+                      setAnchorEl(null);
+                      setReportModalOpen(true);
+                    }}
                     startIcon={<ReportProblem fontSize="small" />}
                   >
                     Report
@@ -471,4 +534,4 @@ export const NavigationBar = memo(function NavigationBar({
       </Toolbar>
     </AppBar>
   );
-});
+}

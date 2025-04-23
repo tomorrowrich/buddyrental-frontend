@@ -45,7 +45,7 @@ const NotificationTray: React.FC<NotificationTrayProps> = () => {
   };
 
   useEffect(() => {
-    setUnreadCount(notifications.filter((e) => !e.notification.read).length);
+    setUnreadCount(notifications?.filter((e) => !e.notification.read).length);
   }, [notifications]);
 
   const formatTime = (dateString: string): string => {
@@ -126,11 +126,11 @@ const NotificationTray: React.FC<NotificationTrayProps> = () => {
           )}
         </Box>
 
-        {notifications.length === 0 ? (
+        {notifications?.length === 0 ? (
           <Typography sx={{ p: 2 }}>No notifications found.</Typography>
         ) : (
           <List sx={{ width: "100%", p: 0, maxHeight: 400, overflow: "auto" }}>
-            {notifications.map((e, index) => (
+            {notifications?.map((e, index) => (
               <span key={e.notification.id}>
                 <ListItem
                   alignItems="flex-start"
@@ -205,7 +205,7 @@ const NotificationTray: React.FC<NotificationTrayProps> = () => {
                     }
                   />
                 </ListItem>
-                {index < notifications.length - 1 && (
+                {index < notifications?.length - 1 && (
                   <Divider sx={{ margin: 0 }} />
                 )}
               </span>

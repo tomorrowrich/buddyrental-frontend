@@ -24,6 +24,7 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import DescriptionIcon from "@mui/icons-material/Description";
+import { Reservation } from "@/model/reservation";
 
 export function BookingDialog({
   open,
@@ -36,7 +37,7 @@ export function BookingDialog({
   buddyName: string;
   open: boolean;
   setOpen: (value: boolean) => void;
-  onSendMessage?: (message: string) => void;
+  onSendMessage: (reservation: Reservation) => void;
 }) {
   const [detail, setDetails] = useState("");
   const [price, setPrice] = useState<string>("0");
@@ -75,11 +76,11 @@ export function BookingDialog({
 
     if (response && response.success) {
       // Create message to display in chat
-      const message = `**Buddy Reservation Request**\nDetails: ${detail || "No details provided."}\nPrice: $${price || "0"}\nDate: ${selectedDate} Time: ${startTime} - ${endTime}`;
+      // const message = `**Buddy Reservation Request**\nDetails: ${detail || "No details provided."}\nPrice: $${price || "0"}\nDate: ${selectedDate} Time: ${startTime} - ${endTime}`;
 
       // Send message to parent component
       if (onSendMessage) {
-        onSendMessage(message);
+        onSendMessage(response.data.data.reservation);
       }
 
       // Show success message
