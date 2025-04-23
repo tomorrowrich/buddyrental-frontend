@@ -16,7 +16,7 @@ import { useAuth } from "@/context/auth/auth";
 import { subscribeToMessages, sendMessage } from "@/api/chat/socket";
 import { useSocket } from "@/context/socket/SocketProvider";
 import { v4 as uuidv4 } from "uuid";
-import { BookingDialog } from "../Booking/BookingDialogMobile";
+import { BookingDialog } from "../Booking/BookingDialog";
 import { cancelReservation, createReservation } from "@/api/reservation/api";
 
 export function ChatWindowMobile({
