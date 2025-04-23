@@ -36,7 +36,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { submitReport } from "@/api/report/api";
-import { fetchBuddiesClient } from "@/api/buddies/api.client";
+import { fetchBuddies } from "@/api/buddies/actions";
 import { BuddyWithUser } from "@/model/buddy";
 
 export interface NavigationBarProps {
@@ -77,7 +77,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
 
   useEffect(() => {
     const getBuddies = async () => {
-      const result = await fetchBuddiesClient();
+      const result = await fetchBuddies();
       if (result.success && result.data) {
         setBuddyList(result.data);
       } else {
@@ -520,11 +520,4 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
       </Toolbar>
     </AppBar>
   );
-}
-function setSnackbarMessage(arg0: string) {
-  throw new Error("Function not implemented.");
-}
-
-function setOpenSnackbar(arg0: boolean) {
-  throw new Error("Function not implemented.");
 }

@@ -19,6 +19,7 @@ export interface User {
   admin?: Admin;
   suspendedUntil?: string;
   isBanned?: boolean;
+  balance: number;
 }
 
 export interface Buddy {

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Avatar, Box, Paper, Typography, Button } from "@mui/material";
-import { BookingDialog } from "./BookingDialog";
+import { BookingDialog } from "../Booking/BookingDialog";
 import { MessageInput } from "./MessageInput";
 import { useRouter } from "next/navigation";
 import { Chat, ChatMessage, ChatMessageMetaType } from "@/api/chat/interface";
@@ -9,6 +9,7 @@ import { useAuth } from "@/context/auth/auth";
 import { subscribeToMessages, sendMessage } from "@/api/chat/socket";
 import { v4 as uuidv4 } from "uuid";
 import { useSocket } from "@/context/socket/SocketProvider";
+import { cancelReservation, createReservation } from "@/api/reservation/api";
 
 export function ChatWindow({
   selectedChat,
@@ -20,13 +21,16 @@ export function ChatWindow({
       id: string;
       text: string;
       sender: "user" | "buddy";
+      type: ChatMessageMetaType;
+      metaContent: string | undefined;
     }[]
   >([]);
-  const [editDetails, setEditDetails] = useState<string | null>(null);
-  const [editStartTime, setEditStartTime] = useState<string | null>(null);
-  const [editEndTime, setEditEndTime] = useState<string | null>(null);
-  const [editSelectedDate, setEditSelectedDate] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [bookingPrice, setBookingPrice] = useState<number>(0);
+  const [editDetails, setEditDetails] = useState<string>("");
+  const [editSelectedDate, setEditSelectedDate] = useState<string>("");
+  const [editStartTime, setEditStartTime] = useState<string>("");
+  const [editEndTime, setEditEndTime] = useState<string>("");
   const router = useRouter();
   const [socketConnected, setSocketConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -46,11 +50,15 @@ export function ChatWindow({
     id: string;
     text: string;
     sender: "user" | "buddy";
+    type: ChatMessageMetaType;
+    metaContent: string | undefined;
   } {
     return {
       id: message.id,
       text: message.content,
       sender: isFromUser ? "user" : "buddy",
+      type: message.meta.type,
+      metaContent: message.meta.content,
     };
   }
 
@@ -64,7 +72,7 @@ export function ChatWindow({
       const height = containerRef.current.clientHeight;
       setContainerHeight(height);
     }
-  }, []);
+  }, [containerHeight]);
 
   // Handle window resize to adjust container height
   useEffect(() => {
@@ -137,6 +145,8 @@ export function ChatWindow({
       id: uuidv4(),
       text: message,
       sender: "user" as const,
+      type: ChatMessageMetaType.TEXT,
+      metaContent: undefined,
     };
 
     setMessages((prev) => [...prev, newMessage]);
@@ -145,7 +155,8 @@ export function ChatWindow({
     sendMessage({
       trackId: uuidv4(),
       chatId: chat.id,
-      senderId: user.userId,
+      senderId:
+        role === "buddy" && user.buddy ? user.buddy?.buddyId : user.userId,
       content: message,
       meta: {
         metaId: uuidv4(),
@@ -155,29 +166,64 @@ export function ChatWindow({
     });
   };
 
+  const _handleSendBookingMessage = async () => {
+    if (!chat || !user) return;
+
+    setOpenDialog(false);
+
+    const reservation = await createReservation({
+      buddyId: chat.buddyId,
+      price: bookingPrice,
+      detail: editDetails || "",
+      reservationStart: new Date(
+        `${editSelectedDate}T${editStartTime}`,
+      ).toISOString(),
+      reservationEnd: new Date(
+        `${editSelectedDate}T${editEndTime}`,
+      ).toISOString(),
+    })
+      .then((res) => {
+        return res.data.data.reservation;
+      })
+      .catch((error) => {
+        console.error("Error creating reservation:", error);
+        throw error;
+      });
+
+    console.log("Reservation created:", reservation);
+
+    const newMessage = {
+      id: uuidv4(),
+      text: `Buddy Reservation Request
+${editDetails}
+Date: ${editSelectedDate}
+Time: ${editStartTime} - ${editEndTime}`,
+      sender: "user" as const,
+      type: ChatMessageMetaType.APPOINTMENT,
+      metaContent: reservation.reservationId,
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+
+    sendMessage({
+      trackId: uuidv4(),
+      chatId: chat.id,
+      senderId:
+        role === "buddy" && user.buddy ? user.buddy?.buddyId : user.userId,
+      content: newMessage.text,
+      meta: {
+        metaId: uuidv4(),
+        timestamp: new Date(),
+        type: ChatMessageMetaType.APPOINTMENT,
+        content: reservation.reservationId,
+      },
+    });
+  };
+
   const handleEditBooking = (message: string) => {
     // Split the message to extract booking details
     const parts = message.split("\n");
     if (parts.length < 3) return;
-
-    // Extract date and time information
-    const dateTimeString = parts[2].includes("Time:")
-      ? parts[2].split("Time: ")[1]
-      : "";
-
-    const [startTime, endTime] = dateTimeString.includes(" - ")
-      ? dateTimeString.split(" - ")
-      : ["10:00", "15:00"];
-
-    // Set the extracted details to state
-    setEditDetails(parts[1].includes(": ") ? parts[1].split(": ")[1] : "");
-    setEditSelectedDate(
-      parts[2].includes("Date: ")
-        ? parts[2].split("Date: ")[1].split(" Time")[0]
-        : "",
-    );
-    setEditStartTime(startTime);
-    setEditEndTime(endTime);
 
     // Open the dialog
     setOpenDialog(true);
@@ -231,7 +277,7 @@ export function ChatWindow({
           <Button
             variant="contained"
             color="quinary"
-            onClick={() => router.push("/app/profile/buddy")}
+            onClick={() => router.push("/profile/buddy")}
             sx={{
               px: 3,
               py: 1.2,
@@ -359,7 +405,7 @@ export function ChatWindow({
                 {msg.text}
               </Typography>
 
-              {msg.text.includes("Buddy Reservation Request") && (
+              {msg.type === ChatMessageMetaType.APPOINTMENT && (
                 <Box display="flex" justifyContent="center" mt={3} gap={2}>
                   <Button
                     variant="contained"
@@ -376,8 +422,16 @@ export function ChatWindow({
                         boxShadow: 2,
                       },
                     }}
-                    onClick={() => {
-                      handleSendMessage("I would like to cancel this booking.");
+                    onClick={async () => {
+                      const { success } = await cancelReservation(
+                        msg.metaContent as string,
+                      );
+                      if (success)
+                        handleSendMessage(`Reservation Cancelled\n${msg.text}`);
+                      if (!success)
+                        handleSendMessage(
+                          `Error cancelling reservation\n\nReservation ID: ${msg.metaContent}`,
+                        );
                     }}
                   >
                     Cancel Booking
@@ -410,19 +464,15 @@ export function ChatWindow({
       </Box>
 
       {/* Booking dialog */}
-      <BookingDialog
-        onSendMessage={handleSendMessage}
-        editDetails={editDetails}
-        editStartTime={editStartTime}
-        editEndTime={editEndTime}
-        editSelectedDate={editSelectedDate}
-        setEditDetails={setEditDetails}
-        setEditStartTime={setEditStartTime}
-        setEditEndTime={setEditEndTime}
-        setEditSelectedDate={setEditSelectedDate}
-        open={openDialog}
-        setOpen={setOpenDialog}
-      />
+      {role === "customer" && chat?.buddy && (
+        <BookingDialog
+          onSendMessage={handleSendMessage}
+          buddyId={chat.buddyId!}
+          buddyName={chat.buddy.user!.displayName}
+          open={openDialog}
+          setOpen={setOpenDialog}
+        />
+      )}
 
       {/* Message input */}
       <MessageInput

@@ -4,7 +4,6 @@ import { createTheme } from "@mui/material/styles";
 let BuddyRentalTheme = createTheme({
   colorSchemes: {
     light: true,
-    dark: false,
   },
   typography: {
     fontSize: 12,
@@ -123,6 +122,23 @@ BuddyRentalTheme = createTheme(BuddyRentalTheme, {
       styleOverrides: {
         root: {
           margin: "16px 0",
+        },
+      },
+    },
+    MuiSnackbar: {
+      defaultProps: {
+        anchorOrigin: {
+          vertical: "top",
+          horizontal: "center",
+        },
+      },
+      styleOverrides: {
+        root: {
+          "& .MuiPaper-root": {
+            border: "1px solid rgba(237, 164, 189, 0.8)",
+            borderRadius: 8,
+            boxShadow: "0px 5px 30px rgba(237, 164, 189, 0.8)",
+          },
         },
       },
     },

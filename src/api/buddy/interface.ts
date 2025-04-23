@@ -18,9 +18,9 @@ export interface ListBuddiesParams {
 }
 
 export interface CreateBuddyRequest {
-  priceMin: number;
-  priceMax?: number | null;
-  userId?: string | null;
+  minPrice: number;
+  maxPrice?: number | null;
+  description?: string | null;
 }
 
 export interface UpdateBuddyRequest {

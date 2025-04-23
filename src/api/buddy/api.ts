@@ -24,7 +24,9 @@ export async function getBuddy({
       },
     });
 
-    return response.data as BuddyWithUser;
+    const buddyWithUser: BuddyWithUser = fillInRatingAvg(response.data);
+
+    return buddyWithUser;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(`Error fetching buddy: ${error.response?.status}`);
@@ -87,6 +89,7 @@ export async function createBuddy(data: CreateBuddyRequest): Promise<Buddy> {
   if (!authToken) {
     throw new Error("Authentication required");
   }
+  console.log("Creating buddy with data:", data);
 
   try {
     const response = await axios.post(`${baseURL}/buddy`, data, {
@@ -184,4 +187,14 @@ export async function getCurrentUserBuddy(): Promise<Buddy | null> {
     console.error("Error getting current user buddy:", error);
     return null;
   }
+}
+
+function fillInRatingAvg(buddy: BuddyWithUser): BuddyWithUser {
+  if (buddy.ratingAvg !== undefined) return buddy;
+  const ratings = buddy.reviews?.map((r) => r.rating) || [];
+  const sum = ratings.reduce((a, b) => a + b, 0);
+  return {
+    ...buddy,
+    ratingAvg: ratings.length > 0 ? sum / ratings.length : 0,
+  };
 }

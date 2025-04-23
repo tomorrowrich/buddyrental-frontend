@@ -26,6 +26,7 @@ import {
   NotificationsNone,
   ChatBubbleOutline,
   Close as CloseIcon,
+  Add,
 } from "@mui/icons-material";
 import Image from "next/image";
 import { useAuth } from "@/context/auth/auth";
@@ -151,17 +152,32 @@ export function MobileNavigationBar({
           />
         </Box>
 
-        {/* Right Side - Notifications, Avatar */}
+        {/* Right Side - Navigation, Balance, Notifications, Avatar */}
         {user && (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 3,
-              flexGrow: 1,
-              justifyContent: "flex-end",
-            }}
-          >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+            {/* Balance */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                backgroundColor: theme.palette.quinary.main,
+                borderRadius: "20px",
+                padding: "5px 10px",
+                gap: 1,
+              }}
+            >
+              <Typography color="secondary" fontWeight="bold">
+                {user.balance}
+              </Typography>
+              <IconButton
+                size="small"
+                sx={{ color: theme.palette.tertiary.main }}
+                onClick={() => router.push("/app/coin/package")}
+              >
+                <Add fontSize="small" />
+              </IconButton>
+            </Box>
+
             {/* Notifications */}
             <IconButton>
               <NotificationsNone sx={{ color: "primary.main" }} />
@@ -337,7 +353,7 @@ export function MobileNavigationBar({
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       setAnchorEl(null);
-                      router.push("/app/profile");
+                      router.push("/profile");
                     }}
                   >
                     Edit Profile

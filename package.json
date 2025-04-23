@@ -24,9 +24,10 @@
     "@types/js-cookie": "^3.0.6",
     "axios": "^1.7.9",
     "dayjs": "^1.11.13",
+    "framer-motion": "^12.7.4",
     "js-cookie": "^3.0.5",
     "moment": "^2.30.1",
-    "next": "^15.2.4",
+    "next": "^15.3.1",
     "react": "^19.0.0",
     "react-big-calendar": "^1.17.1",
     "react-dom": "^19.0.0",
@@ -41,6 +42,8 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^7.0.3",
     "@semantic-release/git": "^10.0.1",
+    "@stripe/react-stripe-js": "^3.6.0",
+    "@stripe/stripe-js": "^7.1.0",
     "@tailwindcss/postcss": "^4.0.6",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -61,9 +64,11 @@
     "postcss": "^8.5.2",
     "prettier": "^3.4.2",
     "semantic-release": "^24.2.1",
+    "stripe": "^18.0.0",
     "tailwindcss": "^4.0.6",
     "typescript": "^5",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.5"
-  }
+  },
+  "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
 }

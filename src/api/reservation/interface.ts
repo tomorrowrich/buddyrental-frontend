@@ -1,6 +1,11 @@
 export interface CreateReservationDto {
-  buddyId: string;
-  dateTime: string;
-  message?: string;
-  location?: string;
+  readonly buddyId: string;
+
+  readonly price: number;
+
+  readonly detail: string;
+
+  readonly reservationStart: string;
+
+  readonly reservationEnd: string;
 }

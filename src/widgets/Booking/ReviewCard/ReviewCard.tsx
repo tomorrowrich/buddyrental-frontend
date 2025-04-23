@@ -17,17 +17,22 @@ import {
   Grid2,
   Container,
   TextField,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { cancelReservation, getReservationStatus } from "@/api/reservation/api";
+import { createReview } from "@/api/review/api";
 
 // Review Dialog Component
 const ReviewDialog = ({
   open,
   onClose,
+  onSubmit,
 }: {
   open: boolean;
   onClose: () => void;
+  onSubmit: (reviewText: string, rating: number) => void;
 }) => {
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState<number | null>(null);
@@ -75,7 +80,9 @@ const ReviewDialog = ({
           variant="contained"
           color="secondary"
           sx={{ borderRadius: 3, mr: 4, m: 2 }}
-          onClick={onClose}
+          onClick={() => {
+            if (rating) onSubmit(reviewText, rating);
+          }}
           disabled={!rating}
         >
           Submit Review
@@ -118,6 +125,32 @@ export const ReviewCard = ({
   const [status, setStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "success" | "error" | "info" | "warning"
+  >("success");
+
+  const showSnackbar = (
+    message: string,
+    severity: "success" | "error" | "info" | "warning",
+  ) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string,
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   const fetchReservationStatus = useCallback(async () => {
     try {
       const response = await getReservationStatus(reservationId);
@@ -126,9 +159,11 @@ export const ReviewCard = ({
       }
       if (response.error) {
         console.error(response.error);
+        showSnackbar("Failed to fetch reservation status", "error");
       }
     } catch (error) {
       console.error("Failed to fetch reservation status:", error);
+      showSnackbar("Failed to fetch reservation status", "error");
     }
   }, [reservationId]);
 
@@ -146,11 +181,26 @@ export const ReviewCard = ({
       await cancelReservation(reservationId);
       // Update status locally instead of closing the dialog
       setStatus("CANCELLED");
+      showSnackbar("Booking cancelled successfully", "success");
     } catch (error) {
       console.error("Error canceling booking:", error);
-      // Could add error notification here
+      showSnackbar("Failed to cancel booking", "error");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSubmitReview = async (reviewText: string, rating: number) => {
+    setIsLoading(true);
+    try {
+      await createReview({ reservationId, comment: reviewText, rating });
+      showSnackbar("Review submitted successfully", "success");
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      showSnackbar("Failed to submit review", "error");
+    } finally {
+      setIsLoading(false);
+      handleCloseReview();
     }
   };
 
@@ -330,7 +380,29 @@ export const ReviewCard = ({
       </Dialog>
 
       {/* Review Popup */}
-      <ReviewDialog open={openReview} onClose={handleCloseReview} />
+      <ReviewDialog
+        open={openReview}
+        onClose={handleCloseReview}
+        onSubmit={(reviewText: string, rating: number) =>
+          handleSubmitReview(reviewText, rating)
+        }
+      />
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

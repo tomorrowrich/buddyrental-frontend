@@ -1,3 +1,4 @@
+import { Review } from "./review";
 import { User } from "./user";
 
 export interface Buddy {
@@ -10,7 +11,7 @@ export interface Buddy {
   priceMax: number | null;
   tagsCount: number;
   userId: string | null;
-  reviews: object[];
+  reviews: Review[];
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
