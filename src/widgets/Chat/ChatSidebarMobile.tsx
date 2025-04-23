@@ -1,14 +1,10 @@
-import {
-  Avatar,
-  Box,
-  Paper,
-  Typography,
-} from "@mui/material";
-import { getChatList } from "@/api/chat/api";
+import { Avatar, Box, Paper, Typography } from "@mui/material";
 import { ChatMessageStatus } from "@/api/chat/interface";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/auth/auth";
 import { Chat } from "@/api/chat/interface";
+
+import { mockChatList } from "./MockChat";
 
 export function MobileChatSidebar({
   onSelectChat,
@@ -22,6 +18,11 @@ export function MobileChatSidebar({
     { name: string; avatar: string; role: "buddy" | "customer"; chat: Chat }[]
   >([]);
 
+  useEffect(() => {
+    setChatList(mockChatList);
+  }, []);
+
+  /*
   useEffect(() => {
     const fetchChatList = async () => {
       const { success, chats } = await getChatList();
@@ -49,10 +50,13 @@ export function MobileChatSidebar({
     fetchChatList();
   }, [user]);
 
+  */
   return (
     <Paper
       sx={{
         width: "100%",
+        height: "100%",
+        mx: "auto",
         p: 2,
         boxShadow: 2,
         maxHeight: "calc(100vh - 60px)",
@@ -62,6 +66,8 @@ export function MobileChatSidebar({
         display: "block",
         borderRadius: 2,
         backgroundColor: "background.paper",
+        left: 0,
+        right: 0,
       }}
     >
       {/* Header */}
@@ -74,6 +80,7 @@ export function MobileChatSidebar({
           p: 2,
           borderTopLeftRadius: 8,
           borderTopRightRadius: 8,
+          marginBottom: 0,
         }}
       >
         <Typography variant="h6" color="white" fontWeight={700}>

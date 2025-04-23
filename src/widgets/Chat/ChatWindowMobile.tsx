@@ -16,7 +16,7 @@ import { useAuth } from "@/context/auth/auth";
 import { subscribeToMessages, sendMessage } from "@/api/chat/socket";
 import { useSocket } from "@/context/socket/SocketProvider";
 import { v4 as uuidv4 } from "uuid";
-import { BookingDialog } from "../Booking/BookingDialog";
+import { BookingDialog } from "../Booking/BookingDialogMobile";
 import { cancelReservation, createReservation } from "@/api/reservation/api";
 
 export function ChatWindowMobile({
@@ -242,16 +242,19 @@ Time: ${editStartTime} - ${editEndTime}`,
     <Paper
       sx={{
         width: "100%",
+        height: "100%",
+        mx: "auto",
         p: 2,
         boxShadow: 2,
-        maxHeight: "calc(100vh)",
-        overflow: "hidden",
-        position: "relative",
+        maxHeight: "calc(100vh - 60px)",
+        overflowY: "auto",
+        position: "absolute",
         top: "10px",
-        display: "flex",
-        flexDirection: "column",
+        display: "block",
         borderRadius: 2,
         backgroundColor: "background.paper",
+        left: 0,
+        right: 0,
       }}
     >
       <Box

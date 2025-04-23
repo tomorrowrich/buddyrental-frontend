@@ -1,25 +1,23 @@
 "use client";
+
 import { Box } from "@mui/material";
-import { ChatSidebar } from "@/widgets/Chat/ChatSidebar";
+import { ChatWindowMobile } from "./ChatWindowMobile";
 import { MobileChatSidebar } from "@/widgets/Chat/ChatSidebarMobile";
-import ChatWindowSwitcher from "@/widgets/Chat/WindowSwitch";
 import { Chat } from "@/api/chat/interface";
 
-export default function SidebarSwitcher({
+export default function ChatAndSidebarSwitcher({
   selectedChat,
   onSelectChat,
   onBack,
-  isMobile,
 }: {
   selectedChat: { role: "buddy" | "customer" | null; chat: Chat | null };
   onSelectChat: (role: "buddy" | "customer", chat: Chat) => void;
   onBack: () => void;
-  isMobile: boolean;
 }) {
   return (
     <>
-      {/* For mobile, show ChatSidebar when no chat is selected */}
-      {isMobile && !selectedChat.chat && (
+      {/* แสดง Sidebar เมื่อยังไม่เลือกแชท */}
+      {!selectedChat.chat && (
         <Box
           sx={{
             width: "100%",
@@ -31,25 +29,17 @@ export default function SidebarSwitcher({
         </Box>
       )}
 
-      {/* For desktop, show the regular ChatSidebar */}
-      {!isMobile && (
+      {/* แสดงหน้าต่างแชทเมื่อเลือกแชทแล้ว */}
+      {selectedChat.chat && (
         <Box
           sx={{
-            width: 320,
+            width: "100%",
             display: "block",
-            mb: 0,
+            mb: 2,
           }}
         >
-          <ChatSidebar
-            onSelectChat={onSelectChat}
-            selectedChatId={selectedChat.chat?.id}
-          />
+          <ChatWindowMobile selectedChat={selectedChat} onBack={onBack} />
         </Box>
-      )}
-
-      {/* For mobile, hide ChatWindow if no chat is selected */}
-      {(!isMobile || selectedChat.chat) && (
-        <ChatWindowSwitcher selectedChat={selectedChat} onBack={onBack} />
       )}
     </>
   );

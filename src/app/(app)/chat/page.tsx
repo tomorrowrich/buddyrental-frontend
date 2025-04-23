@@ -2,7 +2,9 @@
 import { useState } from "react";
 import { Box, useMediaQuery } from "@mui/material";
 import { Chat } from "@/api/chat/interface";
-import SidebarSwitcher from "@/widgets/Chat/SidebarSwitcher"; // ใช้ SidebarSwitcher แทน ChatSidebar
+import ChatAndSidebarSwitcher from "@/widgets/Chat/SidebarSwitcher";
+import { ChatSidebar } from "@/widgets/Chat/ChatSidebar";
+import { ChatWindow } from "@/widgets/Chat/ChatWindow";
 
 export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState<{
@@ -32,14 +34,23 @@ export default function ChatPage() {
       gap={1}
       position="relative"
       height="100vh"
-      flexDirection="row"
+      flexDirection={isMobile ? "column" : "row"}
     >
-      <SidebarSwitcher
-        selectedChat={selectedChat}
-        onSelectChat={handleSelectChat}
-        onBack={handleBack}
-        isMobile={isMobile}
-      />
+      {isMobile ? (
+        <ChatAndSidebarSwitcher
+          selectedChat={selectedChat}
+          onSelectChat={handleSelectChat}
+          onBack={handleBack}
+        />
+      ) : (
+        <>
+          <ChatSidebar
+            onSelectChat={handleSelectChat}
+            selectedChatId={selectedChat.chat?.id}
+          />
+          <ChatWindow selectedChat={selectedChat} />
+        </>
+      )}
     </Box>
   );
 }
