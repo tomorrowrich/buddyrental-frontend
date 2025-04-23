@@ -27,6 +27,8 @@ import { BuddyWithUser } from "@/model/buddy";
 import { PickersDay, PickersDayProps } from "@mui/x-date-pickers/PickersDay";
 import dayjs, { Dayjs } from "dayjs";
 import { getBuddySchedule } from "@/api/schedule/api";
+import { createChat } from "@/api/chat/api";
+import { useRouter } from "next/navigation";
 
 type BuddyScheduleData = {
   busy: number[];
@@ -34,16 +36,27 @@ type BuddyScheduleData = {
 };
 
 export function BuddyProfile({ buddy }: { buddy: BuddyWithUser }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [schedules, setSchedules] = useState<BuddyScheduleData | undefined>(
     undefined,
   );
   const [currentMonth, setCurrentMonth] = useState<Dayjs>(dayjs());
+  const [chatId, setChatId] = useState<string>("");
 
   const fullName =
     buddy.user?.firstName && buddy.user?.lastName
       ? `${buddy.user.firstName} ${buddy.user.lastName}`
       : "Buddy Profile";
+
+  const chat = async () => {
+    const chat = await createChat(buddy.buddyId);
+    if (chat.success) {
+      setChatId(chat.chatId!);
+    } else {
+      console.error("Failed to create chat:", chat.error);
+    }
+  };
 
   useEffect(() => {
     const fetchScheduleData = async () => {
@@ -297,6 +310,16 @@ export function BuddyProfile({ buddy }: { buddy: BuddyWithUser }) {
                   variant="contained"
                   color="secondary"
                   startIcon={<ChatIcon />}
+                  onClick={() => {
+                    createChat(buddy.buddyId).then((chat) => {
+                      console.log(chat);
+                      if (chat.success) {
+                        router.push(`/chat?chat=${chat.chatId}`);
+                      } else {
+                        console.error("Failed to create chat:", chat.error);
+                      }
+                    });
+                  }}
                   sx={{
                     borderRadius: 2,
                     px: 2,
