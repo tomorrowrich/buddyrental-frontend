@@ -19,7 +19,7 @@ export async function fetchBuddies() {
   }
 
   return await axios
-    .get(`${baseURL}/buddies`, {
+    .get(`${baseURL}/buddies?limit=30`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
