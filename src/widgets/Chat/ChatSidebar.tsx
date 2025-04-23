@@ -42,20 +42,6 @@ export function ChatSidebar({
           }
         });
         setChatList(chatLists);
-
-        if (selectChat) {
-          const selectedChat = chatLists.find(
-            (chat: {
-              name: string;
-              avatar: string;
-              role: "buddy" | "customer";
-              chat: Chat;
-            }) => chat.chat.id === selectChat,
-          );
-          if (selectedChat) {
-            onSelectChat(selectedChat.role, selectedChat.chat);
-          }
-        }
       }
     };
     fetchChatList();
