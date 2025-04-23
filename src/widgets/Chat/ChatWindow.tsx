@@ -9,7 +9,8 @@ import { useAuth } from "@/context/auth/auth";
 import { subscribeToMessages, sendMessage } from "@/api/chat/socket";
 import { v4 as uuidv4 } from "uuid";
 import { useSocket } from "@/context/socket/SocketProvider";
-import { cancelReservation, createReservation } from "@/api/reservation/api";
+import { Reservation } from "@/model/reservation";
+import { cancelReservation } from "@/api/reservation/api";
 
 export function ChatWindow({
   selectedChat,
@@ -26,11 +27,6 @@ export function ChatWindow({
     }[]
   >([]);
   const [openDialog, setOpenDialog] = useState(false);
-  const [bookingPrice, setBookingPrice] = useState<number>(0);
-  const [editDetails, setEditDetails] = useState<string>("");
-  const [editSelectedDate, setEditSelectedDate] = useState<string>("");
-  const [editStartTime, setEditStartTime] = useState<string>("");
-  const [editEndTime, setEditEndTime] = useState<string>("");
   const router = useRouter();
   const [socketConnected, setSocketConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -166,44 +162,32 @@ export function ChatWindow({
     });
   };
 
-  const _handleSendBookingMessage = async () => {
+  const handleSendBookingMessage = async (reservation: Reservation) => {
     if (!chat || !user) return;
 
     setOpenDialog(false);
 
-    const reservation = await createReservation({
-      buddyId: chat.buddyId,
-      price: bookingPrice,
-      detail: editDetails || "",
-      reservationStart: new Date(
-        `${editSelectedDate}T${editStartTime}`,
-      ).toISOString(),
-      reservationEnd: new Date(
-        `${editSelectedDate}T${editEndTime}`,
-      ).toISOString(),
-    })
-      .then((res) => {
-        return res.data.data.reservation;
-      })
-      .catch((error) => {
-        console.error("Error creating reservation:", error);
-        throw error;
-      });
-
     console.log("Reservation created:", reservation);
+
+    const reservationDate = reservation.reservationStart.split("T")[0];
+    const startTime = reservation.reservationStart.split("T")[1].slice(0, 5);
+    const endTime = reservation.reservationEnd.split("T")[1].slice(0, 5);
 
     const newMessage = {
       id: uuidv4(),
-      text: `Buddy Reservation Request
-${editDetails}
-Date: ${editSelectedDate}
-Time: ${editStartTime} - ${editEndTime}`,
+      text: `Buddy Reservation Request\n
+Detail: ${reservation.detail || "No details provided."}
+Date: ${reservationDate}
+Time: ${startTime} - ${endTime}`,
       sender: "user" as const,
       type: ChatMessageMetaType.APPOINTMENT,
       metaContent: reservation.reservationId,
     };
 
     setMessages((prev) => [...prev, newMessage]);
+
+    console.log("Sending message:", newMessage);
+    console.log("Chat ID:", messages);
 
     sendMessage({
       trackId: uuidv4(),
@@ -466,7 +450,7 @@ Time: ${editStartTime} - ${editEndTime}`,
       {/* Booking dialog */}
       {role === "customer" && chat?.buddy && (
         <BookingDialog
-          onSendMessage={handleSendMessage}
+          onSendMessage={handleSendBookingMessage}
           buddyId={chat.buddyId!}
           buddyName={chat.buddy.user!.displayName}
           open={openDialog}
