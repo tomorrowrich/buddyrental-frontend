@@ -75,6 +75,14 @@ export function MessageInput({
           "& .MuiOutlinedInput-root": {
             borderRadius: 3,
             color: "text.primary",
+
+            "@media (max-width: 600px)": {
+              fontSize: "0.85rem",
+              padding: "2px 6px",
+              minHeight: "34px",
+            },
+
+            // Responsive for mobile
             "&.Mui-focused": {
               "& .MuiOutlinedInput-notchedOutline": {
                 borderColor: "tertiary.main",
@@ -88,6 +96,7 @@ export function MessageInput({
               },
             },
           },
+
           "& .MuiOutlinedInput-notchedOutline": {
             borderColor: "rgba(124, 96, 107, 0.2)",
           },
