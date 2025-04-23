@@ -172,7 +172,7 @@ export function MobileNavigationBar({
               <IconButton
                 size="small"
                 sx={{ color: theme.palette.tertiary.main }}
-                onClick={() => router.push("/app/coin/package")}
+                onClick={() => router.push("/coin/package")}
               >
                 <Add fontSize="small" />
               </IconButton>
