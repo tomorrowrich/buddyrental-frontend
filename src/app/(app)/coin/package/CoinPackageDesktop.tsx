@@ -60,7 +60,7 @@ export default function CoinPackagePage() {
         setSuccessOpen(true);
       } else if (success === "false") {
         setPaymentError("Payment was cancelled or failed. Please try again.");
-        router.push("/app/coin/package");
+        router.push("/coin/package");
       }
     }
   }, [searchParams]);
@@ -106,7 +106,7 @@ export default function CoinPackagePage() {
 
   const handleCloseSuccess = () => {
     setSuccessOpen(false);
-    router.push("/app/coin/package");
+    router.push("/coin/package");
   };
 
   const StripeCheckout = useCallback(async () => {
@@ -185,7 +185,7 @@ export default function CoinPackagePage() {
 
   const handleWithdrawSuccessClose = () => {
     setWithdrawSuccess(false);
-    router.push("/app/coin/package");
+    router.push("/coin/package");
   };
 
   const options = { clientSecret };
@@ -223,7 +223,7 @@ export default function CoinPackagePage() {
             <Button
               variant="contained"
               size="small"
-              onClick={() => router.push("/app/coin/history")}
+              onClick={() => router.push("/coin/history")}
               sx={{
                 borderRadius: "20px",
                 fontWeight: 600,
