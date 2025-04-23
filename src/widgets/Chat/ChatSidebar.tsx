@@ -90,7 +90,7 @@ export function ChatSidebar({
                 maxWidth: "180px",
               }}
             >
-              {chat.chat.ChatMessage[0].content}
+              {chat.chat.ChatMessage[0]?.content}
             </Typography>
           </Box>
           <IconButton color="tertiary">

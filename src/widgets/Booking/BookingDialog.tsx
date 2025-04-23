@@ -75,11 +75,11 @@ export function BookingDialog({
 
     if (response && response.success) {
       // Create message to display in chat
-      const message = `**Buddy Reservation Request**\nDetails: ${detail || "No details provided."}\nPrice: $${price || "0"}\nDate: ${selectedDate} Time: ${startTime} - ${endTime}`;
+      // const message = `**Buddy Reservation Request**\nDetails: ${detail || "No details provided."}\nPrice: $${price || "0"}\nDate: ${selectedDate} Time: ${startTime} - ${endTime}`;
 
       // Send message to parent component
       if (onSendMessage) {
-        onSendMessage(message);
+        onSendMessage(response.data.data.reservation);
       }
 
       // Show success message
