@@ -96,7 +96,7 @@ export default function CoinHistoryMobile() {
           <Button
             variant="contained"
             size="small"
-            onClick={() => router.push("/app/coin/package")}
+            onClick={() => router.push("/coin/package")}
             sx={{
               borderRadius: "20px",
               fontWeight: 600,
