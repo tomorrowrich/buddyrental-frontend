@@ -4,12 +4,8 @@ import axios from "axios";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { baseURL } from "@/api";
+import { AxiosError } from "axios";
 
-/**
- * Fetch all buddies from backend with auth token (server-side).
- *
- * @returns {Promise<{success: boolean, data: Buddy[] | null, error: string | null}>}
- */
 export async function fetchBuddies() {
   const cookie = await cookies();
   const token = cookie.get("token")?.value;
@@ -18,20 +14,26 @@ export async function fetchBuddies() {
     redirect("/login");
   }
 
-  return await axios
-    .get(`${baseURL}/buddies`, {
+  try {
+    const res = await axios.get(`${baseURL}/buddies`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    })
-    .then((res) => ({
+    });
+
+    return {
       success: true,
       data: res.data.buddies,
       error: null,
-    }))
-    .catch((err) => ({
+    };
+  } catch (error) {
+    // Type guard to check if it's an AxiosError
+    const err = error as AxiosError<{ message: string }>;
+
+    return {
       success: false,
       data: null,
       error: err.response?.data?.message || "Unknown error",
-    }));
+    };
+  }
 }

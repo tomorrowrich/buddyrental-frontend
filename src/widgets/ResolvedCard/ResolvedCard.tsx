@@ -21,97 +21,70 @@ import { ReportData } from "@/api/report/interface";
 import { User } from "@/model/user";
 import { getUser } from "@/api/users/api";
 import { getBuddy } from "@/api/buddy/api";
+import { CategoriesResponse } from "@/api/report/interface";
+import {
+  resolveReport,
+  setBan,
+  setSuspendTime,
+  getCategories,
+} from "@/api/report/api";
 
-const bookingData = [
-  {
-    id: 1,
-    name: "Alexa Rawles",
-    email: "alexarawles@gmail.com",
-    avatar: "https://picsum.photos/200?random=1",
-  },
-  {
-    id: 2,
-    name: "John Smith",
-    email: "johnsmith@gmail.com",
-    avatar: "https://picsum.photos/200?random=2",
-  },
-  {
-    id: 3,
-    name: "Emma Wilson",
-    email: "emmaw@gmail.com",
-    avatar: "https://picsum.photos/200?random=3",
-  },
-  {
-    id: 4,
-    name: "Michael Chen",
-    email: "mchen@gmail.com",
-    avatar: "https://picsum.photos/200?random=4",
-  },
-  {
-    id: 5,
-    name: "Sarah Johnson",
-    email: "sarahj@gmail.com",
-    avatar: "https://picsum.photos/200?random=5",
-  },
-  {
-    id: 6,
-    name: "David Brown",
-    email: "dbrown@gmail.com",
-    avatar: "https://picsum.photos/200?random=6",
-  },
-  {
-    id: 7,
-    name: "Lisa Anderson",
-    email: "landerson@gmail.com",
-    avatar: "https://picsum.photos/200?random=7",
-  },
-  {
-    id: 8,
-    name: "James Wilson",
-    email: "jwilson@gmail.com",
-    avatar: "https://picsum.photos/200?random=8",
-  },
-  {
-    id: 9,
-    name: "Maria Garcia",
-    email: "mgarcia@gmail.com",
-    avatar: "https://picsum.photos/200?random=9",
-  },
-  {
-    id: 10,
-    name: "Robert Taylor",
-    email: "rtaylor@gmail.com",
-    avatar: "https://picsum.photos/200?random=10",
-  },
-];
-
-const ReportCategoryMap: Record<string, string> = {
-  "25d40017-05ad-498b-bfcf-88632cff85d9": "Payment Issues",
-  "123e4567-e89b-12d3-a456-426614174000": "Buddy/Customer Report",
-  "cebae3c6-4ba6-4747-b351-325eb000243c": "App/System Issues",
-  "6fb1dfaf-d12e-4ce7-a392-f5d83d91a46e": "Others",
-};
-
-export const ResolvedCard = (data: ReportData) => {
+export const ResolvedCard = ({
+  data,
+  onResolved,
+}: {
+  data: ReportData;
+  onResolved?: () => void;
+}) => {
   const [open, setOpen] = useState(false);
   const theme = useTheme();
-  const [action, setAction] = useState<string>("");
   const [user, setUser] = useState<User>();
   const [buddy, setBuddy] = useState<User>();
   const [buddyId, setBuddyId] = useState<string>("");
+  const [action, setAction] = useState<
+    "10days" | "1month" | "3months" | "ban" | "none" | ""
+  >("");
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const res = await getCategories({
+        take: 100,
+        skip: 0,
+      });
+
+      const categories: CategoriesResponse[] = res.data.data;
+      const ReportCategoryMap: Record<string, string> = categories.reduce(
+        (map, category) => {
+          map[category.id] = category.name;
+          return map;
+        },
+        {} as Record<string, string>,
+      );
+      setReportCategoryMap(ReportCategoryMap);
+    };
+
+    fetchCategories();
+  }, []);
+
+  const [ReportCategoryMap, setReportCategoryMap] = useState<
+    Record<string, string>
+  >({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch user and buddy details from the backend
         const userRes = await getUser(data.userId);
         setUser(userRes);
 
-        const buddyRes = await getBuddy({ buddyId });
-        if (buddyRes?.userId) {
-          const buddyUserRes = await getUser(buddyRes.userId);
-          setBuddy(buddyUserRes);
-        } else {
-          console.warn(`No buddy found for buddyId: ${buddyId}`);
+        if (data.buddyId) {
+          const buddyRes = await getBuddy({ buddyId: data.buddyId });
+          if (buddyRes?.userId) {
+            const buddyUserRes = await getUser(buddyRes.userId);
+            setBuddy(buddyUserRes);
+          } else {
+            console.warn(`No buddy found for buddyId: ${data.buddyId}`);
+          }
         }
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -119,7 +92,51 @@ export const ResolvedCard = (data: ReportData) => {
     };
 
     fetchData();
-  }, []);
+  }, [data.userId, data.buddyId]);
+
+  const handleResolveReport = async () => {
+    if (
+      !action &&
+      ReportCategoryMap[data.categoryId] === "Buddy Host Complaints"
+    ) {
+      alert("Please select an action before resolving.");
+      return;
+    }
+
+    try {
+      let suspendTime: number | undefined;
+
+      if (action === "10days") {
+        suspendTime = 10;
+      } else if (action === "1month") {
+        suspendTime = 30;
+      } else if (action === "3months") {
+        suspendTime = 90;
+      }
+
+      if (suspendTime) {
+        const result = await setSuspendTime(buddy?.userId, suspendTime);
+        console.log("User suspended:", result);
+      } else if (action === "ban") {
+        const result = await setBan(buddy?.userId, true);
+        console.log("User banned:", result);
+      }
+
+      const result = await resolveReport(
+        data.id,
+        "RESOLVED",
+        action !== "none"
+          ? (action as "10days" | "1month" | "3months" | "ban")
+          : undefined,
+      );
+
+      console.log("Resolved report:", result);
+      setOpen(false);
+      onResolved?.();
+    } catch (err) {
+      console.error("Error resolving report:", err);
+    }
+  };
 
   return (
     <>
@@ -132,7 +149,7 @@ export const ResolvedCard = (data: ReportData) => {
         }}
       >
         <Stack direction="row" spacing={2} alignItems="center">
-          <Avatar src={bookingData[0].avatar} alt={user?.displayName} />
+          <Avatar src={user?.profilePicture} alt={user?.displayName} />
           <Box>
             <Typography variant="body1" fontWeight={600} color="primary">
               {user?.displayName}
@@ -186,13 +203,17 @@ export const ResolvedCard = (data: ReportData) => {
 
             <Box sx={{ border: "1px solid #E4A4B7", borderRadius: 2, p: 2 }}>
               <Typography fontWeight="bold" color="#C76CA8">
-                Reported Account
+                {ReportCategoryMap[data.categoryId] ===
+                  "Buddy Host Complaints" && "Reported Account"}
               </Typography>
               <Box display="flex" alignItems="center" mt={1}>
-                <Avatar
-                  src={bookingData[1].avatar}
-                  sx={{ width: 56, height: 56, mr: 2 }}
-                />
+                {ReportCategoryMap[data.categoryId] ===
+                  "Buddy Host Complaints" && (
+                  <Avatar
+                    src={buddy?.profilePicture}
+                    sx={{ width: 56, height: 56, mr: 2 }}
+                  />
+                )}
                 <Box>
                   <Typography fontWeight="bold">
                     {buddy?.displayName}
@@ -207,32 +228,39 @@ export const ResolvedCard = (data: ReportData) => {
               </Typography>
             </Box>
 
-            <RadioGroup
-              value={action}
-              onChange={(e) => setAction(e.target.value)}
-              sx={{ mt: 2, display: "flex", flexDirection: "column" }}
-            >
-              {[
-                { value: "10days", label: "Suspend for 10 Days" },
-                { value: "1month", label: "Suspend for 1 Month" },
-                { value: "3months", label: "Suspend for 3 Months" },
-                { value: "ban", label: "Ban the Account" },
-              ].map((option) => (
-                <FormControlLabel
-                  key={option.value}
-                  value={option.value}
-                  control={
-                    <Radio
-                      sx={{
-                        color: "#E4A4B7",
-                        "&.Mui-checked": { color: "#E4A4B7" },
-                      }}
-                    />
-                  }
-                  label={option.label}
-                />
-              ))}
-            </RadioGroup>
+            {ReportCategoryMap[data.categoryId] === "Buddy Host Complaints" && (
+              <RadioGroup
+                value={action}
+                onChange={(e) =>
+                  setAction(
+                    e.target.value as "10days" | "1month" | "3months" | "ban",
+                  )
+                }
+                sx={{ mt: 2, display: "flex", flexDirection: "column" }}
+              >
+                {[
+                  { value: "10days", label: "Suspend for 10 Days" },
+                  { value: "1month", label: "Suspend for 1 Month" },
+                  { value: "3months", label: "Suspend for 3 Months" },
+                  { value: "ban", label: "Ban the Account" },
+                  { value: "none", label: "Do Nothing" },
+                ].map((option) => (
+                  <FormControlLabel
+                    key={option.value}
+                    value={option.value}
+                    control={
+                      <Radio
+                        sx={{
+                          color: "#E4A4B7",
+                          "&.Mui-checked": { color: "#E4A4B7" },
+                        }}
+                      />
+                    }
+                    label={option.label}
+                  />
+                ))}
+              </RadioGroup>
+            )}
 
             <Box display="flex" justifyContent="center">
               <Button
@@ -244,6 +272,7 @@ export const ResolvedCard = (data: ReportData) => {
                   width: "50%",
                   borderRadius: 2,
                 }}
+                onClick={handleResolveReport}
               >
                 Resolve
               </Button>

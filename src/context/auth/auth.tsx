@@ -108,6 +108,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         redirect("/");
       }
 
+      if (
+        success &&
+        ((profileUser?.suspendedUntil &&
+          new Date(profileUser.suspendedUntil).getTime() > Date.now()) ||
+          profileUser?.isBanned)
+      ) {
+        redirect("/suspended");
+      }
+
       if (success && profileUser?.verified && pathname === "/verify") {
         redirect("/onboard");
       }

@@ -48,7 +48,6 @@ export default function PersonalProfile() {
     const name = event.target.name;
     let value = event.target.value;
     if (name === "dateOfBirth") value = new Date(value).toISOString();
-    console.log(name, value);
     setUser((prevUser) => ({
       ...prevUser,
       [name]: value,

@@ -16,11 +16,14 @@ export interface User {
   description?: string;
   interests?: Interest[];
   buddy?: Buddy;
-  balance: number;
   admin?: Admin;
+  suspendedUntil?: string;
+  isBanned?: boolean;
+  balance: number;
 }
 
 export interface Buddy {
+  user: User;
   buddyId: string;
 }
 

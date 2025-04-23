@@ -5,15 +5,17 @@ import { ReportData } from "@/api/report/interface";
 
 export interface ReportDataProps {
   datas: ReportData[];
+  onResolved?: () => void;
 }
 
-export const UnresolvedReport = ({ datas }: ReportDataProps) => {
+export const UnresolvedReport = ({ datas, onResolved }: ReportDataProps) => {
   const theme = useTheme();
   return (
     <Box mt={2}>
       {(Array.isArray(datas) ? datas : []).map((data) => (
         <Box key={data.id}>
-          <ResolvedCard {...data} />
+          <ResolvedCard data={data} onResolved={onResolved} />
+
           <Divider
             sx={{ background: theme.palette.quinary.main }}
             variant="middle"

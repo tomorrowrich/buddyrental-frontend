@@ -14,7 +14,10 @@ import { cookies } from "next/headers";
  * - `users`: An array of `User` objects if the request was successful, otherwise `null`.
  * - `error`: A string containing the error message if the request failed, otherwise `null`.
  */
-export async function getUnverifiedUsers() {
+export async function getUnverifiedUsers(
+  page: number = 1,
+  perpage: number = 10,
+) {
   const cookie = await cookies();
   const token = cookie.get("token")?.value;
 
@@ -23,11 +26,14 @@ export async function getUnverifiedUsers() {
   }
 
   return axios
-    .get<{ data: User[] }>(`${baseURL}/admin/verify`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    .get<{ data: User[] }>(
+      `${baseURL}/admin/verify?page=${page}&perPage=${perpage}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    })
+    )
     .then((res) => {
       return { success: true, users: res.data, error: null };
     })
