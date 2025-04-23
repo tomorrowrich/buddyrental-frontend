@@ -24,8 +24,10 @@ import { useAuth } from "@/context/auth/auth";
 import { updateProfile } from "@/api/users/api";
 import { User } from "@/model/user";
 import { createBuddy } from "@/api/buddy/api";
+import { useRouter } from "next/navigation";
 
 export default function PersonalProfile() {
+  const router = useRouter();
   const { user: authUser } = useAuth();
   const theme = useTheme();
   const [isEditing, setIsEditing] = useState(false);
@@ -418,6 +420,8 @@ export default function PersonalProfile() {
                 minPrice: minPrice,
                 maxPrice: Number(maxPrice),
                 description: description,
+              }).then((res) => {
+                if (res.onboard.url) router.push(res.onboard.url);
               });
             }}
           >

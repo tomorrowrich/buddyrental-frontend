@@ -82,7 +82,7 @@ export async function listBuddies(
   }
 }
 
-export async function createBuddy(data: CreateBuddyRequest): Promise<Buddy> {
+export async function createBuddy(data: CreateBuddyRequest) {
   const cookieStore = await cookies();
   const authToken = cookieStore.get("token")?.value;
 
