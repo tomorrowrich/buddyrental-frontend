@@ -35,34 +35,14 @@ import { useAuth } from "@/context/auth/auth";
 import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { submitReport } from "@/api/report/api";
+import { getCategories, submitReport } from "@/api/report/api";
 import { fetchBuddies } from "@/api/buddies/actions";
 import { BuddyWithUser } from "@/model/buddy";
+import { CategoriesResponse } from "@/api/report/interface";
 
 export interface NavigationBarProps {
   isAdmin?: boolean;
 }
-
-const ReportCategoryMap: Record<string, string> = {
-  "Payment Issues": "25d40017-05ad-498b-bfcf-88632cff85d9",
-  "Buddy Host Complaints": "28b62f4e-82b1-4ad1-b337-ac00e792a214",
-  "Search/Filter Problems": "2a210419-bedc-4f61-86ca-53c6459e20b8",
-  "Account Issues": "4430c74b-f39c-4190-8332-326e1edda5f7",
-  "Feedback & Suggestions": "4bdc2786-38bf-4d48-8e38-f57658da5ec3",
-  "Rental Experience": "4fcad569-38a9-43f9-b629-b3bce0ef526f",
-  "UI/UX Issues": "6a2439f1-33a5-4a62-82fc-6468ed2237b3",
-  Other: "6fb1dfaf-d12e-4ce7-a392-f5d83d91a46e",
-  "Safety Concerns": "85cd6225-8333-4b0d-9ea7-0b7d9c0454cf",
-  "Verification Problems": "a902287f-d65a-439d-ac10-eb981c57412d",
-  "Feature Requests": "b474cc8e-9a6d-402f-a56c-1659c149aa19",
-  "Notification Issues": "cc27c907-80d3-4813-8a71-fa4e3141768a",
-  "App/System Issues": "cebae3c6-4ba6-4747-b351-325eb000243c",
-  "Booking Process Errors": "e19abe05-3691-4e79-af60-a3d9e76c959d",
-};
-
-const getCategoryId = (categoryName: string): string => {
-  return ReportCategoryMap[categoryName];
-};
 
 export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const { logout, user } = useAuth();
@@ -74,6 +54,34 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
   const [reportText, setReportText] = useState("");
   const [accountName, setAccountName] = useState("");
   const [buddyList, setBuddyList] = useState<BuddyWithUser[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const res: CategoriesResponse[] = await getCategories({
+        take: 100,
+        skip: 0,
+      });
+
+      const ReportCategoryMap: Record<string, string> = res.data.data.reduce(
+        (map, category) => {
+          map[category.name] = category.id;
+          return map;
+        },
+        {} as Record<string, string>,
+      );
+      setReportCategoryMap(ReportCategoryMap);
+    };
+
+    fetchCategories();
+  }, []);
+
+  const [reportCategoryMap, setReportCategoryMap] = useState<
+    Record<string, string>
+  >({});
+
+  const getCategoryId = (categoryName: string): string => {
+    return reportCategoryMap[categoryName];
+  };
 
   useEffect(() => {
     const getBuddies = async () => {
@@ -248,11 +256,12 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
               }}
             >
               <Typography color="secondary" fontWeight="bold">
-                123.00
+                {user.balance}
               </Typography>
               <IconButton
                 size="small"
                 sx={{ color: theme.palette.tertiary.main }}
+                onClick={() => router.push("/coin/package")}
               >
                 <Add fontSize="small" />
               </IconButton>
