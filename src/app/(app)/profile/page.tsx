@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Container,
@@ -17,6 +17,7 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
+  CircularProgress,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
@@ -24,6 +25,7 @@ import { useAuth } from "@/context/auth/auth";
 import { updateProfile } from "@/api/users/api";
 import { User } from "@/model/user";
 import { createBuddy } from "@/api/buddy/api";
+import { uploadProfile } from "@/api/storage/api";
 
 export default function PersonalProfile() {
   const { user: authUser } = useAuth();
@@ -34,15 +36,49 @@ export default function PersonalProfile() {
   const [description, setDescription] = useState("");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState<string>("");
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [user, setUser] = useState<User>(authUser as User);
 
-  const [user, setUser] = useState<User>({
-    profilePicture: "https://picsum.photos/200",
-  } as User);
   useEffect(() => {
     if (authUser) {
       setUser({ ...authUser, displayName: authUser.displayName || "" });
     }
-  }, [authUser]);
+  }, [authUser, user]);
+
+  const handleProfilePictureChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (!event.target.files || event.target.files.length === 0) return;
+
+    const file = event.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    console.log(formData);
+
+    try {
+      setUploading(true);
+      const res = await uploadProfile(formData);
+      const url = res.url;
+      await updateProfile({ ...user, profilePicture: url });
+
+      setUser((prevUser: User) => ({
+        ...prevUser,
+        profilePicture: url,
+      }));
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const name = event.target.name;
@@ -133,12 +169,48 @@ export default function PersonalProfile() {
         </Typography>
 
         <Box display="flex" alignItems="center" gap={2} mt={12}>
-          <Avatar
-            src={user.profilePicture ? user.profilePicture : undefined}
-            sx={{ width: 80, height: 80 }}
-          >
-            {!user.profilePicture && `${user.firstName.at(0)}`}
-          </Avatar>
+          <Box position="relative">
+            <Avatar
+              src={user.profilePicture ? user.profilePicture : undefined}
+              sx={{
+                width: 80,
+                height: 80,
+                cursor: isEditing ? "pointer" : "default",
+              }}
+              onClick={isEditing ? triggerFileInput : undefined}
+            >
+              {!user.profilePicture && `${user.firstName?.at(0)}`}
+            </Avatar>
+            {isEditing && (
+              <>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  accept="image/*"
+                  onChange={handleProfilePictureChange}
+                />
+              </>
+            )}
+            {uploading && (
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                bottom={0}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                sx={{
+                  bgcolor: "rgba(255, 255, 255, 0.7)",
+                  borderRadius: "50%",
+                }}
+              >
+                <CircularProgress size={30} sx={{ color: "#EB7BC0" }} />
+              </Box>
+            )}
+          </Box>
           <Box flexGrow={1}>
             <Typography variant="h5" fontWeight={500}>
               {user.firstName} {user.lastName}
