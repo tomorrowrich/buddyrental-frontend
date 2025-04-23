@@ -21,6 +21,7 @@ import { ReportData } from "@/api/report/interface";
 import { User } from "@/model/user";
 import { getUser } from "@/api/users/api";
 import { getBuddy } from "@/api/buddy/api";
+import { CategoriesResponse } from "@/api/report/interface";
 import {
   resolveReport,
   setBan,

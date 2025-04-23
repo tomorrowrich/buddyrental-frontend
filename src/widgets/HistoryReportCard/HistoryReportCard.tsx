@@ -4,6 +4,7 @@ import { User } from "@/model/user";
 import { useEffect, useState } from "react";
 import { getUser } from "@/api/users/api";
 import { getCategories } from "@/api/report/api";
+import { CategoriesResponse } from "@/api/report/interface";
 
 // HistoryReportCard Component
 export const HistoryReportCard = ({ data }: { data: ReportData }) => {
