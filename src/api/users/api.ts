@@ -70,3 +70,27 @@ export async function updateInterests(interests: string[]) {
       };
     });
 }
+
+export async function getUser(userId: string): Promise<User> {
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get("token")?.value;
+
+  if (!authToken) {
+    throw new Error("Authentication required");
+  }
+
+  try {
+    const response = await axios.get(`${baseURL}/users/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error updating buddy: ${error.response?.status}`);
+    }
+    throw error;
+  }
+}

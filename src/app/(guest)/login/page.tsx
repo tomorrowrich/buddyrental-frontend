@@ -50,7 +50,6 @@ export default function Login() {
       email: values.email,
       password: values.password,
     });
-    console.log(resp);
     if (resp && resp.error) {
       setErrors({
         email: resp.error || "Invalid email or password",
@@ -161,7 +160,7 @@ export default function Login() {
                 color="primary"
                 label="Remember me"
               />
-              <Link href="/login/forgetpassword" color="tertiary">
+              <Link href="/reset" color="tertiary">
                 Forgot Password
               </Link>
             </Stack>

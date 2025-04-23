@@ -15,6 +15,20 @@ export interface User {
   profilePicture?: string;
   description?: string;
   interests?: Interest[];
+  buddy?: Buddy;
+  admin?: Admin;
+  suspendedUntil?: string;
+  isBanned?: boolean;
+  balance: number;
+}
+
+export interface Buddy {
+  user: User;
+  buddyId: string;
+}
+
+export interface Admin {
+  adminId: string;
 }
 
 export interface Interest {

@@ -1,28 +1,70 @@
 "use client";
-import { getUnverifiedUsers } from "@/api/verify/api";
+import { getUnverifiedUsers, verifyUser } from "@/api/verify/api";
 import { User } from "@/model/user";
-import { VerificationRequest } from "@/widgets/Verification/VerificationHistory/VerificationHistory";
+import { VerficationCard } from "@/widgets/Verification/VerificationCard/VerificationCard";
 import { Box, Container, Typography, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 
 export default function Page() {
   const theme = useTheme();
-  const [unverifiedUsers, setUnverifiedUsers] = useState<User[] | null>();
+  const [unverifiedUsers, setUnverifiedUsers] = useState<User[]>([]);
 
   const fetchUnverifiedUsers = async () => {
     try {
       const { success, users, error } = await getUnverifiedUsers();
+      console.log("API response:", { success, users, error });
+
       if (success) {
-        console.log("Unverified users:", users);
-        setUnverifiedUsers(users);
+        // ตรวจสอบว่า users ถูกต้องหรือไม่
+        if (Array.isArray(users)) {
+          console.log("Unverified users:", users);
+          setUnverifiedUsers(users); // อัปเดต unverifiedUsers
+        } else if (users?.data && Array.isArray(users.data)) {
+          // กรณีที่ data อยู่ใน users
+          console.log("Unverified users from data:", users.data);
+          setUnverifiedUsers(users.data); // ใช้ users.data
+        } else {
+          console.error("Data is not an array:", users);
+          setUnverifiedUsers([]); // ถ้าไม่ใช่อาร์เรย์ตั้งค่าเป็นอาร์เรย์ว่าง
+        }
       } else {
         console.error("Failed to fetch unverified users:", error);
+        setUnverifiedUsers([]); // ถ้าล้มเหลวให้ตั้งค่าเป็นอาร์เรย์ว่าง
       }
     } catch (error) {
       console.error(
         "An error occurred while fetching unverified users:",
         error,
       );
+      setUnverifiedUsers([]); // ถ้ามีข้อผิดพลาดให้ตั้งค่าเป็นอาร์เรย์ว่าง
+    }
+  };
+
+  // อนุมัติผู้ใช้
+  const handleApprove = async (userId: string) => {
+    const { success, error } = await verifyUser(true, userId);
+    if (success) {
+      setUnverifiedUsers((prevUsers) =>
+        prevUsers.filter((user) => user.userId !== userId),
+      );
+    } else {
+      console.error("Failed to approve user:", error);
+    }
+  };
+
+  // ปฏิเสธผู้ใช้
+  const handleDecline = async (userId: string) => {
+    const { success, error } = await verifyUser(
+      false,
+      userId,
+      "User not approved",
+    );
+    if (success) {
+      setUnverifiedUsers((prevUsers) =>
+        prevUsers.filter((user) => user.userId !== userId),
+      );
+    } else {
+      console.error("Failed to decline user:", error);
     }
   };
 
@@ -59,14 +101,26 @@ export default function Page() {
         >
           Verification Management
         </Typography>
+
         <Box
-          data-testid="booking-history-container"
-          sx={{ width: "100%", padding: 2, flex: 1 }}
+          sx={{
+            width: "100%",
+            padding: 2,
+            flex: 1,
+            overflowY: "auto",
+          }}
         >
-          <VerificationRequest
-            data={unverifiedUsers ?? []}
-            onChange={fetchUnverifiedUsers}
-          />
+          {unverifiedUsers.length > 0 ? (
+            unverifiedUsers.map((user) => (
+              <VerficationCard
+                key={user.userId}
+                {...user}
+                onChange={fetchUnverifiedUsers} // Reload users when approved/rejected
+              />
+            ))
+          ) : (
+            <Typography>No unverified users found.</Typography>
+          )}
         </Box>
       </Box>
     </Container>
