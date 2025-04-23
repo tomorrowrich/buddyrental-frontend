@@ -110,9 +110,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (
         success &&
-        ((user?.suspendedUntil &&
-          new Date(user.suspendedUntil).getTime() > Date.now()) ||
-          user?.isBanned)
+        ((profileUser?.suspendedUntil &&
+          new Date(profileUser.suspendedUntil).getTime() > Date.now()) ||
+          profileUser?.isBanned)
       ) {
         redirect("/suspended");
       }

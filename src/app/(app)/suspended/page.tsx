@@ -3,6 +3,7 @@
 import { useAuth } from "@/context/auth/auth";
 import { User } from "@/model/user";
 import { Box, Container, Typography } from "@mui/material";
+import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function SuspendedPage() {
@@ -13,6 +14,13 @@ export default function SuspendedPage() {
   useEffect(() => {
     if (authUser) {
       setUser(authUser);
+    }
+    if (
+      authUser?.suspendedUntil &&
+      new Date(authUser.suspendedUntil).getTime() < Date.now() &&
+      authUser?.isBanned === false
+    ) {
+      redirect("/");
     }
   }, [authUser]);
 

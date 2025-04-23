@@ -18,6 +18,7 @@ import {
   setSuspendTime,
 } from "@/api/report/api";
 import { User } from "@/model/user";
+import { getBuddy } from "@/api/buddy/api";
 
 const SuspendData = ({
   data,
@@ -142,11 +143,17 @@ export default function SuspendAccount() {
 
       const suspendedUsersResults = await Promise.all(
         filteredReports.map(async (report) => {
-          const user = await getSuspendUser(report);
+          let a = report;
+          if (a.buddyId !== undefined) {
+            const buddyRes = await getBuddy({ buddyId: a.buddyId });
+            a = { ...report, buddyId: buddyRes.userId || undefined };
+          }
+          console.log("buddyId", a.buddyId);
+          const user = await getSuspendUser(a);
           return user;
         }),
       );
-
+      console.log("susoend user", suspendedUsersResults);
       // console.log("suspend", suspendedUsersResults);
       // console.log("date", Date.now());
       // Filter หลังจาก resolve แล้ว

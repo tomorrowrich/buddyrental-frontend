@@ -98,10 +98,10 @@ export const ResolvedCard = ({
       }
 
       if (suspendTime) {
-        const result = await setSuspendTime(data.buddyId, suspendTime);
+        const result = await setSuspendTime(buddy?.userId, suspendTime);
         console.log("User suspended:", result);
       } else if (action === "ban") {
-        const result = await setBan(data.buddyId, true);
+        const result = await setBan(buddy?.userId, true);
         console.log("User banned:", result);
       }
 

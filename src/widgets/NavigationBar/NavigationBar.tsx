@@ -115,6 +115,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
       details: reportText,
       buddyId: buddy?.buddyId,
     };
+    console.log("data: ", data);
     try {
       const response = await submitReport(data);
       console.log(response);
@@ -153,7 +154,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
         {/* Left Side - Logo */}
         <Box
           sx={{ display: "flex", alignItems: "center", gap: 1 }}
-          onClick={() => router.push("/app")}
+          onClick={() => router.push("/")}
         >
           <Image
             src="/logo-full.svg"
@@ -208,7 +209,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     color: theme.palette.primary.main,
                     textTransform: "none",
                   }}
-                  onClick={() => router.push("/app/booking/history")}
+                  onClick={() => router.push("/booking/history")}
                 >
                   Bookings
                 </Button>
@@ -218,19 +219,22 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     color: theme.palette.primary.main,
                     textTransform: "none",
                   }}
-                  onClick={() => router.push("/app/booking/schedule")}
+                  onClick={() => router.push("/booking/schedule")}
                 >
                   Calendar
                 </Button>
+                <Button
+                  startIcon={<ChatBubbleOutline />}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => router.push("/chat")}
+                >
+                  Chat
+                </Button>
               </>
             )}
-            <Button
-              startIcon={<ChatBubbleOutline />}
-              sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-              onClick={() => router.push("/app/chat")}
-            >
-              Chat
-            </Button>
 
             {/* Balance */}
             <Box
@@ -470,7 +474,7 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
                     sx={{ justifyContent: "flex-start", mb: 1 }}
                     onClick={() => {
                       setAnchorEl(null);
-                      router.push("/app/profile");
+                      router.push("/profile");
                     }}
                     startIcon={<Edit sx={{ width: 24, height: 24 }} />}
                   >

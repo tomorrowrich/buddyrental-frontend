@@ -127,9 +127,10 @@ export const setSuspendTime = async (
 ) => {
   const cookieStore = await cookies();
   const authToken = cookieStore.get("token")?.value;
+  // console.log("userId: ", userId);
 
   try {
-    console.log("suspendTime: ", suspendTime);
+    // console.log("suspendTime: ", suspendTime);
 
     // ตรวจสอบให้แน่ใจว่า suspendTime ถูกส่งใน request body
     const response = await fetch(`${baseURL}/users/${userId}/suspend`, {
@@ -140,6 +141,7 @@ export const setSuspendTime = async (
       },
       body: JSON.stringify({ suspendTime }), // ส่งค่าของ suspendTime เป็น JSON
     });
+    // console.log("response: ", response);
 
     if (!response.ok) {
       throw new Error("Failed to suspend user");
@@ -181,6 +183,7 @@ export const getSuspendUser = async (report: ReportData) => {
   const cookieStore = await cookies();
   const authToken = cookieStore.get("token")?.value;
   try {
+    console.log("report: ", report);
     const response = await axios.get(`${baseURL}/users/${report.buddyId}`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
