@@ -24,6 +24,7 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import DescriptionIcon from "@mui/icons-material/Description";
+import { Reservation } from "@/model/reservation";
 
 export function BookingDialog({
   open,
@@ -36,7 +37,7 @@ export function BookingDialog({
   buddyName: string;
   open: boolean;
   setOpen: (value: boolean) => void;
-  onSendMessage?: (message: string) => void;
+  onSendMessage: (reservation: Reservation) => void;
 }) {
   const [detail, setDetails] = useState("");
   const [price, setPrice] = useState<string>("0");
