@@ -28,6 +28,7 @@ import {
   Logout,
   HowToReg,
   PersonOff,
+  RequestQuote,
 } from "@mui/icons-material";
 import Image from "next/image";
 import NotificationTray from "../NotificationTray/NotificationTray";
@@ -212,6 +213,18 @@ export function NavigationBar({ isAdmin = false }: NavigationBarProps) {
             )}
             {!isAdmin && (
               <>
+                {user?.buddy && (
+                  <Button
+                    startIcon={<RequestQuote />}
+                    sx={{
+                      color: theme.palette.primary.main,
+                      textTransform: "none",
+                    }}
+                    onClick={() => router.push("/booking/history/buddy")}
+                  >
+                    Requests
+                  </Button>
+                )}
                 <Button
                   startIcon={<MenuBook />}
                   sx={{
