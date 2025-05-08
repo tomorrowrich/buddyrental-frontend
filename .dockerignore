@@ -1,0 +1,47 @@
+# Node.js and NPM/PNPM
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+.pnpm-store/
+.npm
+*.tgz
+.npmrc
+package-lock.json
+
+# Next.js specific
+.next/
+out/
+.vercel
+next-env.d.ts
+.env*.local
+
+# Build output
+dist/
+build/
+
+# Coverage directory
+coverage/
+
+# Logs
+logs
+*.log
+
+# VSCode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Docker specific
+Dockerfile
+.dockerignore
+
+# Misc
+.git
+.github
+*.md
+LICENSE
+.gitignore
