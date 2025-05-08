@@ -1,3 +1,15 @@
+# [2.5.0](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.4.1...v2.5.0) (2025-05-08)
+
+### Features
+
+- add docker deployment ([fbacb47](https://github.com/tomorrowrich/buddyrental-frontend/commit/fbacb472df2eb12f11acef10e021ce6fae118b1f))
+
+## [2.4.1](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.4.0...v2.4.1) (2025-04-24)
+
+### Bug Fixes
+
+- buddy navbar ([697f9ab](https://github.com/tomorrowrich/buddyrental-frontend/commit/697f9abacf390992894fcb0337b1ba355decea83))
+
 # [2.4.0](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.3.0...v2.4.0) (2025-04-23)
 
 ### Bug Fixes
