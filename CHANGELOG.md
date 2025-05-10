@@ -1,3 +1,9 @@
+# [2.6.0](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.5.0...v2.6.0) (2025-05-10)
+
+### Features
+
+- depoyment ([f7ca709](https://github.com/tomorrowrich/buddyrental-frontend/commit/f7ca709a03c3f0dc52c322c27aa362f268c887f2))
+
 # [2.5.0](https://github.com/tomorrowrich/buddyrental-frontend/compare/v2.4.1...v2.5.0) (2025-05-08)
 
 ### Features
